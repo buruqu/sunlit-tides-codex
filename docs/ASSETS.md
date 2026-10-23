@@ -7,9 +7,11 @@
 | 果园午后 | duo-orchard.jpg | 用户提供的 1280×1280 插画，原文件保留 |
 | 昭日遇见暗潮 | duo-night.png | 内置 imagegen 参考角色素材创作 |
 | 西西立绘 | sigrika-cutout.png | 用户原图经内置 imagegen 透明底处理 |
+| 暗面西西立绘 | sigrika-night-cutout.png | 用户夜色睡衣插画经内置 imagegen 移除背景与前景外来手臂，裁成半身透明图 |
 | 娅娅明暗立绘 | dsh/denia_character_right*.webp | DSH 上游原始素材 |
 | 娅娅明暗 Q 版 | dsh/denia_chibi*.gif | DSH 上游原始素材 |
 | 西西吃饭表情 | sigrika-emote.gif | 用户提供，原字节 GIF，仅修正附件后缀 |
+| 暗面西西表情 | sigrika-night-emote.gif | 用户提供，300×300、27 帧原字节 GIF，仅将错误的 .jpg 后缀改为 .gif |
 | 消息团子 | xixi-dumpling.jpg、yaya-dumpling.jpg | 用户提供 |
 | 导航与明信片 | sigrika-breeze.jpg、sigrika-dream.jpg、sigrika-train.jpg、duo-heart.jpg、duo-story.jpg、duo-evening.jpg | 用户提供 |
 | 果园图层 | layered/*.png | 原图 RGB + 手工贝塞尔透明遮罩 |
@@ -31,3 +33,13 @@
 > Edit the supplied square orchard illustration ONLY at both eyes of the pink-haired woman under the straw hat. Gently close both eyes with natural relaxed eyelid lines and eyelashes, no iris. Preserve exact facial position, size, head tilt, smile, all hair, shading, colors, clothes, apples and background. Orange-haired woman's already closed eyes stay unchanged. At 1280 square, eye centers approximately (806,315) and (750,374). Same framing, no beautification or new elements; this is an aligned blink keyframe.
 
 补底提示词保留在 ORCHARD-LAYERS.md。角色及插画权利不因分层或 AI 编辑转为本项目原创；参见根目录 NOTICE.md。
+
+## 1.1.1 暗面西西
+
+2026-10-23 用户明确指定两张附件用于暗面左侧立绘与表情。立绘原图为 `codex-clipboard-ed744a22-034b-4e16-95a5-185bfa1d5bca.jpg`，SHA-256 `bfb873320ee6f8507282d386ffee50533904765cdac69878ad5a7afa61797a58`。输出透明 PNG 为 1156×1361，SHA-256 `10c248645f9528d08b36d1551367568009c2a970de2e0d00c351b05513acc15c`。
+
+使用内置 imagegen 编辑，实际提示词：
+
+> Use case: background-extraction. Edit the provided anime illustration into a clean transparent PNG desktop UI character standee. Preserve the orange-haired character's exact face, surprised expression, emerald eyes, braids, hair accessories, cool blue nighttime illumination, blue short-sleeve pajama shirt, pose, her own raised hand on the viewer left and her own hand across her waist. Output a WAIST-UP portrait crop, ending just below her own hand at the lower shirt area, no legs and no lower-body emphasis. Remove the entire bed, room, pillows, background, punctuation mark, and BOTH other-person foreground hands/arms; reconstruct only tiny hair/garment contours where those removed arms occluded the silhouette. Keep a natural clean edge to braids. Do not change the pose into standing, do not redesign clothes, do not add body parts, do not add text/name/border/shadow or any scenery. Maintain original crisp anime line art and blue-violet palette; genuine alpha transparency around isolated character, a tight portrait composition with 4% clear padding and all visible hair and her own raised hand inside frame. This is a nonsexual desktop companion illustration, focused on face and upper torso.
+
+这是 AI 编辑结果，包含少量轮廓重建，不标为原像素抠图。表情原图为 `codex-clipboard-a82fc7eb-7186-4258-89fa-4a075183b425.jpg`，文件签名实际为 GIF89a；字节未重编码，SHA-256 `65c73bee62b4056c984b68ec09b7475d191b005b3e3f86575665f4af146f9008`。白色底保留为小表情贴纸，未用滤镜改变人物颜色。

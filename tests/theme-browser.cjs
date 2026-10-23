@@ -8,6 +8,22 @@ const output = path.join(root, 'test-results/browser');
 const manifest = JSON.parse(fs.readFileSync(path.join(dist, 'manifest.json'), 'utf8'));
 const results = [], evidence = {}, errors = [];
 async function check(name, fn) { try { await fn(); results.push({ name, passed: true }); } catch (error) { results.push({ name, passed: false, error: error.stack }); } }
+function gifInfo(bytes) {
+  assert.match(bytes.toString('ascii', 0, 6), /^GIF8[79]a$/);
+  let offset = 13 + ((bytes[10] & 128) ? 3 * (1 << ((bytes[10] & 7) + 1)) : 0), frames = 0;
+  const skipBlocks = () => { let size; while ((size = bytes[offset++]) > 0) offset += size; };
+  while (offset < bytes.length) {
+    const marker = bytes[offset++];
+    if (marker === 0x3b) break;
+    if (marker === 0x21) { offset++; skipBlocks(); }
+    else if (marker === 0x2c) {
+      const packed = bytes[offset + 8]; offset += 9;
+      if (packed & 128) offset += 3 * (1 << ((packed & 7) + 1));
+      offset++; skipBlocks(); frames++;
+    } else throw new Error('Invalid GIF block at ' + (offset - 1));
+  }
+  return { width: bytes.readUInt16LE(6), height: bytes.readUInt16LE(8), frames };
+}
 const fixture = `<!doctype html><html lang="zh-CN" data-theme="light" class="native-app"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>晴光与泡影 · 合成预览</title><style id="native-style" data-native-style="keep">
 *{box-sizing:border-box}html,body{margin:0;width:100%;height:100%;overflow:hidden;font:14px/1.65 'Segoe UI','Microsoft YaHei',sans-serif;color:#282b34;background:#fff}[hidden]{display:none!important}button,textarea{font:inherit}button{cursor:pointer;color:inherit}button:focus-visible,textarea:focus-visible{outline:3px solid #8764a5;outline-offset:2px}
 .fixture-toolbar{height:44px;display:flex;align-items:center;gap:16px;padding:0 18px;background:#f6f3f8;border-bottom:1px solid #ddd;font-size:12px}.fixture-toolbar small{margin-left:auto;color:#776b80}
@@ -78,6 +94,57 @@ async function main() {
         assert.equal(painted.matches, true); assert.equal(painted.imagePresent, true); evidence.paint.push(painted);
         await page.screenshot({ path: path.join(output, 'preview-' + mode + '.png') });
       }
+    });
+    await check('packaged Xixi portrait and original animated sticker follow light-dark-light without changing preferences or covering native content', async () => {
+      const source = key => fs.readFileSync(path.join(root, 'theme', manifest.assets[key]));
+      const dataUrl = key => 'data:' + (manifest.assets[key].endsWith('.gif') ? 'image/gif' : 'image/png') + ';base64,' + source(key).toString('base64');
+      assert.deepEqual(gifInfo(source('sigrika-emote-dark')), { width: 300, height: 300, frames: 27 });
+      assert.notDeepEqual(source('task-left'), source('task-left-dark'));
+      const settings = await page.evaluate(() => __SIGRIKA_DENIA_FUSION__.getSettings());
+      evidence.xixiModes = [];
+      await page.setViewportSize({ width: 1920, height: 1080 });
+      await page.evaluate(() => fixture.setView('chat'));
+      for (const mode of ['light', 'dark', 'light']) {
+        await page.evaluate(mode => fixture.setMode(mode), mode); await page.waitForTimeout(450);
+        const expected = { portrait: dataUrl(mode === 'dark' ? 'task-left-dark' : 'task-left'), emote: dataUrl(mode === 'dark' ? 'sigrika-emote-dark' : 'sigrika-emote') };
+        const actual = await page.evaluate(async expected => {
+          const card = document.querySelector('[data-fusion-card="left"]'), art = card.querySelector('[data-theme-part="task-card-art"]');
+          const emote = document.querySelector('[data-sunlit-companion="xixi-emote"]'), image = emote.querySelector('img');
+          const r = card.getBoundingClientRect(), e = emote.getBoundingClientRect();
+          const intersects = (a, b) => a.left < b.right && a.right > b.left && a.top < b.bottom && a.bottom > b.top;
+          const obstacles = [...document.querySelectorAll('.thread-content-max-width,.composer-surface-chrome,.app-shell-right-panel')].filter(node => !node.closest('[hidden]')).map(node => node.getBoundingClientRect());
+          const url = getComputedStyle(art).backgroundImage.match(/^url\("(.*)"\)$/)?.[1];
+          const blob = await (await fetch(url)).blob();
+          const portrait = await new Promise(resolve => { const reader = new FileReader(); reader.onload = () => resolve(reader.result); reader.readAsDataURL(blob); });
+          return { mode: document.documentElement.dataset.theme, portraitMatches: portrait === expected.portrait,
+            emoteMatches: image.getAttribute('src') === expected.emote, emoteLoaded: image.complete && image.naturalWidth > 0,
+            visible: getComputedStyle(card).display !== 'none' && !emote.hidden, contain: getComputedStyle(art).backgroundSize,
+            overlaps: obstacles.some(box => intersects(r, box) || intersects(e, box)), card: { x: r.x, y: r.y, width: r.width, height: r.height },
+            sticker: { x: e.x, y: e.y, width: e.width, height: e.height } };
+        }, expected);
+        evidence.xixiModes.push(actual);
+        assert.equal(actual.portraitMatches, true, JSON.stringify(actual)); assert.equal(actual.emoteMatches, true, JSON.stringify(actual)); assert.equal(actual.emoteLoaded, true, JSON.stringify(actual));
+        assert.equal(actual.visible, true); assert.equal(actual.contain, 'contain'); assert.equal(actual.overlaps, false);
+        if (mode === 'dark') await page.screenshot({ path: path.join(output, 'preview-dark-xixi.png') });
+      }
+      assert.deepEqual(await page.evaluate(() => __SIGRIKA_DENIA_FUSION__.getSettings()), settings);
+      await page.setViewportSize({ width: 1600, height: 1000 });
+      await page.evaluate(() => {
+        fixture.setMode('dark');
+        const panel = document.createElement('aside'); panel.className = 'app-shell-right-panel'; panel.id = 'xixi-test-panel';
+        panel.style.cssText = 'position:fixed;right:0;top:44px;bottom:0;width:240px;background:#201d30;z-index:30';
+        document.body.append(panel);
+      });
+      await page.waitForTimeout(450);
+      evidence.xixiPanel = await page.evaluate(() => {
+        const panel = document.getElementById('xixi-test-panel').getBoundingClientRect();
+        const nodes = [...document.querySelectorAll('[data-fusion-card],[data-sunlit-companion]')].filter(node =>
+          !node.hidden && node.dataset.fusionHidden !== 'true' && getComputedStyle(node).display !== 'none');
+        return { panelWidth: panel.width, overlaps: nodes.filter(node => { const r = node.getBoundingClientRect(); return r.left < panel.right && r.right > panel.left && r.top < panel.bottom && r.bottom > panel.top; }).map(node => node.dataset.fusionCard || node.dataset.sunlitCompanion) };
+      });
+      assert.equal(evidence.xixiPanel.panelWidth, 240); assert.deepEqual(evidence.xixiPanel.overlaps, []);
+      await page.screenshot({ path: path.join(output, 'preview-dark-xixi-panel.png') });
+      await page.evaluate(() => { document.getElementById('xixi-test-panel').remove(); fixture.setMode('light'); });
     });
     await check('native upward project menus remain hit-accessible and preserve keyboard focus at desktop and narrow widths', async () => {
       evidence.menus = [];

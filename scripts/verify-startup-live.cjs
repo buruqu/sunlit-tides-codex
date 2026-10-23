@@ -22,7 +22,7 @@ if (!Number.isInteger(port) || port < 1024 || port > 65535) throw Error('Pass ve
       assert.equal(JSON.parse(fs.readFileSync(settings, 'utf8')).startupEnabled, enabled);
       assert.equal(await page.evaluate(() => localStorage.getItem('sunlit-tides.startup.enabled')), String(enabled));
     }
-    console.log(JSON.stringify({ok:true, version:'1.1.0', roundTrip:true, persisted:true, restored:original}));
+    console.log(JSON.stringify({ok:true, version:'1.1.1', roundTrip:true, persisted:true, restored:original}));
   } finally {
     try {
       if (page && typeof original === 'boolean') {

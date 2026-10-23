@@ -41,7 +41,7 @@ function Start-Process([string]$FilePath, [string]$ArgumentList, [string]$Window
 '@
     Add-Content -LiteralPath (Join-Path $fixture 'installer\Common.ps1') -Value $mock -Encoding UTF8
     foreach ($name in @('SunlitTidesCodex.exe', 'theme\payload.js', 'theme\remove.js', 'media\startup.mp4')) { Write-Fixture (Join-Path $app $name) ('new ' + $name) }
-    Write-Fixture (Join-Path $app 'theme\manifest.json') '{"id":"sunlit-tides.codex","version":"1.1.0"}'
+    Write-Fixture (Join-Path $app 'theme\manifest.json') '{"id":"sunlit-tides.codex","version":"1.1.1"}'
     $files = @()
     foreach ($name in @('SunlitTidesCodex.exe', 'theme\payload.js', 'theme\remove.js', 'theme\manifest.json')) {
         $path = Join-Path $install $name
@@ -68,7 +68,7 @@ try {
     Invoke-Fixture $fixture
     Assert-Fixture ((Get-Content -LiteralPath (Join-Path $fixture.install 'data\settings.json') -Raw -Encoding UTF8) -eq $fixture.settings) 'Settings changed during --quit upgrade.'
     Assert-Fixture (Test-Path -LiteralPath (Join-Path $fixture.install 'data\custom.json')) 'Custom data was not preserved.'
-    Assert-Fixture ((Get-SunlitMarker $fixture.install).version -eq '1.1.0') 'New marker version missing.'
+    Assert-Fixture ((Get-SunlitMarker $fixture.install).version -eq '1.1.1') 'New marker version missing.'
     Assert-Fixture (-not (Test-Path -LiteralPath (Join-Path $fixture.local 'launch.called'))) 'NoLaunch started a helper.'
     $backups = @(Get-ChildItem -LiteralPath $fixture.local -Directory -Filter 'SunlitTidesCodex.backup.*')
     Assert-Fixture ($backups.Count -eq 1) 'Complete old backup missing.'
@@ -77,12 +77,12 @@ try {
     Write-Output 'PASS upgrade preserves pre-quit settings, data, and complete old backup'
     Invoke-Fixture $fixture
     Assert-Fixture (@(Get-ChildItem -LiteralPath $fixture.local -Directory -Filter 'SunlitTidesCodex.backup.*').Count -eq 2) 'Reinstall did not retain both backups.'
-    Write-Output 'PASS 1.1.0 reinstall retains its own validated backup'
+    Write-Output 'PASS 1.1.1 reinstall retains its own validated backup'
 
     $fixture = New-Fixture 'fresh'
     [IO.Directory]::Move($fixture.install, (Join-Path $fixture.root 'original-fixture'))
     Invoke-Fixture $fixture
-    Assert-Fixture ((Get-SunlitMarker $fixture.install).version -eq '1.1.0') 'Fresh install missing.'
+    Assert-Fixture ((Get-SunlitMarker $fixture.install).version -eq '1.1.1') 'Fresh install missing.'
     Assert-Fixture (-not (Test-Path -LiteralPath (Join-Path $fixture.local 'quit.called'))) 'Fresh install controlled an old helper.'
     Write-Output 'PASS fresh install does not invoke old helper'
 

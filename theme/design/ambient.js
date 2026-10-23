@@ -21,7 +21,8 @@ function mountSunlitAmbient(context) {
     try { return context.assetDataUrl?.(key) || context.assets?.[key] || ""; }
     catch { return ""; }
   }
-  const sources = { light: asset("denia-chibi"), dark: asset("denia-chibi-dark"), sigrika: asset("task-right-secondary"), xixiEmote: asset("sigrika-emote") };
+  const sources = { light: asset("denia-chibi"), dark: asset("denia-chibi-dark"), sigrika: asset("task-right-secondary"),
+    xixiEmote: asset("sigrika-emote"), xixiEmoteDark: asset("sigrika-emote-dark") || asset("sigrika-emote") };
   const partners = [
     { id: "xixi-emote", preferredSide: "left", animated: true },
     { id: "sigrika", preferredSide: "left", animated: false },
@@ -119,7 +120,7 @@ function mountSunlitAmbient(context) {
       if (partner.id === "sigrika" && (visibleDumplingPair || context.config?.avatars?.enabled === true)) {
         hidePartner(partner); status.suppressed.push(context.config?.avatars?.enabled === true ? "sigrika-message-avatars" : "sigrika-duplicate"); continue;
       }
-      const source = partner.id === "xixi-emote" ? sources.xixiEmote : partner.animated ? sources[dark ? "dark" : "light"] : sources.sigrika;
+      const source = partner.id === "xixi-emote" ? sources[dark ? "xixiEmoteDark" : "xixiEmote"] : partner.animated ? sources[dark ? "dark" : "light"] : sources.sigrika;
       if (!source || source === partner.failedSource) { hidePartner(partner); continue; }
       let position = null;
       if (partner.id === "xixi-emote") {
@@ -166,6 +167,7 @@ function mountSunlitAmbient(context) {
       setStyle(partner.node, "--sunlit-companion-size", position.width + "px");
       const compact = String(position.width < 80);
       if (partner.node.dataset.sunlitCompact !== compact) partner.node.dataset.sunlitCompact = compact;
+      if (partner.node.dataset.sunlitMode !== status.mode) partner.node.dataset.sunlitMode = status.mode;
       if (partner.image.getAttribute("src") !== source) partner.image.setAttribute("src", source);
       setHidden(partner.node, false);
       occupied.push(position);
