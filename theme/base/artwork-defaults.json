@@ -1,0 +1,296 @@
+{
+  "$schema": "../../schemas/theme-artwork-defaults-v1.schema.json",
+  "schemaVersion": 1,
+  "themeId": "sunlit-tides.codex",
+  "defaultsVersion": "1.0.0",
+  "slots": {
+    "hero": {
+      "light": {
+        "asset": "hero-light",
+        "placement": {
+          "size": {
+            "width": "cover",
+            "height": "auto"
+          },
+          "position": {
+            "x": "50%",
+            "y": "32%"
+          },
+          "scale": 1,
+          "origin": {
+            "x": "center",
+            "y": "center"
+          },
+          "mirrorX": false,
+          "mirrorY": false
+        },
+        "effects": {
+          "brightness": 100,
+          "contrast": 100,
+          "saturation": 100,
+          "opacity": 100,
+          "grayscale": 0,
+          "hueRotate": 0,
+          "blur": 0,
+          "blendMode": "normal",
+          "overlay": {
+            "color": "#FFFDF7",
+            "opacity": 0
+          },
+          "gradientVeil": {
+            "enabled": false,
+            "strength": 0,
+            "layers": []
+          },
+          "vignette": 0,
+          "readabilityVeil": {
+            "enabled": false,
+            "opacity": 0
+          }
+        },
+        "motion": {
+          "mode": "none"
+        }
+      },
+      "dark": {
+        "asset": "hero-dark",
+        "placement": {
+          "size": {
+            "width": "cover",
+            "height": "auto"
+          },
+          "position": {
+            "x": "70%",
+            "y": "45%"
+          },
+          "scale": 1,
+          "origin": {
+            "x": "center",
+            "y": "center"
+          },
+          "mirrorX": false,
+          "mirrorY": false
+        },
+        "effects": {
+          "brightness": 100,
+          "contrast": 100,
+          "saturation": 100,
+          "opacity": 100,
+          "grayscale": 0,
+          "hueRotate": 0,
+          "blur": 0,
+          "blendMode": "normal",
+          "overlay": {
+            "color": "#151420",
+            "opacity": 0
+          },
+          "gradientVeil": {
+            "enabled": false,
+            "strength": 0,
+            "layers": []
+          },
+          "vignette": 0,
+          "readabilityVeil": {
+            "enabled": false,
+            "opacity": 0
+          }
+        },
+        "motion": {
+          "mode": "none"
+        }
+      }
+    },
+    "sidebar": {
+      "light": {
+        "asset": "sidebar-light",
+        "placement": {
+          "size": {
+            "width": "cover",
+            "height": "auto"
+          },
+          "position": {
+            "x": "center",
+            "y": "center"
+          },
+          "scale": 1,
+          "origin": {
+            "x": "center",
+            "y": "center"
+          },
+          "mirrorX": false,
+          "mirrorY": false
+        },
+        "effects": {
+          "brightness": 100,
+          "contrast": 100,
+          "saturation": 100,
+          "opacity": 100,
+          "grayscale": 0,
+          "hueRotate": 0,
+          "blur": 0,
+          "blendMode": "normal",
+          "overlay": {
+            "color": "#FFFDF7",
+            "opacity": 0
+          },
+          "gradientVeil": {
+            "enabled": false,
+            "strength": 0,
+            "layers": []
+          },
+          "vignette": 0,
+          "readabilityVeil": {
+            "enabled": false,
+            "opacity": 0
+          }
+        },
+        "motion": {
+          "mode": "none"
+        }
+      },
+      "dark": {
+        "asset": "sidebar-dark",
+        "placement": {
+          "size": {
+            "width": "cover",
+            "height": "auto"
+          },
+          "position": {
+            "x": "center",
+            "y": "center"
+          },
+          "scale": 1,
+          "origin": {
+            "x": "center",
+            "y": "center"
+          },
+          "mirrorX": false,
+          "mirrorY": false
+        },
+        "effects": {
+          "brightness": 100,
+          "contrast": 100,
+          "saturation": 100,
+          "opacity": 100,
+          "grayscale": 0,
+          "hueRotate": 0,
+          "blur": 0,
+          "blendMode": "normal",
+          "overlay": {
+            "color": "#151420",
+            "opacity": 0
+          },
+          "gradientVeil": {
+            "enabled": false,
+            "strength": 0,
+            "layers": []
+          },
+          "vignette": 0,
+          "readabilityVeil": {
+            "enabled": false,
+            "opacity": 0
+          }
+        },
+        "motion": {
+          "mode": "none"
+        }
+      }
+    },
+    "chat": {
+      "light": {
+        "asset": "chat-light",
+        "placement": {
+          "size": {
+            "width": "cover",
+            "height": "auto"
+          },
+          "position": {
+            "x": "50%",
+            "y": "32%"
+          },
+          "scale": 1,
+          "origin": {
+            "x": "center",
+            "y": "center"
+          },
+          "mirrorX": false,
+          "mirrorY": false
+        },
+        "effects": {
+          "brightness": 100,
+          "contrast": 100,
+          "saturation": 100,
+          "opacity": 100,
+          "grayscale": 0,
+          "hueRotate": 0,
+          "blur": 0,
+          "blendMode": "normal",
+          "overlay": {
+            "color": "#FFFDF7",
+            "opacity": 0
+          },
+          "gradientVeil": {
+            "enabled": false,
+            "strength": 0,
+            "layers": []
+          },
+          "vignette": 0,
+          "readabilityVeil": {
+            "enabled": false,
+            "opacity": 0
+          }
+        },
+        "motion": {
+          "mode": "none"
+        }
+      },
+      "dark": {
+        "asset": "chat-dark",
+        "placement": {
+          "size": {
+            "width": "cover",
+            "height": "auto"
+          },
+          "position": {
+            "x": "70%",
+            "y": "45%"
+          },
+          "scale": 1,
+          "origin": {
+            "x": "center",
+            "y": "center"
+          },
+          "mirrorX": false,
+          "mirrorY": false
+        },
+        "effects": {
+          "brightness": 100,
+          "contrast": 100,
+          "saturation": 100,
+          "opacity": 100,
+          "grayscale": 0,
+          "hueRotate": 0,
+          "blur": 0,
+          "blendMode": "normal",
+          "overlay": {
+            "color": "#151420",
+            "opacity": 0
+          },
+          "gradientVeil": {
+            "enabled": false,
+            "strength": 0,
+            "layers": []
+          },
+          "vignette": 0,
+          "readabilityVeil": {
+            "enabled": false,
+            "opacity": 0
+          }
+        },
+        "motion": {
+          "mode": "none"
+        }
+      }
+    }
+  }
+}

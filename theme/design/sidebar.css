@@ -1,0 +1,165 @@
+/* 0.8.2: one illustrated navigation plane, with bounded contrast over any image.
+   Minimum cream veil .66; maximum dark image contribution .22. List surfaces
+   add only .20 tint instead of another opaque sheet. Load after readability. */
+html.tessalume-theme-active.sgk-theme[data-sunlit-sidebar-active] [data-sunlit-sidebar="true"][data-tessalume-surface="sidebar"] {
+  --sunlit-sidebar-font:"Aptos","Segoe UI Variable Text","Segoe UI","Microsoft YaHei UI","PingFang SC",sans-serif;
+  --sunlit-sidebar-ink:#30203d;
+  --sunlit-sidebar-muted:#38253f;
+  --sunlit-sidebar-base:#fff4dd;
+  --sunlit-sidebar-tint:255 247 228;
+  --sunlit-sidebar-border:rgb(104 72 91 / .23);
+  --sunlit-sidebar-purple:#40106b;--sunlit-sidebar-rose:#5b1441;--sunlit-sidebar-amber:#502a00;
+  --sunlit-sidebar-heading:linear-gradient(105deg,var(--sunlit-sidebar-purple),var(--sunlit-sidebar-rose) 48%,var(--sunlit-sidebar-amber));
+  --sunlit-sidebar-art:var(--tessalume-asset-sidebar-light,var(--tessalume-asset-sigrika-breeze));
+  --sunlit-sidebar-veil:linear-gradient(165deg,rgb(255 246 221 / .76),rgb(255 246 221 / .66) 34%,rgb(255 246 221 / .66) 72%,rgb(255 246 221 / .73));
+}
+html.tessalume-theme-active.sgk-theme[data-sunlit-sidebar-active]:is(.electron-dark,[data-theme="dark"],[data-sgk-reading-mode="dark"]) [data-sunlit-sidebar="true"][data-tessalume-surface="sidebar"] {
+  --sunlit-sidebar-ink:#fff0fa;
+  --sunlit-sidebar-muted:#ead6ed;
+  --sunlit-sidebar-base:#211a34;
+  --sunlit-sidebar-tint:35 25 53;
+  --sunlit-sidebar-border:rgb(224 182 221 / .27);
+  --sunlit-sidebar-purple:#e0bcff;--sunlit-sidebar-rose:#ffbad9;--sunlit-sidebar-amber:#ffd690;
+  --sunlit-sidebar-art:var(--tessalume-asset-sidebar-dark,var(--tessalume-asset-sigrika-dream));
+  --sunlit-sidebar-veil:linear-gradient(165deg,rgb(30 22 49 / .88),rgb(30 22 49 / .78) 34%,rgb(30 22 49 / .78) 72%,rgb(30 22 49 / .86));
+}
+html.tessalume-theme-active.sgk-theme[data-sunlit-sidebar-active] [data-sunlit-sidebar="true"][data-tessalume-surface="sidebar"] {
+  isolation:isolate;
+  color:var(--sunlit-sidebar-ink)!important;
+  background-color:var(--sunlit-sidebar-base)!important;
+  background-image:none!important;
+  font-family:var(--sunlit-sidebar-font)!important;
+  border-inline-end:1px solid var(--sunlit-sidebar-border)!important;
+  --color-text:var(--sunlit-sidebar-ink);
+  --color-text-primary:var(--sunlit-sidebar-ink);
+  --color-text-secondary:var(--sunlit-sidebar-muted);
+  --color-text-tertiary:var(--sunlit-sidebar-muted);
+}
+/* Keep the runtime's ::after image slot: template.css consumes its placement,
+   filter, opacity, blend and motion variables. The fixed ::before reading veil
+   stays above that slot, so image effects cannot weaken text contrast. Negative
+   stack levels are local to the isolated aside and stay behind native controls. */
+html.tessalume-theme-active.sgk-theme[data-sunlit-sidebar-active] [data-sunlit-sidebar="true"][data-tessalume-surface="sidebar"]::after {
+  content:"";display:block;position:absolute;inset:0;z-index:-2!important;pointer-events:none;
+  background-image:var(--sunlit-sidebar-art)!important;
+  background-size:cover;background-position:center;background-repeat:no-repeat;
+}
+html.tessalume-theme-active.sgk-theme[data-sunlit-sidebar-active] [data-sunlit-sidebar="true"][data-tessalume-surface="sidebar"]::before {
+  content:"";position:absolute;inset:0;z-index:-1!important;pointer-events:none;
+  background:var(--sunlit-sidebar-veil)!important;
+  opacity:1!important;filter:none!important;transform:none!important;translate:none!important;scale:1!important;
+}
+html.tessalume-theme-active.sgk-theme[data-sunlit-sidebar-active][data-fusion-sidebar-art="false"] [data-sunlit-sidebar="true"][data-tessalume-surface="sidebar"]::after {display:none!important;}
+html.tessalume-theme-active.sgk-theme[data-sunlit-sidebar-active] [data-sunlit-sidebar="true"][data-tessalume-surface="sidebar"]>:first-child {
+  background:transparent!important;
+}
+html.tessalume-theme-active.sgk-theme[data-sunlit-sidebar-active] [data-sunlit-sidebar="true"][data-tessalume-surface="sidebar"] :is([data-app-action-sidebar-project-row],[data-app-action-sidebar-thread-row]) {
+  color:var(--sunlit-sidebar-ink)!important;
+  background:rgb(var(--sunlit-sidebar-tint) / .20)!important;
+  border-color:transparent!important;
+  font-family:var(--sunlit-sidebar-font)!important;
+  font-weight:500;
+  letter-spacing:.005em;
+  text-shadow:none!important;
+}
+html.tessalume-theme-active.sgk-theme[data-sunlit-sidebar-active] [data-sunlit-sidebar="true"][data-tessalume-surface="sidebar"] [data-app-action-sidebar-project-row] {font-weight:650;background:rgb(var(--sunlit-sidebar-tint) / .20)!important;}
+html.tessalume-theme-active.sgk-theme[data-sunlit-sidebar-active] [data-sunlit-sidebar="true"][data-tessalume-surface="sidebar"] :is([data-app-action-sidebar-project-row],[data-app-action-sidebar-thread-row]):is(:hover,[aria-current="page"],[data-app-action-sidebar-thread-active="true"],[data-sidebar-thread-active="true"]) {
+  background:rgb(var(--sunlit-sidebar-tint) / .46)!important;
+  border-color:var(--sunlit-sidebar-border)!important;
+  box-shadow:inset 3px 0 0 var(--sunlit-sidebar-rose),0 2px 7px rgb(34 16 53 / .06)!important;
+}
+html.tessalume-theme-active.sgk-theme[data-sunlit-sidebar-active] [data-sunlit-sidebar="true"][data-tessalume-surface="sidebar"] :is(.text-secondary,.text-tertiary,[class~="text-text/70"],[class~="text-text/60"],[class~="text-text/40"],.text-codex-description,[class~="text-codex-description/80"]):not([data-status],[class*="text-success"],[class*="text-danger"],[class*="text-codex-git-"],pre *,code *) {
+  color:var(--sunlit-sidebar-muted)!important;
+  opacity:1!important;
+}
+html.tessalume-theme-active.sgk-theme[data-sunlit-sidebar-active] [data-tessalume-surface="markdown"] :is(h1,h2,h3,strong:not(pre *,code *,a *,kbd *,samp *)) {
+  --sunlit-sidebar-font:"Aptos","Segoe UI Variable Text","Segoe UI","Microsoft YaHei UI","PingFang SC",sans-serif;
+  --sunlit-sidebar-ink:#30203d;
+  --sunlit-sidebar-heading:linear-gradient(105deg,#300a53,#450d2b 48%,#3c1d00);
+}
+html.tessalume-theme-active.sgk-theme[data-sunlit-sidebar-active]:is(.electron-dark,[data-theme="dark"],[data-sgk-reading-mode="dark"]) [data-tessalume-surface="markdown"] :is(h1,h2,h3,strong:not(pre *,code *,a *,kbd *,samp *)) {
+  --sunlit-sidebar-ink:#fff0fa;
+  --sunlit-sidebar-heading:linear-gradient(105deg,#f4daff,#ffd6eb 48%,#ffeac1);
+}
+html.tessalume-theme-active.sgk-theme[data-sunlit-sidebar-active] [data-sunlit-sidebar="true"][data-tessalume-surface="sidebar"] :is(h1,h2,h3,.sgk-project-heading,.sgk-section-label>span),
+html.tessalume-theme-active.sgk-theme[data-sunlit-sidebar-active] [data-sunlit-sidebar="true"][data-tessalume-surface="sidebar"] .sidebar-brand>span,
+html.tessalume-theme-active.sgk-theme[data-sunlit-sidebar-active] [data-tessalume-surface="markdown"] :is(h1,h2,h3,strong:not(pre *,code *,a *,kbd *,samp *)) {
+  color:var(--sunlit-sidebar-ink)!important;
+  font-family:var(--sunlit-sidebar-font)!important;
+  font-weight:700;
+  letter-spacing:.012em;
+}
+@supports (background-clip:text) {
+  html.tessalume-theme-active.sgk-theme[data-sunlit-sidebar-active] [data-sunlit-sidebar="true"][data-tessalume-surface="sidebar"] :is(h1,h2,h3,.sgk-project-heading,.sgk-section-label>span),
+  html.tessalume-theme-active.sgk-theme[data-sunlit-sidebar-active] [data-sunlit-sidebar="true"][data-tessalume-surface="sidebar"] .sidebar-brand>span,
+  html.tessalume-theme-active.sgk-theme[data-sunlit-sidebar-active] [data-tessalume-surface="markdown"] :is(h1,h2,h3,strong:not(pre *,code *,a *,kbd *,samp *)) {
+    background-image:var(--sunlit-sidebar-heading)!important;
+    background-clip:text!important;-webkit-background-clip:text!important;
+    background-size:220px 100%;background-repeat:repeat-x;
+    -webkit-text-fill-color:transparent!important;
+  }
+}
+html.tessalume-theme-active.sgk-theme[data-sunlit-sidebar-active] [data-tessalume-surface="markdown"] :is(pre,code,kbd,samp) {font-family:"Cascadia Code","SFMono-Regular",Consolas,"Liberation Mono",monospace!important;}
+/* Nested links/code keep their semantic ink instead of inheriting a heading or
+   emphasis gradient's transparent text fill. This covers both nesting orders. */
+html.tessalume-theme-active.sgk-theme[data-sunlit-sidebar-active] [data-tessalume-surface="markdown"] :is(h1,h2,h3,strong) :is(a,code,kbd,samp) {-webkit-text-fill-color:currentColor!important;}
+html[data-sunlit-sidebar-active] [data-sunlit-sidebar="true"][data-tessalume-surface="sidebar"]::selection,
+html[data-sunlit-sidebar-active] [data-tessalume-surface="markdown"] :is(h1,h2,h3,strong:not(pre *,code *,a *,kbd *,samp *))::selection {background:#5f456e;color:#fff6fa;-webkit-text-fill-color:#fff6fa;}
+@media (forced-colors:active) {
+  html.tessalume-theme-active.sgk-theme[data-sunlit-sidebar-active] [data-sunlit-sidebar="true"][data-tessalume-surface="sidebar"] {background-image:none!important;background-color:Canvas!important;color:CanvasText!important;}
+  html.tessalume-theme-active.sgk-theme[data-sunlit-sidebar-active] [data-sunlit-sidebar="true"][data-tessalume-surface="sidebar"]::before,
+  html.tessalume-theme-active.sgk-theme[data-sunlit-sidebar-active] [data-sunlit-sidebar="true"][data-tessalume-surface="sidebar"]::after {display:none!important;}
+  html.tessalume-theme-active.sgk-theme[data-sunlit-sidebar-active] [data-sunlit-sidebar="true"][data-tessalume-surface="sidebar"] :is(h1,h2,h3,.sgk-project-heading,.sgk-section-label>span,[data-app-action-sidebar-project-row],[data-app-action-sidebar-thread-row]),
+  html.tessalume-theme-active.sgk-theme[data-sunlit-sidebar-active] [data-sunlit-sidebar="true"][data-tessalume-surface="sidebar"] .sidebar-brand>span,
+  html.tessalume-theme-active.sgk-theme[data-sunlit-sidebar-active] [data-tessalume-surface="markdown"] :is(h1,h2,h3,strong:not(pre *,code *,a *,kbd *,samp *)) {background-image:none!important;color:CanvasText!important;-webkit-text-fill-color:CanvasText!important;}
+}
+/* Clear native Slate structural panels, retaining controls and their layout.
+   The surface attribute above also wins the readability aside specificity. */
+html.tessalume-theme-active.sgk-theme[data-sunlit-sidebar-active] [data-sunlit-sidebar="true"][data-tessalume-surface="sidebar"] :is(#app-shell-sidebar,#app-shell-sidebar>div,[data-sidebar-navigation-root],[data-slate-sidebar-content],[data-slate-sidebar-content]>div,[data-slate-sidebar-content]>div>div,[data-slate-sidebar-content] nav,[data-app-action-sidebar-scroll]),
+html.tessalume-theme-active.sgk-theme[data-sunlit-sidebar-active] [data-sunlit-sidebar="true"][data-tessalume-surface="sidebar"]>div:has(#app-shell-sidebar),
+html.tessalume-theme-active.sgk-theme[data-sunlit-sidebar-active] [data-sunlit-sidebar="true"][data-tessalume-surface="sidebar"]>div>div:has(#app-shell-sidebar) {
+  background-color:transparent!important;background-image:none!important;
+}
+html.tessalume-theme-active.sgk-theme[data-sunlit-sidebar-active] [data-sunlit-sidebar="true"][data-tessalume-surface="sidebar"] [data-app-navigation-rail] {
+  background:rgb(var(--sunlit-sidebar-tint) / .18)!important;
+  box-shadow:inset -1px 0 0 var(--sunlit-sidebar-border);
+  color:var(--sunlit-sidebar-ink)!important;
+}
+html.tessalume-theme-active.sgk-theme[data-sunlit-sidebar-active] [data-sunlit-sidebar="true"][data-tessalume-surface="sidebar"] :is([data-app-action-sidebar-thread-row],[data-app-action-sidebar-project-row],[data-app-navigation-rail] button) {
+  border-radius:11px!important;
+  transition:background-color 140ms ease,border-color 140ms ease,box-shadow 140ms ease;
+}
+html.tessalume-theme-active.sgk-theme[data-sunlit-sidebar-active] [data-sunlit-sidebar="true"][data-tessalume-surface="sidebar"] [data-app-navigation-rail] button:is(:hover,[data-selected],[aria-current="page"]) {
+  background:linear-gradient(135deg,rgb(var(--sunlit-sidebar-tint) / .72),rgb(var(--sunlit-sidebar-tint) / .34))!important;
+  box-shadow:inset 0 0 0 1px var(--sunlit-sidebar-border)!important;
+  color:var(--sunlit-sidebar-rose)!important;
+}
+html.tessalume-theme-active.sgk-theme[data-sunlit-sidebar-active] [data-sunlit-sidebar="true"][data-tessalume-surface="sidebar"] :is([data-app-action-sidebar-thread-row],[data-app-action-sidebar-project-row],[data-app-navigation-rail] button):focus-visible {
+  outline:2px solid var(--sunlit-sidebar-purple)!important;outline-offset:-2px;
+  box-shadow:inset 3px 0 0 var(--sunlit-sidebar-rose)!important;
+}
+/* Native Codex is an SVG wordmark. These paint definitions change no layout. */
+html.tessalume-theme-active.sgk-theme[data-sunlit-sidebar-active] [data-sunlit-sidebar="true"][data-tessalume-surface="sidebar"] [data-sunlit-brand] path {fill:url(#sunlit-sidebar-brand-gradient)!important;}
+#sunlit-sidebar-brand-gradient stop:nth-child(1){stop-color:var(--sunlit-sidebar-purple)}
+#sunlit-sidebar-brand-gradient stop:nth-child(2){stop-color:var(--sunlit-sidebar-rose)}
+#sunlit-sidebar-brand-gradient stop:nth-child(3){stop-color:var(--sunlit-sidebar-amber)}
+/* Inert portrait decoration uses the existing header, never another flex item. */
+html.tessalume-theme-active.sgk-theme[data-sunlit-sidebar-active] [data-sunlit-sidebar="true"][data-tessalume-surface="sidebar"] [class~="@container/navigation-header"] {position:relative;}
+html.tessalume-theme-active.sgk-theme[data-sunlit-sidebar-active] [data-sunlit-sidebar="true"][data-tessalume-surface="sidebar"] [class~="@container/navigation-header"]::after {
+  content:"";position:absolute;pointer-events:none;width:28px;height:28px;inset-inline-start:86px;top:12px;
+  background:var(--tessalume-asset-duo-heart) center 40% / cover no-repeat;
+  border:1px solid var(--sunlit-sidebar-border);border-radius:9px 9px 12px 9px;
+  box-shadow:0 2px 7px rgb(34 16 53 / .14);transform:rotate(-5deg);
+}
+html.tessalume-theme-active.sgk-theme[data-sunlit-sidebar-active][data-fusion-sidebar-art="false"] [data-sunlit-sidebar="true"] [class~="@container/navigation-header"]::after {display:none;}
+@supports (background-clip:text) {
+  html.tessalume-theme-active.sgk-theme[data-sunlit-sidebar-active] [data-tessalume-surface="markdown"] strong:not(pre *,code *,a *,kbd *,samp *) {background-size:100% 100%;}
+}
+@media(prefers-reduced-motion:reduce) {
+  html.tessalume-theme-active.sgk-theme[data-sunlit-sidebar-active] [data-sunlit-sidebar="true"] :is(button,[data-app-action-sidebar-thread-row],[data-app-action-sidebar-project-row]) {transition:none!important;}
+}
+@media(forced-colors:active) {
+  html.tessalume-theme-active.sgk-theme[data-sunlit-sidebar-active] [data-sunlit-sidebar="true"][data-tessalume-surface="sidebar"] [data-sunlit-brand] path {fill:CanvasText!important;}
+  html.tessalume-theme-active.sgk-theme[data-sunlit-sidebar-active] [data-sunlit-sidebar="true"] [class~="@container/navigation-header"]::after {display:none;}
+  html.tessalume-theme-active.sgk-theme[data-sunlit-sidebar-active] [data-sunlit-sidebar="true"][data-tessalume-surface="sidebar"] [data-app-navigation-rail] {background:Canvas!important;color:CanvasText!important;}
+}

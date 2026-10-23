@@ -1,0 +1,23 @@
+/* The shader uses exactly the original cover / 50% 32% composition.
+   The independent ::after reading veil never joins the animated layer. */
+html.sgk-theme.tessalume-theme-active.tessalume-is-task[data-sgk-scene="orchard"][data-sunlit-living-active="true"] main[data-tessalume-surface="main"]::before {
+  animation:none!important;
+  will-change:auto!important;
+  scale:var(--tessalume-visual-chat-light-scale,1)!important;
+}
+html.sgk-theme.tessalume-theme-active.tessalume-is-task.electron-dark[data-sgk-scene="orchard"][data-sunlit-living-active="true"] main[data-tessalume-surface="main"]::before {
+  scale:var(--tessalume-visual-chat-dark-scale,1)!important;
+}
+html.sgk-theme.tessalume-theme-active.tessalume-is-task[data-sgk-scene="orchard"][data-sunlit-living-active="true"][data-sunlit-living-ready="true"] main[data-tessalume-surface="main"]::before {
+  visibility:hidden!important;
+}
+main[data-tessalume-surface="main"]>.sunlit-living-scene {
+  position:absolute;inset:0;width:100%;height:100%;display:block;z-index:-2;
+  pointer-events:none!important;user-select:none;contain:strict;
+  transform:none!important;filter:none!important;object-fit:fill;
+}
+main[data-tessalume-surface="main"]>.sunlit-living-scene[hidden] {display:none!important;}
+@media (prefers-reduced-motion:reduce) {
+  main[data-tessalume-surface="main"]>.sunlit-living-scene {display:none!important;}
+  html.sgk-theme.tessalume-theme-active.tessalume-is-task[data-sgk-scene="orchard"][data-sunlit-living-active="true"] main[data-tessalume-surface="main"]::before {visibility:visible!important;}
+}

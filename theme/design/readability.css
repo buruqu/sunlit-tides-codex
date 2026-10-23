@@ -1,0 +1,187 @@
+/* 0.7: dark violet ink / pale pink text over one translucent scene veil. */
+html.tessalume-theme-active.sgk-theme[data-sgk-reading-mode] {
+  --sgk-text:var(--sgk-reading-ink);
+  --sgk-text-2:var(--sgk-reading-muted);
+  --sgk-text-3:var(--sgk-reading-muted);
+  --sgk-teal:var(--sgk-reading-link);
+  --sgk-orange:var(--sgk-reading-accent);
+  --sgk-gold:var(--sgk-reading-accent);
+  --sgk-aqua:var(--sgk-reading-accent);
+  --sgk-violet:var(--sgk-reading-accent);
+  --sgk-solid:rgb(var(--sgk-reading-strong-rgb));
+  --sgk-bg-2:rgb(var(--sgk-reading-strong-rgb));
+  --sgk-panel:rgb(var(--sgk-reading-surface-rgb) / var(--sgk-reading-surface-alpha));
+  --sgk-sidebar:rgb(var(--sgk-reading-strong-rgb));
+  --sgk-composer-control:rgb(var(--sgk-reading-strong-rgb));
+  --sgk-composer-strong:rgb(var(--sgk-reading-strong-rgb));
+  /* Current Codex neutral tokens, confirmed against the app DOM. Status,
+     diff and syntax token families are deliberately separate. */
+  --color-text:var(--sgk-reading-ink)!important;
+  --color-text-primary:var(--sgk-reading-ink)!important;
+  --color-text-foreground:var(--sgk-reading-ink)!important;
+  --color-text-secondary:var(--sgk-reading-muted)!important;
+  --color-text-tertiary:var(--sgk-reading-muted)!important;
+  --color-token-text-primary:var(--sgk-reading-ink)!important;
+  --color-token-text-secondary:var(--sgk-reading-muted)!important;
+  --color-token-text-tertiary:var(--sgk-reading-muted)!important;
+  --color-text-foreground-secondary:var(--sgk-reading-muted)!important;
+  --color-text-foreground-tertiary:var(--sgk-reading-muted)!important;
+  --app-color-text-primary:var(--sgk-reading-ink)!important;
+  --app-color-text-secondary:var(--sgk-reading-muted)!important;
+  --user-message-text-color:var(--sgk-reading-ink)!important;
+  --color-codex-terminal-foreground:var(--sgk-reading-ink)!important;
+  --color-text-execution-output:var(--sgk-reading-ink)!important;
+  --color-text-execution-output-label:var(--sgk-reading-muted)!important;
+  --color-text-execution-output-error:var(--sgk-reading-danger)!important;
+  --tessalume-v1-light-text-primary:var(--sgk-reading-ink);
+  --tessalume-v1-light-text-secondary:var(--sgk-reading-muted);
+  --tessalume-v1-dark-text-primary:var(--sgk-reading-ink);
+  --tessalume-v1-dark-text-secondary:var(--sgk-reading-muted);
+}
+/* The entire native transcript is transparent: prose, commands, status rows
+   and gaps all share the same scene veil, without individual white cards. */
+html.tessalume-theme-active.sgk-theme[data-sgk-reading-mode][data-fusion-active] .thread-scroll-container [data-tessalume-surface="chat-paper"] {
+  color:var(--sgk-reading-ink)!important;
+  background:transparent!important;
+  padding-inline:clamp(18px,2vw,28px)!important;
+  padding-block:20px 28px!important;
+  border:0!important;border-radius:0!important;box-shadow:none!important;
+  backdrop-filter:none!important;-webkit-backdrop-filter:none!important;
+  text-shadow:0 1px 1px rgb(255 250 255 / .16);
+}
+html.tessalume-theme-active.sgk-theme[data-sgk-reading-mode="dark"] [data-tessalume-surface="chat-paper"] {
+  text-shadow:0 1px 2px rgb(9 4 25 / .3);
+}
+/* Individual assistant entries remain transparent as well. */
+html.tessalume-theme-active.sgk-theme[data-sgk-reading-mode][data-fusion-active] .thread-scroll-container [data-tessalume-message="assistant"],
+html.tessalume-theme-active.sgk-theme[data-sgk-reading-mode][data-fusion-active] .thread-scroll-container [data-tessalume-message="assistant"] [data-tessalume-surface="markdown"],
+html.tessalume-theme-active.sgk-theme[data-sgk-reading-mode][data-fusion-active] [data-tessalume-surface="chat-paper"] .turn-actions {
+  color:var(--sgk-reading-ink)!important;
+  background:transparent!important;
+  border:0!important;
+  border-radius:0!important;
+  box-shadow:none!important;
+  backdrop-filter:none!important;
+  -webkit-backdrop-filter:none!important;
+  text-shadow:none!important;
+}
+html.tessalume-theme-active.sgk-theme[data-sgk-reading-mode][data-fusion-active] .thread-scroll-container [data-tessalume-message="assistant"] [data-tessalume-surface="markdown"] {
+  padding:0!important;
+}
+html.tessalume-theme-active.sgk-theme[data-sgk-reading-mode][data-fusion-active] [data-user-message-bubble="true"] {
+  color:var(--sgk-reading-ink)!important;
+  background:rgb(var(--sgk-reading-veil-rgb) / .05)!important;
+  border:1px solid color-mix(in srgb,var(--sgk-reading-accent) 20%,transparent)!important;
+  border-radius:14px!important;
+  padding:12px 16px!important;
+  box-shadow:none!important;
+  backdrop-filter:none!important;
+}
+html.tessalume-theme-active.sgk-theme[data-sgk-reading-mode] [data-tessalume-surface="chat-paper"] :is(div,button):has(>[class~="group/turn-diff-header"]) {
+  color:var(--sgk-reading-ink)!important;
+  background:transparent!important;
+  border-color:color-mix(in srgb,var(--sgk-reading-accent) 20%,transparent)!important;
+  box-shadow:none!important;
+  backdrop-filter:none!important;
+}
+/* Codex's native titlebar can contain a unified tab row and therefore carries
+   no task-header decoration. Keep its existing drag/click geometry intact. */
+html.tessalume-theme-active.sgk-theme[data-sgk-reading-mode] :is(header[data-app-shell-titlebar="true"],[data-tessalume-surface="task-header"],.chat-topbar) {
+  color:var(--sgk-reading-ink)!important;
+  background:rgb(var(--sgk-reading-veil-rgb) / var(--sgk-reading-veil))!important;
+  border-bottom:1px solid color-mix(in srgb,var(--sgk-reading-accent) 20%,transparent)!important;
+  box-shadow:none!important;
+  backdrop-filter:none!important;
+  -webkit-backdrop-filter:none!important;
+}
+html.tessalume-theme-active.sgk-theme[data-sgk-reading-mode] header[data-app-shell-titlebar="true"] :is([data-testid="app-shell-header-context-menu-surface"],[data-app-shell-titlebar-content="true"],[data-app-shell-tab-row="true"]) {
+  color:var(--sgk-reading-ink)!important;
+  background-color:transparent!important;
+  backdrop-filter:none!important;
+}
+html.tessalume-theme-active.sgk-theme[data-sgk-reading-mode] .chat-topbar small {color:var(--sgk-reading-muted)!important}
+/* The native neutral activity summary sets a local 60%-alpha variable. Make
+   the variable readable without flattening nested status/diff/syntax colors. */
+html.tessalume-theme-active.sgk-theme[data-sgk-reading-mode] [data-tessalume-surface="chat-paper"] [class~="text-(--agent-activity-summary-color)"] {
+  --agent-activity-summary-color:var(--sgk-reading-muted)!important;
+}
+@media(max-width:720px) {
+  html.tessalume-theme-active.sgk-theme[data-sgk-reading-mode][data-fusion-active] .thread-scroll-container [data-tessalume-surface="chat-paper"] {
+    padding-inline:14px!important;padding-block:16px 22px!important;border-radius:0!important;
+  }
+}
+html.tessalume-theme-active.sgk-theme[data-sgk-reading-mode] :is([data-tessalume-surface="markdown"],[data-user-message-bubble="true"],.rich-text-user-turn) {
+  color:var(--sgk-reading-ink)!important;
+}
+html.tessalume-theme-active.sgk-theme[data-sgk-reading-mode] [data-tessalume-surface="markdown"] :is(h1,h2,h3,h4,h5,h6,p,li,th,td,blockquote,strong,em) {
+  color:var(--sgk-reading-ink)!important;
+  text-shadow:none!important;
+}
+html.tessalume-theme-active.sgk-theme[data-sgk-reading-mode] [data-tessalume-surface="markdown"] a {
+  color:var(--sgk-reading-link)!important;
+  text-decoration:underline;text-underline-offset:3px;
+}
+/* Local code fields preserve native syntax colors. They are separate from
+   the transparent prose column and add only the protection code needs. */
+html.tessalume-theme-active.sgk-theme[data-sgk-reading-mode] [data-tessalume-surface="markdown"] :is(pre,table,blockquote),
+html.tessalume-theme-active.sgk-theme[data-sgk-reading-mode] :is([data-tessalume-surface="output-panel"],[data-tessalume-surface="output-section"],.app-shell-right-panel,.pane-file) {
+  color:var(--sgk-reading-ink)!important;
+  background:rgb(var(--sgk-reading-strong-rgb) / .72)!important;
+  backdrop-filter:none!important;
+  text-shadow:none!important;
+}
+html.tessalume-theme-active.sgk-theme[data-sgk-reading-mode] [data-tessalume-surface="markdown"] :not(pre)>code {
+  color:var(--sgk-reading-link)!important;
+  background:rgb(var(--sgk-reading-strong-rgb) / .12)!important;
+}
+html.tessalume-theme-active.sgk-theme[data-sgk-reading-mode] :is([data-tessalume-surface="composer"],.composer-surface-chrome) {
+  color:var(--sgk-reading-ink)!important;
+  background:rgb(var(--sgk-reading-strong-rgb) / .14)!important;
+  backdrop-filter:none!important;
+  -webkit-backdrop-filter:none!important;
+}
+html.tessalume-theme-active.sgk-theme[data-sgk-reading-mode] :is([data-tessalume-surface="composer"],.composer-surface-chrome) :is(input,textarea,[contenteditable="true"]) {
+  color:var(--sgk-reading-ink)!important;
+  -webkit-text-fill-color:var(--sgk-reading-ink)!important;
+  caret-color:var(--sgk-reading-accent)!important;
+}
+html.tessalume-theme-active.sgk-theme[data-sgk-reading-mode] :is([data-tessalume-surface="composer"],.composer-surface-chrome) :is(input,textarea)::placeholder,
+html.tessalume-theme-active.sgk-theme[data-sgk-reading-mode] :is([data-tessalume-surface="composer"],.composer-surface-chrome) [contenteditable="true"]:empty::before {
+  color:var(--sgk-reading-muted)!important;
+  -webkit-text-fill-color:var(--sgk-reading-muted)!important;
+  opacity:1!important;
+}
+html.tessalume-theme-active.sgk-theme[data-sgk-reading-mode] :is([data-tessalume-surface="sidebar"],aside.app-shell-left-panel) {
+  color:var(--sgk-reading-ink)!important;
+  background-color:rgb(var(--sgk-reading-strong-rgb))!important;
+}
+html.tessalume-theme-active.sgk-theme[data-sgk-reading-mode] :is([data-tessalume-surface="sidebar"],aside.app-shell-left-panel)>:first-child {
+  background-color:rgb(var(--sgk-reading-strong-rgb) / .97)!important;
+}
+html.tessalume-theme-active.sgk-theme[data-sgk-reading-mode] :is([data-app-action-sidebar-project-row],[data-app-action-sidebar-thread-row]) {
+  color:var(--sgk-reading-ink)!important;
+  background-color:rgb(var(--sgk-reading-strong-rgb) / .97)!important;
+}
+html.tessalume-theme-active.sgk-theme[data-sgk-reading-mode] :is(.sgk-home-title,.sgk-home-letter,.sgk-memory,.sgk-gallery-strip,.sgk-gallery-dialog,.sgk-gallery-open) {
+  color:var(--sgk-reading-ink)!important;
+  background-color:rgb(var(--sgk-reading-strong-rgb) / .97)!important;
+  backdrop-filter:none!important;
+}
+/* Neutral utility labels can otherwise retain their own 40–70% alpha, even
+   after the root text tokens are corrected. No span-wide or wildcard reset. */
+html.tessalume-theme-active.sgk-theme[data-sgk-reading-mode] :is([data-tessalume-surface="chat-paper"],[data-tessalume-surface="composer"],[data-tessalume-surface="sidebar"],[data-tessalume-surface="output-panel"],header[data-app-shell-titlebar="true"],.chat-topbar)
+:is(.text-secondary,.text-tertiary,[class~="text-text/70"],[class~="text-text/60"],[class~="text-text/40"],[class~="text-text-tertiary/90"],.text-codex-description,[class~="text-codex-description/80"],.turn-diff-default-subtitle,.turn-diff-hover-subtitle):not(pre *,code *,[class*="text-success"],[class*="text-danger"],[class*="text-codex-git-"],[data-status]) {
+  color:var(--sgk-reading-muted)!important;
+}
+html.tessalume-theme-active.sgk-theme[data-sgk-reading-mode] [data-tessalume-surface="chat-paper"] :is(div,button):has(>[class~="group/turn-diff-header"]) {
+  --color-codex-git-added:var(--sgk-reading-success);
+  --color-codex-git-deleted:var(--sgk-reading-danger);
+  --color-text-success:var(--sgk-reading-success);
+  --color-text-danger:var(--sgk-reading-danger);
+  --color-text-warning:var(--sgk-reading-warning);
+}
+html.tessalume-theme-active.sgk-theme[data-sgk-reading-mode] [data-tessalume-surface="chat-paper"] .turn-actions {color:var(--sgk-reading-muted)!important}
+html.tessalume-theme-active.sgk-theme[data-sgk-reading-mode] [data-tessalume-surface="chat-paper"] .text-codex-git-added {color:var(--sgk-reading-success)!important}
+html.tessalume-theme-active.sgk-theme[data-sgk-reading-mode] [data-tessalume-surface="chat-paper"] .text-codex-git-deleted {color:var(--sgk-reading-danger)!important}
+
+html.tessalume-theme-active.sgk-theme[data-sgk-reading-mode] :is(.sgk-home-title,.sgk-home-letter) {background-image:none!important}

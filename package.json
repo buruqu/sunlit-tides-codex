@@ -1,0 +1,13 @@
+{
+  "name": "sunlit-tides-codex",
+  "version": "1.0.0",
+  "private": true,
+  "description": "晴光与泡影：独立的 Codex Windows 双人主题",
+  "scripts": {
+    "build:theme": "node scripts/build-theme.cjs",
+    "test": "node --test tests/build.test.cjs",
+    "test:browser": "node tests/theme-browser.cjs"
+  },
+  "devDependencies": {"playwright": "1.62.1"},
+  "license": "MIT"
+}

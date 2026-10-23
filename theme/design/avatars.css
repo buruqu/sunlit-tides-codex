@@ -1,0 +1,24 @@
+/* Reserved space is inside each native message; avatars never occupy gutters. */
+[data-sunlit-avatar-role] { --sunlit-message-avatar-size:clamp(36px,calc(58px * var(--sunlit-message-avatar-scale,1)),80px);--sunlit-message-avatar-gap:12px; }
+[data-sunlit-avatar-role][data-sunlit-avatar-compact="true"] { --sunlit-message-avatar-size:clamp(32px,calc(42px * var(--sunlit-message-avatar-scale,1)),64px);--sunlit-message-avatar-gap:8px; }
+html[data-sunlit-message-avatars="true"] [data-sunlit-avatar-active="true"] { min-height:var(--sunlit-message-avatar-size); }
+[data-sunlit-avatar-position="relative"] { position:relative; }
+html[data-sunlit-message-avatars="true"] .thread-scroll-container [data-sunlit-avatar-role="assistant"][data-sunlit-avatar-active="true"] {
+  padding-inline-start:calc(var(--sunlit-avatar-original-start,0px) + var(--sunlit-message-avatar-size) + var(--sunlit-message-avatar-gap))!important;
+  box-sizing:border-box;
+}
+html[data-sunlit-message-avatars="true"] .thread-scroll-container [data-sunlit-avatar-role="user"][data-sunlit-avatar-active="true"] {
+  padding-inline-end:calc(var(--sunlit-avatar-original-end,0px) + var(--sunlit-message-avatar-size) + var(--sunlit-message-avatar-gap))!important;
+  box-sizing:border-box;
+}
+[data-sunlit-avatar-role]>[data-sunlit-message-avatar] {
+  position:absolute;top:0;display:none;
+  width:var(--sunlit-message-avatar-size);height:var(--sunlit-message-avatar-size);
+  max-width:none;object-fit:contain;pointer-events:none!important;user-select:none;
+  border:1px solid var(--sgk-line,rgba(124,96,137,.20));border-radius:50%;
+  background:var(--sgk-solid,#fffaf5);box-shadow:0 2px 6px rgba(42,26,51,.08);
+}
+[data-sunlit-avatar-role][data-sunlit-avatar-active="true"]>[data-sunlit-message-avatar] { display:block; }
+[data-sunlit-avatar-role="assistant"]>[data-sunlit-message-avatar] { inset-inline-start:var(--sunlit-avatar-original-start,0px); }
+[data-sunlit-avatar-role="user"]>[data-sunlit-message-avatar] { inset-inline-end:var(--sunlit-avatar-original-end,0px); }
+@media(max-width:600px) { [data-sunlit-avatar-role] { --sunlit-message-avatar-size:clamp(32px,calc(42px * var(--sunlit-message-avatar-scale,1)),64px);--sunlit-message-avatar-gap:8px; } }

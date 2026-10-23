@@ -1,0 +1,126 @@
+/* Function layer, kept separate from the future two-character visual design. */
+html[data-fusion-active="true"] [data-tessalume-surface="chat-paper"] {
+  --thread-content-responsive-max-width: var(--fusion-chat-width, 820px) !important;
+  --thread-content-max-width: var(--fusion-chat-width, 820px) !important;
+  width: 100% !important;
+  max-width: min(100%, var(--fusion-chat-width, 820px)) !important;
+  box-sizing: border-box !important;
+}
+/* Opt-in side corridors. Independent translate preserves native transform-based
+   footer positioning; only the active paper and its inner control group move. */
+html[data-fusion-active="true"][data-fusion-split-sides="true"] [data-fusion-split-paper="true"] {
+  --thread-content-responsive-max-width:var(--fusion-split-width)!important;
+  --thread-content-max-width:var(--fusion-split-width)!important;
+  width:min(100%,var(--fusion-split-width))!important;
+  max-width:min(100%,var(--fusion-split-width))!important;
+  translate:var(--fusion-split-shift,0px) 0px!important;
+}
+html[data-fusion-active="true"][data-fusion-split-sides="true"] [data-fusion-split-footer="true"] {
+  max-width:min(100%,var(--fusion-split-width))!important;
+  min-width:0!important;
+  translate:var(--fusion-split-shift,0px) var(--fusion-split-shift-y,0px)!important;
+}
+/* Hide transcript pixels behind transparent native controls, including hit targets.
+   The footer itself stays outside this clip and keeps its native positioning. */
+/* This scroll-driven value belongs only to the clipping element. Inheriting it
+   invalidates text styles across the entire long transcript on every scroll. */
+@property --fusion-transcript-clip-bottom { syntax:"<length>"; inherits:false; initial-value:0px; }
+html[data-fusion-active="true"][data-fusion-split-sides="true"] [data-fusion-transcript-clip="true"] {
+  clip-path:inset(0 0 var(--fusion-transcript-clip-bottom,0px) 0)!important;
+  padding-bottom:calc(var(--fusion-transcript-base-padding,0px) + var(--fusion-transcript-tail,0px))!important;
+}
+html[data-fusion-active="true"] .thread-scroll-container [data-tessalume-message="assistant"] [data-tessalume-surface="markdown"] {
+  box-sizing: border-box !important;
+  max-width: 100% !important;
+}
+html[data-fusion-active="true"][data-fusion-message-panel="true"] .thread-scroll-container [data-tessalume-message="assistant"] [data-tessalume-surface="markdown"] {
+  background: rgb(var(--fusion-panel-light-rgb, 255 251 244) / var(--fusion-message-opacity, .92)) !important;
+  backdrop-filter: blur(12px) !important;
+}
+html[data-fusion-active="true"][data-fusion-message-panel="true"].electron-dark .thread-scroll-container [data-tessalume-message="assistant"] [data-tessalume-surface="markdown"] {
+  background: rgb(var(--fusion-panel-dark-rgb, 27 25 36) / var(--fusion-message-opacity, .82)) !important;
+}
+html[data-fusion-active="true"][data-fusion-message-panel="false"] .thread-scroll-container [data-tessalume-message="assistant"] [data-tessalume-surface="markdown"] {
+  background: transparent !important;
+  backdrop-filter: none !important;
+  border-color: transparent !important;
+  box-shadow: none !important;
+}
+html[data-fusion-active="true"].tessalume-theme-active.tessalume-is-task:not(.electron-dark) main[data-tessalume-surface="main"]::before {
+  opacity: calc(var(--tessalume-visual-chat-light-opacity, 1) * var(--fusion-background-strength, 1)) !important;
+}
+html[data-fusion-active="true"].tessalume-theme-active.tessalume-is-task.electron-dark main[data-tessalume-surface="main"]::before {
+  opacity: calc(var(--tessalume-visual-chat-dark-opacity, 1) * var(--fusion-background-strength, 1)) !important;
+}
+html[data-fusion-active="true"].tessalume-theme-active.tessalume-is-task.sgk-theme #tessalume-theme-root[data-tessalume-template-version="1.0"] [data-fusion-card][data-theme-role] {
+  position: fixed !important;
+  left: var(--fusion-card-x) !important;
+  top: var(--fusion-card-y) !important;
+  right: auto !important;
+  bottom: auto !important;
+  width: var(--fusion-card-width) !important;
+  height: var(--fusion-card-height) !important;
+  min-height: 0 !important;
+  max-height: none !important;
+  transform: none !important;
+  animation: none !important;
+  pointer-events: none !important;
+}
+html[data-fusion-active="true"] #tessalume-theme-root [data-fusion-card][data-fusion-hidden="false"] {
+  display: block !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+}
+html[data-fusion-active="true"] #tessalume-theme-root [data-fusion-hidden="true"] {
+  visibility: hidden !important;
+  opacity: 0 !important;
+  pointer-events: none !important;
+}
+html[data-fusion-active="true"][data-fusion-focus="true"] #tessalume-theme-root :is([data-theme-role="task-left"],[data-theme-role="task-right"],[data-theme-role="memory"],[data-theme-role="sync-panel"],[data-theme-role="composer-accessory"]) {
+  visibility: hidden !important;
+}
+html[data-fusion-active="true"][data-fusion-reduced-motion="true"] #tessalume-theme-root *,
+html[data-fusion-active="true"][data-fusion-reduced-motion="true"] #tessalume-theme-root *::before,
+html[data-fusion-active="true"][data-fusion-reduced-motion="true"] #tessalume-theme-root *::after {
+  animation-play-state: paused !important;
+  transition-duration: 0s !important;
+}
+[data-fusion-bubbles] {
+  position: fixed;
+  pointer-events: none !important;
+  overflow: hidden;
+  contain: strict;
+  z-index: 2;
+}
+[data-fusion-bubbles] > i {
+  position: absolute;
+  display: block;
+  width: var(--bubble-size);
+  height: var(--bubble-size);
+  left: var(--bubble-x);
+  top: 100%;
+  border-radius: 50%;
+  corner-shape: round;
+  border: 1px solid rgb(195 171 233 / .4);
+  background: radial-gradient(circle at 32% 25%, rgb(255 255 255 / .36), transparent 42%), linear-gradient(130deg, rgb(137 224 206 / .08), rgb(214 171 240 / .12));
+  animation: fusion-bubble-rise var(--bubble-duration) linear var(--bubble-delay) infinite;
+}
+[data-fusion-bubbles][data-paused="true"] { visibility: hidden; }
+[data-fusion-bubbles][data-paused="true"] > i { animation-play-state: paused; }
+@keyframes fusion-bubble-rise {
+  0% { transform: translate3d(0, 0, 0); opacity: 0; }
+  12% { opacity: .55; }
+  85% { opacity: .4; }
+  100% { transform: translate3d(var(--bubble-drift), calc(-1 * var(--fusion-bubble-travel, 1100px)), 0); opacity: 0; }
+}
+@media (prefers-reduced-motion: reduce) {
+  [data-fusion-bubbles] { display: none; }
+}
+
+/* The native transcript owns vertical scrolling. overflow-x:hidden from the
+   shared template also computes overflow-y:auto on its outer main, creating a
+   second scrollbar when a native footer or long turn extends its scroll area.
+   Clip that viewport shell only; preserve the transcript, editor and panels. */
+html.sgk-theme.tessalume-theme-active.tessalume-is-task :is(main,[role="main"]):has(.thread-scroll-container) {
+  overflow:clip!important;
+}

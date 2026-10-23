@@ -1,0 +1,84 @@
+/* 0.8.3: quiet gradients for reading text, never another painted panel.
+   All stops AND their sRGB interpolation clear 4.5:1 at the scene veil floors
+   (.60 light / .64 dark), including an entirely black / white source image.
+   Sidebar floors (.66 / .78) are stronger. No font, geometry, DOM or observer. */
+html.tessalume-theme-active.sgk-theme[data-fusion-gradient-text="true"] {
+  --fusion-prose-ink:#291737;
+  --fusion-prose-gradient:linear-gradient(105deg,#291737,#3d1830 48%,#102b29);
+}
+html.tessalume-theme-active.sgk-theme[data-fusion-gradient-text="true"]:is(.electron-dark,[data-theme="dark"],[data-sgk-reading-mode="dark"]) {
+  --fusion-prose-ink:#eddbfb;
+  --fusion-prose-gradient:linear-gradient(105deg,#eddbfb,#ffd6e7 48%,#f8e4c7);
+}
+/* Native Markdown paragraphs often contain plain spans; clip the paragraph,
+   not each streaming span. Native marquee labels and the small titlebar title
+   are text-only slots, including slots INSIDE native buttons. The prose-only
+   button-ancestor guard must not exclude those text slots. Never paint a row,
+   button, icon, or an explicitly painted label (inline / bg-* utility). A custom
+   label stylesheet can opt out with data-fusion-gradient-text="false". */
+html.tessalume-theme-active.sgk-theme[data-fusion-gradient-text="true"]
+:is([data-tessalume-surface="markdown"] :is(p,th,td):not(button *),
+    [data-user-message-bubble="true"]:not(:has([data-tessalume-surface="markdown"])):not(button *),
+    [data-tessalume-surface="sidebar"] :is([data-thread-title],[data-marquee-text],.sgk-nav-label),
+    .chat-topbar>span,.chat-topbar>small,
+    [data-app-shell-titlebar-content="true"]>:is(.truncate,small)):not(:where(pre,pre *,code,code *,kbd,kbd *,samp,samp *,a,a *,button,input,textarea,select,[contenteditable],[contenteditable] *,[data-tessalume-surface="composer"] *,[data-tessalume-surface="output-panel"] *,[data-tessalume-surface="output-section"] *,[data-status],[data-status] *,[class*="text-success"],[class*="text-danger"],[class*="text-warning"],[class*="text-codex-git-"],[data-tool-call],[data-tool-call] *,[style*="background" i],[class*="bg-"],[data-fusion-gradient-text="false"])) {
+  color:var(--fusion-prose-ink)!important;
+  -webkit-text-fill-color:currentColor!important;
+  text-shadow:none!important;
+}
+@supports (background-clip:text) {
+  html.tessalume-theme-active.sgk-theme[data-fusion-gradient-text="true"]
+  :is([data-tessalume-surface="markdown"] :is(p,th,td):not(button *),
+      [data-user-message-bubble="true"]:not(:has([data-tessalume-surface="markdown"])):not(button *),
+      [data-tessalume-surface="sidebar"] :is([data-thread-title],[data-marquee-text],.sgk-nav-label),
+      .chat-topbar>span,.chat-topbar>small,
+      [data-app-shell-titlebar-content="true"]>:is(.truncate,small)):not(:where(pre,pre *,code,code *,kbd,kbd *,samp,samp *,a,a *,button,input,textarea,select,[contenteditable],[contenteditable] *,[data-tessalume-surface="composer"] *,[data-tessalume-surface="output-panel"] *,[data-tessalume-surface="output-section"] *,[data-status],[data-status] *,[class*="text-success"],[class*="text-danger"],[class*="text-warning"],[class*="text-codex-git-"],[data-tool-call],[data-tool-call] *,[style*="background" i],[class*="bg-"],[data-fusion-gradient-text="false"])):not(:has(:is(ul,ol,li,a,pre,code,kbd,samp,button,input,textarea,select,[contenteditable],svg,[role="img"],[data-status],[class*="text-success"],[class*="text-danger"],[class*="text-warning"],[class*="text-codex-git-"],[data-tool-call]))) {
+    background-image:var(--fusion-prose-gradient)!important;
+    background-clip:text!important;-webkit-background-clip:text!important;
+    background-size:380px 100%;background-repeat:repeat-x;
+    -webkit-text-fill-color:transparent!important;
+    /* Inline/fragment text remains clipped correctly when it wraps. */
+    -webkit-box-decoration-break:clone;box-decoration-break:clone;
+  }
+}
+/* Background clipping on an ancestor can clip a link/code background too.
+   Fall back for the WHOLE containing block, including old heading/emphasis
+   accents, whenever semantic inline content is present. Its own native colors
+   and surfaces remain untouched. Both nesting orders retain solid text fill. */
+html.tessalume-theme-active.sgk-theme[data-fusion-gradient-text="true"] [data-tessalume-surface="markdown"]
+:is(h1,h2,h3,strong):has(:is(a,pre,code,kbd,samp,button,input,textarea,select,[contenteditable],svg,[role="img"],[data-status],[class*="text-success"],[class*="text-danger"],[class*="text-warning"],[class*="text-codex-git-"],[data-tool-call])) {
+  background-image:none!important;
+  -webkit-text-fill-color:currentColor!important;
+}
+html.tessalume-theme-active.sgk-theme[data-fusion-gradient-text="true"] [data-tessalume-surface="markdown"]
+:is(a,pre,code,kbd,samp,[data-status],[class*="text-success"],[class*="text-danger"],[class*="text-warning"],[class*="text-codex-git-"],[data-tool-call]) :is(strong,em,b,i) {
+  background-image:none!important;color:inherit!important;
+}
+/* Keep bare list-item text solid: Chromium's marker inherits transparent fill
+   and does not support overriding that property. Paragraphs inside lists still
+   receive the gradient, with their list markers outside the clipping plane. */
+html.tessalume-theme-active.sgk-theme[data-fusion-gradient-text="true"]
+:is([data-tessalume-surface="markdown"],[data-user-message-bubble="true"],[data-tessalume-surface="sidebar"],.chat-topbar,[data-app-shell-titlebar-content="true"])
+:is(a,pre,code,kbd,samp,button,input,textarea,select,[contenteditable],svg,[role="img"],[data-status],[class*="text-success"],[class*="text-danger"],[class*="text-warning"],[class*="text-codex-git-"],[data-tool-call]),
+html.tessalume-theme-active.sgk-theme[data-fusion-gradient-text="true"] [data-tessalume-surface="markdown"]
+:is(a,pre,code,kbd,samp,[data-status],[class*="text-success"],[class*="text-danger"],[class*="text-warning"],[class*="text-codex-git-"],[data-tool-call]) :is(span,strong,em,b,i) {
+  -webkit-text-fill-color:currentColor!important;
+}
+/* Selection must not inherit transparent glyph fill. These are scoped to the
+   eligible reading surfaces and do not change selection geometry or opacity. */
+html.tessalume-theme-active.sgk-theme[data-fusion-gradient-text="true"]
+:is([data-tessalume-surface="markdown"],[data-user-message-bubble="true"],[data-tessalume-surface="sidebar"],.chat-topbar,[data-app-shell-titlebar-content="true"]) ::selection,
+html.tessalume-theme-active.sgk-theme[data-fusion-gradient-text="true"] [data-user-message-bubble="true"]::selection {
+  background:#5f456e!important;color:#fff6fa!important;-webkit-text-fill-color:#fff6fa!important;
+}
+@media (forced-colors:active) {
+  /* Extra root specificity beats the eligibility guards above. */
+  html.tessalume-theme-active.sgk-theme[data-fusion-gradient-text="true"]:is(.tessalume-theme-active.sgk-theme)
+  :is([data-tessalume-surface="markdown"] :is(p,li,th,td,blockquote,h1,h2,h3,strong),
+      [data-user-message-bubble="true"],
+      [data-tessalume-surface="sidebar"] :is([data-thread-title],[data-marquee-text],.sgk-nav-label),
+      .chat-topbar>span,.chat-topbar>small,
+      [data-app-shell-titlebar-content="true"]>:is(.truncate,small)) {
+    background-image:none!important;color:CanvasText!important;-webkit-text-fill-color:currentColor!important;
+  }
+}

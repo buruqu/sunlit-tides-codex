@@ -1,0 +1,554 @@
+{
+  "schemaVersion": 2,
+  "id": "sunlit-tides.codex",
+  "name": "晴光与泡影 · Codex 独立主题",
+  "version": "1.0.0",
+  "author": "Sunlit Tides contributors; upstream credits in NOTICE.md",
+  "description": "果园午后 / 昭日遇见暗潮，随 Codex 明暗模式切换的独立 Windows 主题。",
+  "engineVersion": 2,
+  "type": "advanced",
+  "template": {
+    "id": "flagship",
+    "version": "1.0",
+    "style": "shared"
+  },
+  "capabilities": {
+    "light": true,
+    "dark": true
+  },
+  "compatibility": {
+    "petOverlay": false
+  },
+  "entryPoints": {
+    "css": "skin.css",
+    "script": "theme.js",
+    "artworkDefaults": "artwork-defaults.json"
+  },
+  "previews": {
+    "light": "assets/duo-orchard.jpg",
+    "dark": "assets/duo-night.png"
+  },
+  "assets": {
+    "hero-light": "assets/duo-orchard.jpg",
+    "hero-dark": "assets/duo-night.png",
+    "sidebar-light": "assets/sigrika-breeze.jpg",
+    "sidebar-dark": "assets/sigrika-dream.jpg",
+    "sigrika-emote": "assets/sigrika-emote.gif",
+    "orchard-blink": "assets/orchard-blink.png",
+    "orchard-clean-plate": "assets/orchard-layer-underpaint.png",
+    "orchard-layer-background-original": "assets/layered/background-original.png",
+    "orchard-layer-xixi-body": "assets/layered/xixi-body.png",
+    "orchard-layer-denia-body": "assets/layered/denia-body.png",
+    "orchard-layer-xixi-braid-mid": "assets/layered/xixi-braid-mid.png",
+    "orchard-layer-xixi-braid-low": "assets/layered/xixi-braid-low.png",
+    "orchard-layer-denia-hair-middle": "assets/layered/denia-hair-middle.png",
+    "orchard-layer-denia-hair-lower": "assets/layered/denia-hair-lower.png",
+    "orchard-layer-denia-hair-tip": "assets/layered/denia-hair-tip.png",
+    "orchard-layer-denia-skirt-hem": "assets/layered/denia-skirt-hem.png",
+    "orchard-layer-foreground-fixed": "assets/layered/foreground-fixed.png",
+    "orchard-layer-xixi-braid-mid-root": "assets/layered/xixi-braid-mid-root.png",
+    "orchard-layer-xixi-braid-low-root": "assets/layered/xixi-braid-low-root.png",
+    "orchard-layer-denia-hair-middle-root": "assets/layered/denia-hair-middle-root.png",
+    "orchard-layer-denia-hair-lower-root": "assets/layered/denia-hair-lower-root.png",
+    "orchard-layer-denia-hair-tip-root": "assets/layered/denia-hair-tip-root.png",
+    "orchard-layer-denia-skirt-hem-root": "assets/layered/denia-skirt-hem-root.png",
+    "chat-light": "assets/duo-orchard.jpg",
+    "chat-dark": "assets/duo-night.png",
+    "memory-light": "assets/duo-story.jpg",
+    "memory-dark": "assets/duo-evening.jpg",
+    "task-left": "assets/sigrika-cutout.png",
+    "task-left-dark": "assets/sigrika-cutout.png",
+    "task-right-primary": "assets/dsh/denia_character_right.webp",
+    "task-right-primary-dark": "assets/dsh/denia_character_right_dark.webp",
+    "task-right-secondary": "assets/xixi-dumpling.jpg",
+    "denia-dark": "assets/dsh/denia_character_right_dark.webp",
+    "dumpling-denia": "assets/yaya-dumpling.jpg",
+    "denia-chibi": "assets/dsh/denia_chibi.gif",
+    "denia-chibi-dark": "assets/dsh/denia_chibi_dark.gif",
+    "duo-sunset": "assets/duo-sunset.jpg",
+    "duo-heart": "assets/duo-heart.jpg",
+    "duo-orchard": "assets/duo-orchard.jpg",
+    "duo-story": "assets/duo-story.jpg",
+    "duo-evening": "assets/duo-evening.jpg",
+    "sigrika-train": "assets/sigrika-train.jpg",
+    "sigrika-breeze": "assets/sigrika-breeze.jpg",
+    "sigrika-dream": "assets/sigrika-dream.jpg",
+    "duo-night": "assets/duo-night.png"
+  },
+  "config": {
+    "designVersion": "1.0.0",
+    "title": "晴光与泡影",
+    "subtitle": "把期待写成晴光，让灵感泛起涟漪。",
+    "memory": "晴光落在身旁，泡影轻轻回响。",
+    "ambient": {
+      "companions": true,
+      "xixiEmote": true
+    },
+    "avatars": {
+      "enabled": true
+    },
+    "sidebar": {
+      "enabled": true
+    },
+    "sceneEffects": {
+      "enabled": true
+    },
+    "livingScene": {
+      "enabled": true
+    },
+    "layeredScene": {
+      "enabled": true,
+      "baseAsset": "orchard-clean-plate",
+      "layers": [
+        {
+          "asset": "orchard-layer-background-original",
+          "kind": "rigid",
+          "bounds": [
+            0,
+            0,
+            1280,
+            1280
+          ],
+          "radius": 1483.1988999456546,
+          "rotation": 0,
+          "translation": [
+            0,
+            0
+          ],
+          "period": 7.1,
+          "phase": 0,
+          "blink": false
+        },
+        {
+          "asset": "orchard-layer-xixi-body",
+          "kind": "body",
+          "bounds": [
+            0,
+            234,
+            639,
+            1046
+          ],
+          "radius": 1003.9790812561783,
+          "rotation": 0,
+          "translation": [
+            0,
+            0.28
+          ],
+          "period": 5.4,
+          "phase": 0,
+          "blink": false
+        },
+        {
+          "asset": "orchard-layer-denia-body",
+          "kind": "body",
+          "bounds": [
+            0,
+            0,
+            1280,
+            1280
+          ],
+          "radius": 1483.1988999456546,
+          "rotation": 0,
+          "translation": [
+            0,
+            0.24
+          ],
+          "period": 7.1,
+          "phase": 0,
+          "blink": true
+        },
+        {
+          "asset": "orchard-layer-xixi-braid-mid",
+          "kind": "hair",
+          "bounds": [
+            10,
+            709,
+            122,
+            110
+          ],
+          "pivot": [
+            98.56,
+            720.6399999999999
+          ],
+          "radius": 133.54172681225893,
+          "rotation": 0.4,
+          "translation": [
+            0,
+            0
+          ],
+          "period": 5.4,
+          "phase": 0,
+          "parent": "orchard-layer-xixi-body",
+          "blink": false
+        },
+        {
+          "asset": "orchard-layer-xixi-braid-low",
+          "kind": "hair",
+          "bounds": [
+            0,
+            804,
+            74,
+            120
+          ],
+          "pivot": [
+            41.984,
+            809.984
+          ],
+          "radius": 114.47740388391063,
+          "rotation": 0.4,
+          "translation": [
+            0,
+            0
+          ],
+          "period": 5.4,
+          "phase": 0,
+          "parent": "orchard-layer-xixi-body",
+          "blink": false
+        },
+        {
+          "asset": "orchard-layer-denia-hair-middle",
+          "kind": "hair",
+          "bounds": [
+            989,
+            800,
+            280,
+            235
+          ],
+          "pivot": [
+            999.6800000000001,
+            934.4
+          ],
+          "radius": 298.5937420643641,
+          "rotation": 0.22,
+          "translation": [
+            0,
+            0
+          ],
+          "period": 7.1,
+          "phase": 0,
+          "parent": "orchard-layer-denia-body",
+          "blink": false
+        },
+        {
+          "asset": "orchard-layer-denia-hair-lower",
+          "kind": "hair",
+          "bounds": [
+            981,
+            1017,
+            268,
+            185
+          ],
+          "pivot": [
+            992,
+            1114.88
+          ],
+          "radius": 265.89377202183584,
+          "rotation": 0.28,
+          "translation": [
+            0,
+            0
+          ],
+          "period": 7.1,
+          "phase": 0,
+          "parent": "orchard-layer-denia-body",
+          "blink": false
+        },
+        {
+          "asset": "orchard-layer-denia-hair-tip",
+          "kind": "hair",
+          "bounds": [
+            962,
+            1192,
+            251,
+            88
+          ],
+          "pivot": [
+            988.1600000000001,
+            1227.52
+          ],
+          "radius": 217.0585073200311,
+          "rotation": 0.3,
+          "translation": [
+            0,
+            0
+          ],
+          "period": 7.1,
+          "phase": 0,
+          "parent": "orchard-layer-denia-body",
+          "blink": false
+        },
+        {
+          "asset": "orchard-layer-denia-skirt-hem",
+          "kind": "cloth",
+          "bounds": [
+            463,
+            980,
+            415,
+            300
+          ],
+          "pivot": [
+            755.1999999999999,
+            1049.6
+          ],
+          "radius": 418.7599584487513,
+          "rotation": 0.22,
+          "translation": [
+            0,
+            0
+          ],
+          "period": 6.3,
+          "phase": 0,
+          "parent": "orchard-layer-denia-body",
+          "blink": false
+        },
+        {
+          "asset": "orchard-layer-foreground-fixed",
+          "kind": "rigid",
+          "bounds": [
+            0,
+            0,
+            1280,
+            1280
+          ],
+          "radius": 1483.1988999456546,
+          "rotation": 0,
+          "translation": [
+            0,
+            0
+          ],
+          "period": 7.1,
+          "phase": 0,
+          "blink": false
+        },
+        {
+          "asset": "orchard-layer-xixi-braid-mid-root",
+          "kind": "rigid",
+          "rotation": 0,
+          "translation": [
+            0,
+            0
+          ],
+          "parent": "orchard-layer-xixi-body",
+          "bounds": [
+            82,
+            709,
+            23,
+            16
+          ],
+          "period": 7.1,
+          "phase": 0
+        },
+        {
+          "asset": "orchard-layer-xixi-braid-low-root",
+          "kind": "rigid",
+          "rotation": 0,
+          "translation": [
+            0,
+            0
+          ],
+          "parent": "orchard-layer-xixi-body",
+          "bounds": [
+            20,
+            804,
+            33,
+            13
+          ],
+          "period": 7.1,
+          "phase": 0
+        },
+        {
+          "asset": "orchard-layer-denia-hair-middle-root",
+          "kind": "rigid",
+          "rotation": 0,
+          "translation": [
+            0,
+            0
+          ],
+          "parent": "orchard-layer-denia-body",
+          "bounds": [
+            990,
+            800,
+            268,
+            233
+          ],
+          "period": 7.1,
+          "phase": 0
+        },
+        {
+          "asset": "orchard-layer-denia-hair-lower-root",
+          "kind": "rigid",
+          "rotation": 0,
+          "translation": [
+            0,
+            0
+          ],
+          "parent": "orchard-layer-denia-body",
+          "bounds": [
+            981,
+            1105,
+            20,
+            92
+          ],
+          "period": 7.1,
+          "phase": 0
+        },
+        {
+          "asset": "orchard-layer-denia-hair-tip-root",
+          "kind": "rigid",
+          "rotation": 0,
+          "translation": [
+            0,
+            0
+          ],
+          "parent": "orchard-layer-denia-body",
+          "bounds": [
+            962,
+            1228,
+            29,
+            52
+          ],
+          "period": 7.1,
+          "phase": 0
+        },
+        {
+          "asset": "orchard-layer-denia-skirt-hem-root",
+          "kind": "rigid",
+          "rotation": 0,
+          "translation": [
+            0,
+            0
+          ],
+          "parent": "orchard-layer-denia-body",
+          "bounds": [
+            629,
+            980,
+            249,
+            128
+          ],
+          "period": 7.1,
+          "phase": 0
+        }
+      ],
+      "blinkAsset": "orchard-blink"
+    },
+    "reading": {
+      "continuous": true,
+      "style": "scene"
+    },
+    "fusion": {
+      "paletteTitle": "晴光与泡影 · 调色板",
+      "defaults": {
+        "schemaVersion": 1,
+        "common": {
+          "chatWidth": 800,
+          "avoidPanels": true,
+          "focusMode": false,
+          "bubbles": true,
+          "companions": true,
+          "bubbleCount": 22,
+          "bubbleSpeed": 85,
+          "reduceMotion": false,
+          "sidebarArt": true,
+          "sidebarEmote": true,
+          "sceneEffects": true,
+          "wallpaperMotion": true,
+          "gradientText": true,
+          "livingScene": true,
+          "layeredScene": true
+        },
+        "modes": {
+          "light": {
+            "backgroundStrength": 100,
+            "messagePanel": true,
+            "messageOpacity": 60,
+            "left": {
+              "visible": true,
+              "size": 100,
+              "x": 0,
+              "y": 0
+            },
+            "primary": {
+              "visible": true,
+              "size": 100,
+              "x": 0,
+              "y": 0
+            },
+            "secondary": {
+              "visible": true,
+              "size": 100,
+              "x": 0,
+              "y": 0
+            }
+          },
+          "dark": {
+            "backgroundStrength": 100,
+            "messagePanel": true,
+            "messageOpacity": 64,
+            "left": {
+              "visible": true,
+              "size": 100,
+              "x": 0,
+              "y": 0
+            },
+            "primary": {
+              "visible": true,
+              "size": 100,
+              "x": 0,
+              "y": 0
+            },
+            "secondary": {
+              "visible": true,
+              "size": 100,
+              "x": 0,
+              "y": 0
+            }
+          }
+        }
+      },
+      "pairCards": true,
+      "splitSides": true,
+      "runtimePerformance": true,
+      "cards": {
+        "left": {
+          "width": 154,
+          "height": 230,
+          "anchor": "bottom"
+        },
+        "primary": {
+          "width": 132,
+          "height": 230,
+          "anchor": "bottom"
+        },
+        "secondary": {
+          "width": 144,
+          "height": 65,
+          "side": "left"
+        }
+      }
+    },
+    "gallery": {
+      "scenes": [
+        {
+          "id": "night",
+          "label": "昭日遇见暗潮",
+          "kicker": "双人 · 夜色试探",
+          "asset": "duo-night",
+          "position": "70% 45%",
+          "description": "递出一束暖光，等一个轻轻的回应。"
+        },
+        {
+          "id": "orchard",
+          "label": "果园午后",
+          "kicker": "双人 · 日光",
+          "asset": "duo-orchard",
+          "position": "50% 32%",
+          "description": "苹果、阳光，还有陪在身边的人。"
+        }
+      ],
+      "fixed": {
+        "light": "orchard",
+        "dark": "night"
+      }
+    }
+  }
+}

@@ -1,0 +1,15 @@
+/* Only the artwork surface is replaced. The independent reading veil remains. */
+html.sgk-theme.tessalume-theme-active.tessalume-is-task[data-sgk-scene="orchard"][data-sunlit-layered-active="true"] main[data-tessalume-surface="main"]::before {
+  animation:none!important;will-change:auto!important;
+}
+html.sgk-theme.tessalume-theme-active.tessalume-is-task[data-sgk-scene="orchard"][data-sunlit-layered-active="true"][data-sunlit-layered-ready="true"] main[data-tessalume-surface="main"]::before {visibility:hidden!important;}
+main[data-tessalume-surface="main"]>.sunlit-layered-scene {
+  position:absolute;inset:0;width:100%;height:100%;display:block;z-index:-2;
+  pointer-events:none!important;user-select:none;contain:strict;
+  transform:none!important;filter:none!important;object-fit:fill;
+}
+main[data-tessalume-surface="main"]>.sunlit-layered-scene[hidden] {display:none!important;}
+@media(prefers-reduced-motion:reduce) {
+  main[data-tessalume-surface="main"]>.sunlit-layered-scene {display:none!important;}
+  html[data-sunlit-layered-active="true"] main[data-tessalume-surface="main"]::before {visibility:visible!important;}
+}

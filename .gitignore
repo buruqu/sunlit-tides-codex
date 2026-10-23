@@ -1,0 +1,9 @@
+dist/
+release/
+node_modules/
+host/bin/
+host/obj/
+test-results/
+*.user
+*.log
+.DS_Store
