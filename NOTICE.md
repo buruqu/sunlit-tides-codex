@@ -8,5 +8,6 @@
 - 用户提供插画、团子头像、500×500 西西吃饭 GIF 原字节素材保留来源；其中部分作者/再分发授权尚未在本机素材记录中确认。公开分享前应补足这些素材的来源及分享条件，也可用自己的授权素材替换。
 - `duo-night.png`、西西透明立绘、果园闭眼帧与遮挡补底包含内置 imagegen 生成/编辑部分；原图、处理方法及提示词记录在 `docs/ASSETS.md`。果园人物图层以原图 RGB 和手工透明遮罩构成。
 - 字体使用系统已安装的 Noto Sans SC、Microsoft YaHei UI、Segoe UI 回退；不捆绑或下载字体。
+- Windows 自包含宿主捆绑 .NET / Windows Desktop 8.0.32 运行时，保留对应运行时包的 MIT 许可及第三方声明于 `licenses/DOTNET-*`、`licenses/WINDOWS-DESKTOP-LICENSE.txt`。
 
 安装器和托盘宿主是本项目代码；其行为不涉及 Codex 账户登录、订阅或聊天内容收集。所有调试连接限制到经过当前 Codex 包路径和端口所属进程验证的 loopback 端点。没有分析上报或外部主题更新服务。
