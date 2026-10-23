@@ -6,7 +6,7 @@ namespace SunlitTidesCodex;
 internal sealed record ThemeScripts(string Apply, string Bootstrap, string Remove, string Probe);
 internal static class ScriptBuilder
 {
-    private static string Read(string file)
+    internal static string Read(string file)
     {
         using var stream = Assembly.GetExecutingAssembly().GetManifestResourceStream("SunlitTidesCodex.Scripts." + file) ?? throw new InvalidDataException("bootstrap-resource-missing");
         using var reader = new StreamReader(stream);

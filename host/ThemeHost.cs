@@ -1,4 +1,5 @@
 using System.Text.Json;
+using System.Net.Http;
 
 namespace SunlitTidesCodex;
 
@@ -11,6 +12,8 @@ internal sealed class ThemeHost : IAsyncDisposable
         internal string Key = $"{pid}:{port}:{targetId}";
         internal List<string> ScriptIds = [];
         internal bool Restored;
+        internal bool BridgeInitialized;
+        internal bool SentStartupEnabled;
     }
     private readonly StateStore _store;
     private readonly SemaphoreSlim _gate = new(1, 1), _wake = new(0, 1);
@@ -18,20 +21,26 @@ internal sealed class ThemeHost : IAsyncDisposable
     private readonly CdpDiscovery _discovery = new();
     private readonly Dictionary<string, PageSession> _pages = [];
     private readonly Dictionary<string, List<string>> _registrations = [];
-    private Settings _settings;
-    private CodexPackage? _package;
+    private volatile Settings _settings;
+    private volatile CodexPackage? _package;
     private DateTimeOffset _packageAt;
     private Task? _loop;
     private string _apply = "", _bootstrap = "", _remove = "", _probe = "";
     private Health _health;
+    private readonly StartupWatcher _startup;
     internal event Action<Health>? Changed;
     internal event Action<string>? Notice;
+    internal event Action<IntPtr>? StartupRequested;
+    internal bool StartupEnabled => _settings.StartupEnabled;
+    internal bool AutomaticStartupEnabled { get { var settings = _settings; return settings.Enabled && settings.StartupEnabled; } }
     internal Health Current => _health with { UpdatedAt = DateTimeOffset.Now };
 
     internal ThemeHost(StateStore store)
     {
         _store = store;
         _settings = store.Read();
+        _startup = new(() => _package, () => _settings.Enabled && _settings.StartupEnabled);
+        _startup.Play += window => StartupRequested?.Invoke(window);
         _health = new(true, _settings.Enabled, "starting", 0, null, DateTimeOffset.Now);
         try
         {
@@ -45,6 +54,7 @@ internal sealed class ThemeHost : IAsyncDisposable
 
     internal void Start(bool launch, bool enable)
     {
+        _startup.Start();
         _loop = Task.Run(async () =>
         {
             try
@@ -79,8 +89,8 @@ internal sealed class ThemeHost : IAsyncDisposable
         var folder = Path.Combine(AppContext.BaseDirectory, "theme");
         using var manifest = JsonDocument.Parse(File.ReadAllText(Path.Combine(folder, "manifest.json")));
         if (manifest.RootElement.GetProperty("id").GetString() != "sunlit-tides.codex"
-            || manifest.RootElement.GetProperty("version").GetString() != "1.0.0"
-            || manifest.RootElement.GetProperty("config").GetProperty("designVersion").GetString() != "1.0.0") throw new InvalidDataException("manifest-invalid");
+            || manifest.RootElement.GetProperty("version").GetString() != "1.1.0"
+            || manifest.RootElement.GetProperty("config").GetProperty("designVersion").GetString() != "1.1.0") throw new InvalidDataException("manifest-invalid");
         string Expression(string file)
         {
             var path = Path.Combine(folder, file);
@@ -108,6 +118,58 @@ internal sealed class ThemeHost : IAsyncDisposable
         Wake();
         if (!enabled) await ReconcileAsync(token);
         if (enabled && launch) await LaunchAsync(token);
+    }
+
+    internal async Task SetStartupEnabledAsync(bool enabled, CancellationToken token)
+    {
+        await _gate.WaitAsync(token);
+        try
+        {
+            _settings = _settings with { StartupEnabled = enabled };
+            _store.Save(_settings);
+            foreach (var page in _pages.Values.Where(p => p.Connection.Ready))
+            {
+                try { await PublishStartupAsync(page, token); }
+                catch (OperationCanceledException) when (token.IsCancellationRequested) { throw; }
+                catch { page.BridgeInitialized = false; }
+            }
+            Update(_health.State, _health.Port);
+        }
+        finally { _gate.Release(); }
+        Wake();
+    }
+
+    private async Task PublishStartupAsync(PageSession page, CancellationToken token)
+    {
+        await page.Connection.EvaluateAsync(StartupSettingsBridge.Publish(_settings.StartupEnabled), token);
+        page.SentStartupEnabled = _settings.StartupEnabled;
+        page.BridgeInitialized = true;
+    }
+
+    private async Task ReceiveStartupChangeAsync(bool enabled)
+    {
+        try { await SetStartupEnabledAsync(enabled, _stop.Token); }
+        catch { /* Keep protocol payloads and user state out of diagnostics. */ }
+    }
+
+    private async Task SyncStartupAsync(PageSession page, CancellationToken token)
+    {
+        if (page.BridgeInitialized)
+        {
+            var raw = await page.Connection.EvaluateAsync(StartupSettingsBridge.Read, token);
+            if (raw.ValueKind == JsonValueKind.String && raw.GetString() is "true" or "false")
+            {
+                var incoming = raw.GetString() == "true";
+                // Compare with this page's last publication, not the current global value:
+                // an unchanged old page must never revert a newer choice from another page.
+                if (incoming != page.SentStartupEnabled)
+                {
+                    _settings = _settings with { StartupEnabled = incoming };
+                    _store.Save(_settings);
+                }
+            }
+        }
+        await PublishStartupAsync(page, token);
     }
 
     internal async Task LaunchAsync(CancellationToken token)
@@ -193,7 +255,14 @@ internal sealed class ThemeHost : IAsyncDisposable
                         await connection.SendAsync("Page.enable", new { }, token);
                         page = new(connection, value.Port.ProcessId, value.Port.Port, value.Target.Id);
                         var capturedPage = page;
-                        connection.Navigated += () => { capturedPage.Restored = false; Wake(); };
+                        connection.Navigated += () => { capturedPage.Restored = false; capturedPage.BridgeInitialized = false; Wake(); };
+                        connection.StartupSettingChanged += value =>
+                        {
+                            if (StartupSettingsBridge.TryParseChange(value, out var enabled))
+                                _ = ReceiveStartupChangeAsync(enabled);
+                        };
+                        await connection.SendAsync("Runtime.enable", new { }, token);
+                        await connection.SendAsync("Runtime.addBinding", new { name = "sunlitTidesStartupChanged" }, token);
                         if (_registrations.TryGetValue(key, out var ids)) page.ScriptIds.AddRange(ids);
                         _pages.Add(key, page);
                         await RemoveFutureAsync(page, token); // Recover registrations left by a crashed earlier helper.
@@ -202,6 +271,7 @@ internal sealed class ThemeHost : IAsyncDisposable
                 }
                 try
                 {
+                    await SyncStartupAsync(page, token);
                     if (!_settings.Enabled)
                     {
                         await RemoveFutureAsync(page, token);
@@ -284,8 +354,8 @@ internal sealed class ThemeHost : IAsyncDisposable
 
     private void Update(string state, int? port)
     {
-        var changed = _health.State != state || _health.Enabled != _settings.Enabled || _health.Port != port || _health.AttachedPages != _pages.Count;
-        _health = new(true, _settings.Enabled, state, _pages.Count, port, DateTimeOffset.Now);
+        var changed = _health.State != state || _health.Enabled != _settings.Enabled || _health.StartupEnabled != _settings.StartupEnabled || _health.Port != port || _health.AttachedPages != _pages.Count;
+        _health = new(true, _settings.Enabled, state, _pages.Count, port, DateTimeOffset.Now, StartupEnabled: _settings.StartupEnabled);
         if (!changed) return;
         _store.SaveHealth(_health);
         _store.Log(state);
@@ -297,15 +367,26 @@ internal sealed class ThemeHost : IAsyncDisposable
     public async ValueTask DisposeAsync()
     {
         _stop.Cancel();
+        await _startup.DisposeAsync();
         if (_loop is not null) try { await _loop; } catch { }
         using var cleanup = new CancellationTokenSource(TimeSpan.FromSeconds(10));
         await _gate.WaitAsync();
         try
         {
             await RestoreSessionsAsync(cleanup.Token);
-            foreach (var page in _pages.Values) await page.Connection.DisposeAsync();
+            foreach (var page in _pages.Values)
+            {
+                if (page.Connection.Ready)
+                    try
+                    {
+                        await page.Connection.EvaluateAsync(StartupSettingsBridge.Remove, cleanup.Token);
+                        await page.Connection.SendAsync("Runtime.removeBinding", new { name = "sunlitTidesStartupChanged" }, cleanup.Token);
+                    }
+                    catch { }
+                await page.Connection.DisposeAsync();
+            }
             _pages.Clear();
-            _store.SaveHealth(new(false, _settings.Enabled, "stopped", 0, null, DateTimeOffset.Now));
+            _store.SaveHealth(new(false, _settings.Enabled, "stopped", 0, null, DateTimeOffset.Now, StartupEnabled: _settings.StartupEnabled));
         }
         finally { _gate.Release(); }
         _discovery.Dispose();

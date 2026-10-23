@@ -10,7 +10,7 @@ internal static class Program
     private static int Main(string[] args)
     {
         var command = args.FirstOrDefault()?.ToLowerInvariant() ?? "--launch";
-        if (args.Length > 1 || command is not ("--launch" or "--startup" or "--status" or "--restore" or "--enable" or "--quit" or "--self-test"))
+        if (args.Length > 1 || !HostCommands.TryParseCli(command, out _))
         { Write("{\"ok\":false,\"error\":\"invalid-command\"}"); return 2; }
         if (command == "--self-test") return SelfTests.Run();
         using var mutex = new Mutex(false, SingleInstance.MutexName);
@@ -18,7 +18,7 @@ internal static class Program
         try { acquired = mutex.WaitOne(0); } catch (AbandonedMutexException) { acquired = true; }
         if (!acquired)
         {
-            var request = command switch { "--startup" => "status", _ => command[2..] };
+            _ = HostCommands.TryParseCli(command, out var request);
             var response = SingleInstance.SendAsync(request, CancellationToken.None).GetAwaiter().GetResult();
             Write(response ?? "{\"ok\":false,\"error\":\"helper-not-responding\"}");
             if (response is null) return 3;
@@ -36,7 +36,8 @@ internal static class Program
             var store = new StateStore();
             if (command == "--status")
             {
-                Write(JsonSerializer.Serialize(new Health(false, store.Read().Enabled, "stopped", 0, null, DateTimeOffset.Now), new JsonSerializerOptions(JsonSerializerDefaults.Web)));
+                var saved = store.Read();
+                Write(JsonSerializer.Serialize(new Health(false, saved.Enabled, "stopped", 0, null, DateTimeOffset.Now, StartupEnabled: saved.StartupEnabled), new JsonSerializerOptions(JsonSerializerDefaults.Web)));
                 return 0;
             }
             if (command is "--restore" or "--quit")
@@ -76,27 +77,42 @@ internal sealed class TrayContext : ApplicationContext
     private readonly Control _dispatcher = new();
     private readonly NotifyIcon _icon;
     private readonly ThemeHost _host;
+    private readonly StateStore _store;
     private readonly CancellationTokenSource _stop = new();
     private readonly Task _server;
     private bool _exiting;
+    private StartupAnimationWindow? _animation;
+    private bool _animationAutomatic;
 
     internal TrayContext(StateStore store, string command)
     {
+        _store = store;
         _ = _dispatcher.Handle;
         _host = new(store);
         var menu = new ContextMenuStrip();
         menu.Items.Add("启用晴光与泡影主题", null, async (_, _) => await RunAction(() => _host.SetEnabledAsync(true, true, _stop.Token)));
         menu.Items.Add("恢复 Codex 默认外观", null, async (_, _) => await RunAction(() => _host.SetEnabledAsync(false, false, _stop.Token)));
         menu.Items.Add("打开 Codex", null, async (_, _) => await RunAction(() => _host.LaunchAsync(_stop.Token)));
+        var startupToggle = new ToolStripMenuItem("启动时播放 Dragon 动画") { Checked = _host.StartupEnabled, CheckOnClick = true };
+        startupToggle.Click += async (_, _) => await RunAction(() => _host.SetStartupEnabledAsync(startupToggle.Checked, _stop.Token));
+        menu.Items.Add(startupToggle);
+        menu.Items.Add("预览启动动画", null, (_, _) => ShowStartup(IntPtr.Zero));
         menu.Items.Add("查看状态", null, (_, _) => ShowStatus());
         menu.Items.Add(new ToolStripSeparator());
         menu.Items.Add("恢复默认并退出", null, async (_, _) => await QuitAsync());
         _icon = new NotifyIcon { Icon = SystemIcons.Application, Text = "Codex · 晴光与泡影", ContextMenuStrip = menu, Visible = true };
         _icon.DoubleClick += (_, _) => ShowStatus();
-        _host.Changed += health => Dispatch(() => _icon.Text = "晴光与泡影 · " + StatusName(health.State));
+        _host.Changed += health => Dispatch(() =>
+        {
+            _icon.Text = "晴光与泡影 · " + StatusName(health.State);
+            startupToggle.Checked = health.StartupEnabled;
+            if (!health.Enabled && _animationAutomatic) _animation?.Close();
+        });
         _host.Notice += message => Dispatch(() => _icon.ShowBalloonTip(12000, "Codex · 晴光与泡影", message, ToolTipIcon.Info));
+        _host.StartupRequested += window => Dispatch(() => ShowStartup(window));
         _server = SingleInstance.ServeAsync(HandleAsync, _stop.Token);
         _host.Start(launch: command is "--startup" or "--launch" or "--enable", enable: command is "--launch" or "--enable");
+        if (command == "--preview-startup") Dispatch(() => ShowStartup(IntPtr.Zero));
     }
 
     private async Task RunAction(Func<Task> action)
@@ -115,6 +131,7 @@ internal sealed class TrayContext : ApplicationContext
                 case "restore": await _host.SetEnabledAsync(false, false, _stop.Token); break;
                 case "enable": await _host.SetEnabledAsync(true, true, _stop.Token); break;
                 case "launch": await _host.SetEnabledAsync(true, true, _stop.Token); break;
+                case "preview-startup": Dispatch(() => ShowStartup(IntPtr.Zero)); break;
                 case "quit":
                     await _host.SetEnabledAsync(false, false, _stop.Token);
                     if (_host.Current.State == "default")
@@ -135,7 +152,7 @@ internal sealed class TrayContext : ApplicationContext
     private void ShowStatus()
     {
         var state = _host.Current;
-        MessageBox.Show($"状态：{StatusName(state.State)}\n主题：{(state.Enabled ? "已启用" : "默认外观")}\n已连接页面：{state.AttachedPages}\n本机端口：{state.Port?.ToString() ?? "无"}\n\n原生入口冷启动没有主题连接时，请完成任务后自行退出 Codex，再从主题快捷方式打开。",
+        MessageBox.Show($"状态：{StatusName(state.State)}\n主题：{(state.Enabled ? "已启用" : "默认外观")}\n启动动画：{(state.StartupEnabled ? "已启用" : "已关闭")}\n已连接页面：{state.AttachedPages}\n本机端口：{state.Port?.ToString() ?? "无"}\n\n宿主运行时，普通 Codex 新进程也会播放启动动画。普通入口没有主题连接时，界面主题和界面内开关需完成任务后自行退出，再从主题入口打开；托盘开关始终可用。",
             "Codex · 晴光与泡影", MessageBoxButtons.OK, MessageBoxIcon.Information);
     }
 
@@ -147,6 +164,41 @@ internal sealed class TrayContext : ApplicationContext
         "theme-apply-retrying" => "正在重试主题", "restore-retrying" => "正在重试恢复", _ => "连接暂不可用"
     };
 
+    private void ShowStartup(IntPtr target)
+    {
+        if (_exiting || _animation is not null) return;
+        // A watcher notification can have been queued before Restore or the preference changed.
+        // A zero target is an explicit preview, which remains available with autoplay disabled.
+        if (target != IntPtr.Zero && !_host.AutomaticStartupEnabled) return;
+        var path = Path.Combine(AppContext.BaseDirectory, "media", "startup.mp4");
+        if (!StartupAnimationWindow.ValidVideo(path))
+        {
+            _store.Log("startup-media-missing");
+            _icon.ShowBalloonTip(5000, "Dragon 动画不可用", "未找到可播放的 media/startup.mp4，Codex 可继续正常使用。", ToolTipIcon.Info);
+            return;
+        }
+        try
+        {
+            _store.Log("startup-requested");
+            _animation = new(path, target, _host.StartupEnabled, enabled => _ = RunAction(() => _host.SetStartupEnabledAsync(enabled, _stop.Token)), _store.Log);
+            _animationAutomatic = target != IntPtr.Zero;
+            _animation.Closed += (_, _) => { _animation = null; _animationAutomatic = false; };
+            _animation.Show();
+            _store.Log("startup-window-shown");
+        }
+        catch (Exception error)
+        {
+            _store.Log(error switch
+            {
+                DllNotFoundException or FileNotFoundException => "startup-player-dependency-missing",
+                COMException => "startup-player-com-failed",
+                InvalidOperationException => "startup-player-state-failed",
+                _ => "startup-player-failed"
+            });
+            _animation = null; _animationAutomatic = false;
+        }
+    }
+
     private async Task QuitAsync()
     {
         if (_exiting) return;
@@ -156,6 +208,7 @@ internal sealed class TrayContext : ApplicationContext
         if (_host.Current.State != "default")
         { _icon.ShowBalloonTip(8000, "恢复尚未完成", "将保留宿主继续恢复，避免遗留页面注入。请稍后重试退出。", ToolTipIcon.Warning); return; }
         _exiting = true;
+        _animation?.Close();
         _stop.Cancel();
         try { await _host.DisposeAsync(); } catch { }
         _icon.Visible = false;

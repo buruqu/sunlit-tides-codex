@@ -11,81 +11,145 @@ if ([string]::IsNullOrWhiteSpace($SourceDirectory)) {
 $sourceRoot = [IO.Path]::GetFullPath((Resolve-Path -LiteralPath $SourceDirectory).Path).TrimEnd('\')
 $installRoot = Get-SunlitRoot
 $executable = Join-Path $installRoot 'SunlitTidesCodex.exe'
+$version = '1.1.0'
 if ($sourceRoot -eq $installRoot -or (Test-SunlitChild $sourceRoot $installRoot)) { throw '安装来源不能位于安装目录中。' }
+Assert-SunlitLocalPath $installRoot
 Assert-SunlitNoReparse $sourceRoot
-foreach ($required in @('SunlitTidesCodex.exe', 'theme\manifest.json', 'theme\payload.js', 'theme\remove.js')) {
-    if (-not (Test-Path -LiteralPath (Join-Path $sourceRoot $required) -PathType Leaf)) { throw ('缺少发行文件：' + $required) }
+foreach ($required in @('SunlitTidesCodex.exe', 'theme\manifest.json', 'theme\payload.js', 'theme\remove.js', 'media\startup.mp4')) {
+    $path = Join-Path $sourceRoot $required
+    if (-not (Test-Path -LiteralPath $path -PathType Leaf) -or (Get-Item -LiteralPath $path).Length -eq 0) { throw ('缺少或空发行文件：' + $required) }
 }
 $themeManifest = Get-Content -LiteralPath (Join-Path $sourceRoot 'theme\manifest.json') -Raw -Encoding UTF8 | ConvertFrom-Json
-if ($themeManifest.id -ne 'sunlit-tides.codex' -or $themeManifest.version -ne '1.0.0') { throw '主题标识或版本不匹配。' }
+if ($themeManifest.id -ne 'sunlit-tides.codex' -or $themeManifest.version -ne $version) { throw '主题标识或版本不匹配。' }
 $files = @(Get-ChildItem -LiteralPath $sourceRoot -File -Recurse -Force | ForEach-Object {
     $relative = $_.FullName.Substring($sourceRoot.Length + 1)
-    if ($relative -match '(^|\\)(data|\.sunlit-tides-owned\.json)(\\|$)') { throw '发行包不能包含用户状态或旧安装记录。' }
+    Assert-SunlitRelativeFile $relative
     [pscustomobject]@{ path = $relative; sha256 = (Get-SunlitHash $_.FullName) }
 })
 $existingMarker = $null
-if (Test-Path -LiteralPath $installRoot) {
+$hadRoot = Test-Path -LiteralPath $installRoot
+if ($hadRoot) {
     Assert-SunlitNoReparse $installRoot
     $existingMarker = Get-SunlitMarker $installRoot
     if ($null -eq $existingMarker -and @(Get-ChildItem -LiteralPath $installRoot -Force).Count -gt 0) { throw '现有目录没有本程序所有权记录；不会覆盖。' }
     if ($null -ne $existingMarker) {
-        foreach ($file in $files) {
-            $old = @($existingMarker.files | Where-Object { $_.path -eq $file.path -and $_.sha256 -eq $file.sha256 })
-            $path = Join-Path $installRoot $file.path
-            if ($old.Count -ne 1 -or -not (Test-Path -LiteralPath $path -PathType Leaf) -or (Get-SunlitHash $path) -ne $file.sha256) {
-                throw '已有安装与本发行包不同。请先恢复并卸载，再安装新版本；当前文件已保留。'
-            }
-        }
-        if (@($existingMarker.files).Count -ne $files.Count) { throw '已有安装文件列表不同，请先卸载；当前文件已保留。' }
+        if ($existingMarker.version -notin @('1.0.0', $version)) { throw '不支持此已安装版本；现有安装已保留。' }
+        Assert-SunlitInstalledFiles $installRoot $existingMarker $files
     }
 }
-$runPath = 'HKCU:\Software\Microsoft\Windows\CurrentVersion\Run'
 $runValue = '"' + $executable + '" --startup'
 $oldRun = Get-SunlitRunValue
 if ($null -ne $oldRun -and $oldRun -ne $runValue) { throw '同名启动项由其他命令占用，已保留。' }
 $shortcuts = @(Get-SunlitShortcuts)
+$priorShortcuts = @{}
+foreach ($shortcut in $shortcuts) { $priorShortcuts[$shortcut] = Test-Path -LiteralPath $shortcut }
 foreach ($shortcut in $shortcuts) { if (-not (Test-SunlitShortcut $shortcut $executable)) { throw ('快捷方式已由其他程序占用：' + $shortcut) } }
-if (-not $PSCmdlet.ShouldProcess($installRoot, '安装独立主题、当前用户登录启动和主题快捷方式')) { return }
+if (-not $PSCmdlet.ShouldProcess($installRoot, '暂存并验证 1.1.0，恢复旧主题、保留用户设置与完整旧版本备份后安装')) { return }
 
-if ($null -eq $existingMarker) {
-    $stage = Join-Path $env:LOCALAPPDATA ('SunlitTidesCodex.stage.' + [Guid]::NewGuid().ToString('N'))
-    if (-not (Test-SunlitChild $stage $env:LOCALAPPDATA)) { throw '暂存路径校验失败。' }
-    try {
-        [void](New-Item -ItemType Directory -Path $stage)
-        foreach ($file in $files) {
-            $destination = Join-Path $stage $file.path
-            if (-not (Test-SunlitChild $destination $stage)) { throw '发行包包含越界路径。' }
-            [void](New-Item -ItemType Directory -Path (Split-Path $destination -Parent) -Force)
-            Copy-Item -LiteralPath (Join-Path $sourceRoot $file.path) -Destination $destination
-            if ((Get-SunlitHash $destination) -ne $file.sha256) { throw '暂存文件完整性校验失败。' }
-        }
-        $marker = [ordered]@{ schema = 1; product = 'sunlit-tides.codex'; version = '1.0.0'; installRoot = $installRoot; files = $files; shortcuts = $shortcuts }
-        $marker | ConvertTo-Json -Depth 5 | Set-Content -LiteralPath (Join-Path $stage '.sunlit-tides-owned.json') -Encoding UTF8
-        if (Test-Path -LiteralPath $installRoot) { Remove-Item -LiteralPath $installRoot }
-        # Both resolved paths are checked to remain in LOCALAPPDATA; no vendor files are moved.
-        if (-not (Test-SunlitChild $installRoot $env:LOCALAPPDATA) -or -not (Test-SunlitChild $stage $env:LOCALAPPDATA)) { throw '移动路径校验失败。' }
-        Move-Item -LiteralPath $stage -Destination $installRoot
-    } finally {
-        if ((Test-Path -LiteralPath $stage) -and (Test-SunlitChild $stage $env:LOCALAPPDATA) -and (Split-Path $stage -Leaf) -like 'SunlitTidesCodex.stage.*') { Remove-Item -LiteralPath $stage -Recurse -Force }
-    }
-}
-[void](New-Item -Path $runPath -Force)
-Set-ItemProperty -LiteralPath $runPath -Name SunlitTidesCodex -Value $runValue -Type String
-$shell = New-Object -ComObject WScript.Shell
+$installMutex = New-Object Threading.Mutex($false, ('Local\SunlitTidesCodex.Install.' + [Security.Principal.WindowsIdentity]::GetCurrent().User.Value))
+$hasInstallMutex = $false
 try {
-    foreach ($shortcut in $shortcuts) {
-        [void](New-Item -ItemType Directory -Path (Split-Path $shortcut -Parent) -Force)
-        $link = $shell.CreateShortcut($shortcut)
-        try {
-            $link.TargetPath = $executable
-            $link.Arguments = '--launch'
-            $link.WorkingDirectory = $installRoot
-            $link.Description = '独立晴光与泡影主题；登录时自动启动；托盘可恢复默认外观'
-            $link.IconLocation = $executable + ',0'
-            $link.Save()
-        } finally { [void][Runtime.InteropServices.Marshal]::FinalReleaseComObject($link) }
+    try { $hasInstallMutex = $installMutex.WaitOne(0) } catch [Threading.AbandonedMutexException] { $hasInstallMutex = $true }
+    if (-not $hasInstallMutex) { throw '另一个安装操作正在运行，请等待其完成。' }
+$token = [DateTime]::UtcNow.ToString('yyyyMMdd-HHmmss') + '.' + [Guid]::NewGuid().ToString('N')
+$stage = Join-Path $env:LOCALAPPDATA ('SunlitTidesCodex.stage.' + $token)
+$oldVersion = if ($null -eq $existingMarker) { 'empty' } else { $existingMarker.version }
+$backup = Join-Path $env:LOCALAPPDATA ('SunlitTidesCodex.backup.' + $oldVersion + '.' + $token)
+foreach ($path in @($stage, $backup)) {
+    Assert-SunlitLocalPath $path
+    if (Test-Path -LiteralPath $path) { throw '暂存或备份路径已存在，已停止。' }
+}
+$oldMoved = $false
+$newMoved = $false
+$oldStopped = $false
+$settingsBytes = $null
+$settingsPath = Join-Path $installRoot 'data\settings.json'
+$hadSettings = $false
+try {
+    [void](New-Item -ItemType Directory -Path $stage)
+    foreach ($file in $files) {
+        $destination = Join-Path $stage $file.path
+        if (-not (Test-SunlitChild $destination $stage)) { throw '发行包包含越界路径。' }
+        [void](New-Item -ItemType Directory -Path (Split-Path $destination -Parent) -Force)
+        Copy-Item -LiteralPath (Join-Path $sourceRoot $file.path) -Destination $destination
+        if ((Get-SunlitHash $destination) -ne $file.sha256) { throw '暂存文件完整性校验失败。' }
     }
-} finally { [void][Runtime.InteropServices.Marshal]::FinalReleaseComObject($shell) }
-if (-not $NoLaunch) { [void](Start-Process -FilePath $executable -ArgumentList '--launch' -WindowStyle Hidden -PassThru) }
-Write-Output ('已安装：' + $installRoot)
-Write-Output '登录 Windows 后自动启用；原生入口在 Codex 完全退出后冷启动，可能仍需使用主题快捷方式。'
+    $stagedManifest = Get-Content -LiteralPath (Join-Path $stage 'theme\manifest.json') -Raw -Encoding UTF8 | ConvertFrom-Json
+    if ($stagedManifest.id -ne 'sunlit-tides.codex' -or $stagedManifest.version -ne $version) { throw '暂存主题标识或版本不匹配。' }
+    $marker = [ordered]@{ schema = 1; product = 'sunlit-tides.codex'; version = $version; installRoot = $installRoot; files = $files; shortcuts = $shortcuts }
+    $marker | ConvertTo-Json -Depth 5 | Set-Content -LiteralPath (Join-Path $stage '.sunlit-tides-owned.json') -Encoding UTF8
+    if ($null -ne $existingMarker) {
+        # Recheck immediately before running the known old executable. Its --quit
+        # writes enabled=false; capture the original bytes before asking it to stop.
+        Assert-SunlitInstalledFiles $installRoot $existingMarker $files
+        $hadSettings = Test-Path -LiteralPath $settingsPath -PathType Leaf
+        if ($hadSettings) {
+            $settingsBytes = [IO.File]::ReadAllBytes($settingsPath)
+            [void](New-Item -ItemType Directory -Path (Join-Path $stage 'data'))
+            [IO.File]::WriteAllBytes((Join-Path $stage 'data\settings.json'), $settingsBytes)
+        }
+        Stop-SunlitOwnedHelper $installRoot $existingMarker
+        $oldStopped = $true
+        Assert-SunlitInstalledFiles $installRoot $existingMarker $files
+        if ($hadSettings) { [IO.File]::WriteAllBytes($settingsPath, $settingsBytes) }
+        elseif (Test-Path -LiteralPath $settingsPath) {
+            # Preserve the original absent-file state without deleting a helper-created file.
+            $quitSettings = Join-Path $installRoot ('data\settings.quit.' + $token + '.json')
+            Move-Item -LiteralPath $settingsPath -Destination $quitSettings
+        }
+        $data = Join-Path $installRoot 'data'
+        if (Test-Path -LiteralPath $data -PathType Container) {
+            [void](New-Item -ItemType Directory -Path (Join-Path $stage 'data') -Force)
+            foreach ($item in Get-ChildItem -LiteralPath $data -Force) { Copy-Item -LiteralPath $item.FullName -Destination (Join-Path $stage 'data') -Recurse -Force }
+        }
+    }
+    # No recursive deletion: complete previous installs and failed stages remain recoverable.
+    Assert-SunlitNoReparse $stage
+    foreach ($path in @($stage, $installRoot, $backup)) { Assert-SunlitLocalPath $path }
+    if ($hadRoot) {
+        Move-SunlitDirectory $installRoot $backup
+        $oldMoved = $true
+    }
+    Move-SunlitDirectory $stage $installRoot
+    $newMoved = $true
+    Set-SunlitIntegration $installRoot $shortcuts
+    if (-not $NoLaunch) {
+        # --launch intentionally re-enables a fresh installation. Existing users'
+        # disabled-theme choice must survive an upgrade or reinstall.
+        $launchCommand = if ($null -eq $existingMarker) { '--launch' } else { '--startup' }
+        [void](Start-Process -FilePath $executable -ArgumentList $launchCommand -WindowStyle Hidden -PassThru)
+    }
+} catch {
+    $failure = $_
+    # Do not move a live new helper. Start-Process is the final fallible operation;
+    # a returned process is a successful handoff, not a health claim.
+    try {
+        foreach ($path in @($stage, $installRoot, $backup)) { Assert-SunlitLocalPath $path }
+        if ($newMoved) {
+            # Remove only integration entries that did not exist before this attempt
+            # and still point to our exact command. Existing entries remain stable.
+            if ($null -eq $oldRun -and (Get-SunlitRunValue) -eq $runValue) { Remove-ItemProperty -LiteralPath 'HKCU:\Software\Microsoft\Windows\CurrentVersion\Run' -Name SunlitTidesCodex }
+            foreach ($shortcut in $shortcuts) {
+                if (-not $priorShortcuts[$shortcut] -and (Test-Path -LiteralPath $shortcut -PathType Leaf) -and (Test-SunlitShortcut $shortcut $executable)) { Remove-Item -LiteralPath $shortcut }
+            }
+            Assert-SunlitNoReparse $installRoot
+            if (@(Get-SunlitProcesses $executable).Count -gt 0) { throw '新版宿主仍在运行；需要人工恢复保留的备份。' }
+            Move-SunlitDirectory $installRoot $stage
+            $newMoved = $false
+        }
+        if ($oldMoved) {
+            Assert-SunlitNoReparse $backup
+            Move-SunlitDirectory $backup $installRoot
+            $oldMoved = $false
+        }
+        if ($oldStopped -and $hadSettings -and (Test-Path -LiteralPath $installRoot -PathType Container)) { [IO.File]::WriteAllBytes($settingsPath, $settingsBytes) }
+    } catch { throw ('安装失败且自动恢复未完成。原错误：' + $failure.Exception.Message + '；恢复错误：' + $_.Exception.Message + '；备份：' + $backup + '；暂存：' + $stage) }
+    throw ('安装失败，原安装已保留或恢复，宿主可能已停止。' + $failure.Exception.Message + '；已保留暂存：' + $stage)
+}
+Write-Output ('已安装 ' + $version + '：' + $installRoot)
+if ($oldMoved) { Write-Output ('旧版本完整备份（含用户状态）：' + $backup) }
+Write-Output '登录 Windows 后启动宿主并沿用主题开关；原生入口在 Codex 完全退出后冷启动，可能仍需使用主题快捷方式。'
+} finally {
+    if ($hasInstallMutex) { $installMutex.ReleaseMutex() }
+    $installMutex.Dispose()
+}

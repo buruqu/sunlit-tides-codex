@@ -126,10 +126,34 @@ function createFusionPalette({ document, initialState, mode, title, companionsEn
   range(motion, '气泡数量', 'common', 'bubbleCount', 5, 40);
   range(motion, '气泡速度', 'common', 'bubbleSpeed', 30, 200, '%');
   check(motion, '减少动效', 'common', 'reduceMotion');
+  const startup = group('启动动画');
+  const startupLabel = element('label', 'check');
+  const startupInput = element('input'); startupInput.type = 'checkbox'; startupInput.disabled = true;
+  startupLabel.append(element('span', '', '以后启动 Codex 时播放龙娘动画'), startupInput);
+  const startupHelp = element('p', 'note', '需要通过晴光与泡影启动器连接 Codex 后设置启动动画。');
+  startup.append(startupLabel, element('p', 'note', '正常启动时自动播放，可随时按 Esc 跳过。'), startupHelp);
+  const startupKey = 'sunlit-tides.startup.enabled';
+  function saveStartup(value) {
+    try { win.localStorage.setItem(startupKey, String(value)); } catch (_) { /* Native preference remains available if browser storage is blocked. */ }
+  }
+  function syncStartup(value) {
+    const available = value?.available === true && typeof value.enabled === 'boolean';
+    startupInput.disabled = !available;
+    startupHelp.hidden = available;
+    if (available) { startupInput.checked = value.enabled; saveStartup(value.enabled); }
+  }
+  try { startupInput.checked = win.localStorage.getItem(startupKey) === 'true'; } catch (_) { /* No browser preference yet. */ }
+  syncStartup(win?.__sunlitTidesStartup);
+  if (win) listen(win, 'sunlit-tides:startup-state', event => syncStartup(event.detail));
+  listen(startupInput, 'change', () => {
+    if (startupInput.disabled) return;
+    saveStartup(startupInput.checked);
+    win.dispatchEvent(new win.CustomEvent('sunlit-tides:startup-change', { detail: { enabled: startupInput.checked } }));
+  });
   const layout = group('避让与专注');
   check(layout, '避让右侧面板', 'common', 'avoidPanels');
   check(layout, '专注模式', 'common', 'focusMode');
-  panel.appendChild(element('p', 'note', '亮、暗参数跟随 Codex 当前外观。六图替换与裁切仍在 Tessalume 图片工作台操作。参数保存到此 Codex 配置，导出可备份。'));
+  panel.appendChild(element('p', 'note', '果园亮色与暗潮夜景跟随 Codex 当前外观，亮暗参数分别保存。调色板参数可导出备份；启动动画由启动器单独保存。'));
   const actions = element('div', 'actions');
   const file = element('input'); file.type = 'file'; file.accept = '.json,application/json'; file.hidden = true;
   const status = element('p', 'status'); status.setAttribute('role', 'status'); status.setAttribute('aria-live', 'polite');

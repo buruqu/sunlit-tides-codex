@@ -2,7 +2,9 @@ param([string]$Dotnet = 'dotnet')
 $ErrorActionPreference = 'Stop'
 $projectRoot = Split-Path $PSScriptRoot -Parent
 $releaseRoot = Join-Path $projectRoot 'release'
-$finalRoot = Join-Path $releaseRoot 'SunlitTidesCodex-1.0.0-win-x64'
+$version = (Get-Content -LiteralPath (Join-Path $projectRoot 'package.json') -Raw -Encoding UTF8 | ConvertFrom-Json).version
+if ($version -notmatch '^\d+\.\d+\.\d+$') { throw 'Invalid release version' }
+$finalRoot = Join-Path $releaseRoot ('SunlitTidesCodex-' + $version + '-win-x64')
 $packageRoot = Join-Path $releaseRoot ('SunlitTidesCodex.stage.' + [Guid]::NewGuid().ToString('N'))
 function Assert-ReleasePath([string]$candidate) {
     $resolved = [IO.Path]::GetFullPath($candidate)
@@ -21,7 +23,13 @@ try {
     if ($LASTEXITCODE -ne 0) { throw 'Host publish failed' }
     New-Item -ItemType Directory -Path (Join-Path $appRoot 'theme') -Force | Out-Null
     Copy-Item -LiteralPath 'dist/theme/payload.js','dist/theme/remove.js','dist/theme/manifest.json' -Destination (Join-Path $appRoot 'theme') -Force
-    Copy-Item -LiteralPath 'installer' -Destination $packageRoot -Recurse -Force
+    New-Item -ItemType Directory -Path (Join-Path $appRoot 'media') -Force | Out-Null
+    Copy-Item -LiteralPath 'media/startup.mp4','media/MEDIA_NOTICE.md' -Destination (Join-Path $appRoot 'media') -Force
+    $installerRoot = Join-Path $packageRoot 'installer'
+    New-Item -ItemType Directory -Path $installerRoot -Force | Out-Null
+    foreach ($name in @('Common.ps1','Install.ps1','Restore.ps1','Uninstall.ps1','README.md')) {
+        Copy-Item -LiteralPath (Join-Path 'installer' $name) -Destination $installerRoot -Force
+    }
     Copy-Item -LiteralPath 'README.md','LICENSE','NOTICE.md' -Destination $packageRoot -Force
     Copy-Item -LiteralPath 'licenses','docs' -Destination $packageRoot -Recurse -Force
     foreach ($action in @('Install','Restore','Uninstall')) {

@@ -5,6 +5,20 @@ using System.Text;
 
 namespace SunlitTidesCodex;
 
+internal static class HostCommands
+{
+    internal static bool IsIpc(string command) => command is "status" or "restore" or "enable" or "launch" or "quit" or "preview-startup";
+    internal static bool TryParseCli(string command, out string request)
+    {
+        request = "";
+        if (command == "--self-test") return true;
+        if (command == "--startup") { request = "status"; return true; }
+        if (!command.StartsWith("--", StringComparison.Ordinal) || !IsIpc(command[2..])) return false;
+        request = command[2..];
+        return true;
+    }
+}
+
 internal static class SingleInstance
 {
     private static string Scope => Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(WindowsIdentity.GetCurrent().User?.Value ?? Environment.UserName)))[..24];
@@ -42,7 +56,7 @@ internal static class SingleInstance
                 var one = new byte[1];
                 while (request.Count <= 32 && await server.ReadAsync(one, timeout.Token) == 1 && one[0] != '\n') request.Add(one[0]);
                 var command = Encoding.UTF8.GetString(request.ToArray()).Trim();
-                var result = request.Count <= 32 && command is "status" or "restore" or "enable" or "launch" or "quit"
+                var result = request.Count <= 32 && HostCommands.IsIpc(command)
                     ? await handler(command) : "{\"ok\":false,\"error\":\"invalid-command\"}";
                 var bytes = Encoding.UTF8.GetBytes(result + "\n");
                 await server.WriteAsync(bytes, timeout.Token);

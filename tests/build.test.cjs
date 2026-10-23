@@ -8,7 +8,7 @@ test('self-contained payload has exactly the two requested scenes and valid asse
  const payload=read('dist/theme/payload.js');new vm.Script(payload);new vm.Script(read('dist/theme/remove.js'));
  assert.ok(!payload.includes('__TESSALUME_PAYLOAD_'));assert.ok(!payload.includes('D:/Apps/'));assert.ok(!payload.includes('C:/Users/'));
  assert.ok(!payload.includes('className = "sgk-gallery-host"'));assert.ok(!payload.includes('wrapper.remove();'));
- assert.equal(JSON.parse(read('dist/theme/manifest.json')).version,'1.0.0');
+ assert.equal(JSON.parse(read('dist/theme/manifest.json')).version,JSON.parse(read('package.json')).version);
 });
 test('restore script leaves a foreign runtime untouched',async()=>{
  let disposed=0;const win={__TESSALUME_RUNTIME__:{themeId:'foreign',dispose(){disposed++;}}};

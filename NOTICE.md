@@ -9,5 +9,6 @@
 - `duo-night.png`、西西透明立绘、果园闭眼帧与遮挡补底包含内置 imagegen 生成/编辑部分；原图、处理方法及提示词记录在 `docs/ASSETS.md`。果园人物图层以原图 RGB 和手工透明遮罩构成。
 - 字体使用系统已安装的 Noto Sans SC、Microsoft YaHei UI、Segoe UI 回退；不捆绑或下载字体。
 - Windows 自包含宿主捆绑 .NET / Windows Desktop 8.0.32 运行时，保留对应运行时包的 MIT 许可及第三方声明于 `licenses/DOTNET-*`、`licenses/WINDOWS-DESKTOP-LICENSE.txt`。
+- Dragon Codex Boot：https://github.com/yushua0808-cpu/dragon-codex-boot 。1.1.0 保留本机先前安装的 0.2.0 示例视频完整原字节，用于个人启动播放；媒体说明原样保存在 `media/MEDIA_NOTICE.md`，上游代码许可保存在 `licenses/DRAGON-CODEX-BOOT-MIT.txt`。启动宿主采用本项目实现的窗口检测与 WPF 播放，不运行上游快捷方式替换器。视频、音轨及角色不因代码的 MIT 许可而获得额外授权；本项目不声明拥有这些权利。
 
 安装器和托盘宿主是本项目代码；其行为不涉及 Codex 账户登录、订阅或聊天内容收集。所有调试连接限制到经过当前 Codex 包路径和端口所属进程验证的 loopback 端点。没有分析上报或外部主题更新服务。

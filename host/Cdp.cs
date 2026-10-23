@@ -1,5 +1,6 @@
 using System.Collections.Concurrent;
 using System.Net;
+using System.Net.Http;
 using System.Net.WebSockets;
 using System.Text;
 using System.Text.Json;
@@ -84,6 +85,7 @@ internal sealed class CdpConnection : IAsyncDisposable
     private int _nextId;
     internal bool Ready => _socket.State == WebSocketState.Open && _reader is { IsCompleted: false };
     internal event Action? Navigated;
+    internal event Action<string>? StartupSettingChanged;
 
     internal async Task ConnectAsync(Uri socket, CancellationToken token)
     {
@@ -148,7 +150,14 @@ internal sealed class CdpConnection : IAsyncDisposable
                 using var document = JsonDocument.Parse(message.ToArray());
                 var root = document.RootElement;
                 if (root.TryGetProperty("id", out var id) && _pending.TryGetValue(id.GetInt32(), out var pending)) pending.TrySetResult(root.Clone());
-                else if (root.TryGetProperty("method", out var method) && method.GetString() is "Page.frameNavigated" or "Page.domContentEventFired" or "Page.loadEventFired") Navigated?.Invoke();
+                else if (root.TryGetProperty("method", out var method))
+                {
+                    if (method.GetString() is "Page.frameNavigated" or "Page.domContentEventFired" or "Page.loadEventFired") Navigated?.Invoke();
+                    else if (method.GetString() == "Runtime.bindingCalled" && root.TryGetProperty("params", out var parameters)
+                        && parameters.TryGetProperty("name", out var name) && name.GetString() == "sunlitTidesStartupChanged"
+                        && parameters.TryGetProperty("payload", out var payload) && payload.ValueKind == JsonValueKind.String
+                        && payload.GetString() is { Length: <= 100 } value) StartupSettingChanged?.Invoke(value);
+                }
             }
         }
         catch (Exception) { /* Protocol data and errors may contain user content; do not log them. */ }

@@ -142,6 +142,61 @@ async function main() {
       assert.equal((await evaluateFile('/remove.js')).removed, false);
       assert.equal(await page.evaluate(() => localStorage.getItem('other.theme.preference')), 'untouched');
     });
+    await check('native startup preference supports absent/late bridge, changes, reset isolation and listener cleanup', async () => {
+      const startupContext = await browser.newContext();
+      const startupPage = await startupContext.newPage();
+      startupPage.on('pageerror', error => errors.push(error.message));
+      try {
+        await startupPage.goto(`http://127.0.0.1:${server.address().port}`);
+        await startupPage.evaluate(() => {
+          window.startupChanges = [];
+          window.addEventListener('sunlit-tides:startup-change', event => startupChanges.push(event.detail));
+          // A theme must emit the event only; the native host owns calling this binding.
+          window.sunlitTidesStartupChanged = () => { throw new Error('Palette directly called native binding'); };
+        });
+        await startupPage.evaluate(payload => (0, eval)(payload), payload);
+        const input = startupPage.getByRole('checkbox', { name: '以后启动 Codex 时播放龙娘动画', exact: true });
+        await startupPage.getByRole('button', { name: '调色板', exact: true }).click();
+        await startupPage.getByText('启动动画', { exact: true }).click();
+        assert.equal(await input.isDisabled(), true);
+        assert.equal(await startupPage.getByText('需要通过晴光与泡影启动器连接 Codex 后设置启动动画。', { exact: true }).isVisible(), true);
+        await startupPage.evaluate(() => {
+          window.__sunlitTidesStartup = { enabled: true, available: true };
+          window.dispatchEvent(new CustomEvent('sunlit-tides:startup-state', { detail: __sunlitTidesStartup }));
+        });
+        assert.equal(await input.isEnabled(), true); assert.equal(await input.isChecked(), true);
+        assert.equal(await startupPage.getByText('需要通过晴光与泡影启动器连接 Codex 后设置启动动画。', { exact: true }).isVisible(), false);
+        await input.uncheck();
+        assert.equal(await startupPage.evaluate(() => localStorage.getItem('sunlit-tides.startup.enabled')), 'false');
+        await input.check();
+        assert.equal(await startupPage.evaluate(() => localStorage.getItem('sunlit-tides.startup.enabled')), 'true');
+        assert.deepEqual(await startupPage.evaluate(() => startupChanges), [{ enabled: false }, { enabled: true }]);
+        await startupPage.getByRole('button', { name: '恢复默认', exact: true }).click();
+        assert.equal(await input.isChecked(), true);
+        assert.equal(await startupPage.evaluate(() => localStorage.getItem('sunlit-tides.startup.enabled')), 'true');
+        await startupPage.evaluate(() => {
+          window.retainedStartupInput = [...document.querySelector('[data-fusion-ui="palette"]').shadowRoot.querySelectorAll('label')].find(node => node.textContent === '以后启动 Codex 时播放龙娘动画').querySelector('input');
+          window.__sunlitTidesStartup = { enabled: false, available: true };
+        });
+        await startupPage.evaluate(remove => (0, eval)(remove), remove);
+        await startupPage.evaluate(() => {
+          window.dispatchEvent(new CustomEvent('sunlit-tides:startup-state', { detail: __sunlitTidesStartup }));
+        });
+        assert.equal(await startupPage.evaluate(() => retainedStartupInput.checked), true);
+        await startupPage.evaluate(() => {
+          retainedStartupInput.checked = false;
+          retainedStartupInput.dispatchEvent(new Event('change', { bubbles: true }));
+        });
+        assert.equal(await startupPage.evaluate(() => startupChanges.length), 2);
+        assert.equal(await startupPage.evaluate(() => localStorage.getItem('sunlit-tides.startup.enabled')), 'true');
+        // Native state on a fresh attach overrides the stale browser mirror.
+        await startupPage.evaluate(payload => (0, eval)(payload), payload);
+        await startupPage.getByRole('button', { name: '调色板', exact: true }).click();
+        await startupPage.getByText('启动动画', { exact: true }).click();
+        assert.equal(await input.isChecked(), false); assert.equal(await input.isEnabled(), true);
+        assert.equal(await startupPage.evaluate(() => localStorage.getItem('sunlit-tides.startup.enabled')), 'false');
+      } finally { await startupContext.close(); }
+    });
     await check('browser reports no uncaught script errors', async () => assert.deepEqual(errors, []));
     await context.close();
   } finally {
