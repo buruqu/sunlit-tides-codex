@@ -53,8 +53,8 @@ html[data-tessalume-motion="reduced"] .sunlit-ambient-host { display:none!import
 .sunlit-ambient-xixi-emote>img {width:100%;height:100%;margin:0;border-radius:18%;filter:none;animation:none;}
 .sunlit-ambient-xixi-emote::after {content:none;}
 .sunlit-ambient-xixi-emote[data-sunlit-mode="dark"]>img {
-  /* Preserve the original GIF's opaque white matte as a small rounded sticker. */
-  background:#fff;box-shadow:0 2px 9px rgba(7,4,20,.22);
+  /* The original animated GIF already has alpha; leave its silhouette unobstructed. */
+  background:transparent;border-radius:0;box-shadow:none;
 }
 html.sgk-theme #tessalume-theme-root [data-fusion-card="secondary"][data-fusion-card-layout="stacked"] [data-theme-part="task-card-art"],
 html.sgk-theme #tessalume-theme-root [data-fusion-card="secondary"][data-fusion-card-layout="stacked"] [data-theme-part="dumpling-companion"] {

@@ -3,7 +3,7 @@ using System.Text.Json;
 namespace SunlitTidesCodex;
 
 internal sealed record Settings(bool Enabled = true, int? LastPort = null, bool StartupEnabled = true);
-internal sealed record Health(bool Running, bool Enabled, string State, int AttachedPages, int? Port, DateTimeOffset UpdatedAt, string Version = "1.1.1", bool StartupEnabled = true);
+internal sealed record Health(bool Running, bool Enabled, string State, int AttachedPages, int? Port, DateTimeOffset UpdatedAt, string Version = "1.1.2", bool StartupEnabled = true);
 
 internal sealed class StateStore
 {

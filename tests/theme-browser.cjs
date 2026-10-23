@@ -106,7 +106,7 @@ async function main() {
       await page.evaluate(() => fixture.setView('chat'));
       for (const mode of ['light', 'dark', 'light']) {
         await page.evaluate(mode => fixture.setMode(mode), mode); await page.waitForTimeout(450);
-        const expected = { portrait: dataUrl(mode === 'dark' ? 'task-left-dark' : 'task-left'), emote: dataUrl(mode === 'dark' ? 'sigrika-emote-dark' : 'sigrika-emote') };
+        const expected = { portrait: dataUrl(mode === 'dark' ? 'task-left-dark' : 'task-left'), right: 'data:image/webp;base64,' + source(mode === 'dark' ? 'task-right-primary-dark' : 'task-right-primary').toString('base64'), emote: dataUrl(mode === 'dark' ? 'sigrika-emote-dark' : 'sigrika-emote') };
         const actual = await page.evaluate(async expected => {
           const card = document.querySelector('[data-fusion-card="left"]'), art = card.querySelector('[data-theme-part="task-card-art"]');
           const emote = document.querySelector('[data-sunlit-companion="xixi-emote"]'), image = emote.querySelector('img');
@@ -116,7 +116,13 @@ async function main() {
           const url = getComputedStyle(art).backgroundImage.match(/^url\("(.*)"\)$/)?.[1];
           const blob = await (await fetch(url)).blob();
           const portrait = await new Promise(resolve => { const reader = new FileReader(); reader.onload = () => resolve(reader.result); reader.readAsDataURL(blob); });
+          const rightArt = document.querySelector('[data-fusion-card="primary"] [data-theme-part="task-card-art"]');
+          const rightUrl = getComputedStyle(rightArt).backgroundImage.match(/^url\("(.*)"\)$/)?.[1];
+          const rightBlob = await (await fetch(rightUrl)).blob();
+          const rightPortrait = await new Promise(resolve => { const reader = new FileReader(); reader.onload = () => resolve(reader.result); reader.readAsDataURL(rightBlob); });
           return { mode: document.documentElement.dataset.theme, portraitMatches: portrait === expected.portrait,
+            rightPortraitMatches: rightPortrait === expected.right,
+            emoteBackground: getComputedStyle(image).backgroundColor,
             emoteMatches: image.getAttribute('src') === expected.emote, emoteLoaded: image.complete && image.naturalWidth > 0,
             visible: getComputedStyle(card).display !== 'none' && !emote.hidden, contain: getComputedStyle(art).backgroundSize,
             overlaps: obstacles.some(box => intersects(r, box) || intersects(e, box)), card: { x: r.x, y: r.y, width: r.width, height: r.height },
@@ -124,6 +130,8 @@ async function main() {
         }, expected);
         evidence.xixiModes.push(actual);
         assert.equal(actual.portraitMatches, true, JSON.stringify(actual)); assert.equal(actual.emoteMatches, true, JSON.stringify(actual)); assert.equal(actual.emoteLoaded, true, JSON.stringify(actual));
+        assert.equal(actual.rightPortraitMatches, true);
+        assert.equal(actual.emoteBackground, 'rgba(0, 0, 0, 0)');
         assert.equal(actual.visible, true); assert.equal(actual.contain, 'contain'); assert.equal(actual.overlaps, false);
         if (mode === 'dark') await page.screenshot({ path: path.join(output, 'preview-dark-xixi.png') });
       }
@@ -145,6 +153,63 @@ async function main() {
       assert.equal(evidence.xixiPanel.panelWidth, 240); assert.deepEqual(evidence.xixiPanel.overlaps, []);
       await page.screenshot({ path: path.join(output, 'preview-dark-xixi-panel.png') });
       await page.evaluate(() => { document.getElementById('xixi-test-panel').remove(); fixture.setMode('light'); });
+    });
+    await check('night pair stays centered with original aspect and full coverage at 1280, 1600 and 1920 with or without a right dock', async () => {
+      evidence.nightFraming = [];
+      await page.evaluate(() => { fixture.setView('chat'); fixture.setMode('dark'); });
+      for (const width of [1280, 1600, 1920]) for (const dock of [false, true]) {
+        await page.setViewportSize({ width, height: 1000 });
+        await page.evaluate(dock => {
+          document.getElementById('framing-panel')?.remove();
+          if (dock) { const panel = document.createElement('aside'); panel.id = 'framing-panel'; panel.className = 'app-shell-right-panel'; panel.style.cssText = 'position:fixed;right:0;top:44px;bottom:0;width:240px;background:#201d30;z-index:30'; document.body.append(panel); }
+        }, dock);
+        await page.waitForTimeout(300);
+        const framing = await page.evaluate(() => {
+          const main = document.querySelector('main'), area = main.getBoundingClientRect(), css = getComputedStyle(main, '::before');
+          const canvasWidth = parseFloat(css.width), imageWidth = parseFloat(css.backgroundSize), imageHeight = imageWidth * 941 / 1672;
+          const offset = parseFloat(css.backgroundPositionX);
+          const panel = document.getElementById('framing-panel')?.getBoundingClientRect(), availableWidth = panel ? panel.left - area.left : area.width;
+          const oldWidth = Math.max(area.width, area.height * 1672 / 941), oldPairX = (area.width - oldWidth) * .7 + oldWidth * .66;
+          const pairX = offset + imageWidth * .66;
+          return { canvasWidth, imageWidth, imageHeight, offset, mainWidth: area.width, mainHeight: area.height, availableWidth, center: pairX / availableWidth, pairX, oldPairX };
+        });
+        assert.ok(Math.abs(framing.canvasWidth - (width - 240)) <= 1, JSON.stringify(framing));
+        assert.ok(framing.imageWidth >= framing.canvasWidth && framing.imageHeight >= framing.mainHeight - 1, JSON.stringify(framing));
+        assert.ok(framing.offset <= 0 && framing.offset + framing.imageWidth >= framing.canvasWidth - 1, JSON.stringify(framing));
+        assert.ok(framing.center >= .49 && framing.center <= (dock ? .66 : .57), JSON.stringify(framing));
+        assert.ok(framing.pairX < framing.oldPairX - 20, JSON.stringify(framing));
+        evidence.nightFraming.push({ width, dock, ...framing });
+        await page.screenshot({ path: path.join(output, `preview-night-centered-${width}${dock ? '-panel' : ''}.png`) });
+      }
+      await page.evaluate(() => { document.getElementById('framing-panel')?.remove(); fixture.setMode('light'); });
+      await page.setViewportSize({ width: 1600, height: 1000 });
+    });
+    await check('night framing ignores streamed message nodes, stays idle in light mode and disposes layout observers', async () => {
+      const probe = await context.newPage();
+      try {
+        await probe.goto(`http://127.0.0.1:${server.address().port}`);
+        await probe.evaluate(source => {
+          window.framingReads = 0;
+          window.resolveFusionLayout = () => { framingReads++; return { main: document.querySelector('main'), panels: [...document.querySelectorAll('.app-shell-right-panel')] }; };
+          (0, eval)(source);
+          mountSunlitGallery({ window, document, addCleanup() {} });
+        }, fs.readFileSync(path.join(root, 'theme/design/fixed-scenes.js'), 'utf8'));
+        await probe.waitForTimeout(120);
+        assert.equal(await probe.evaluate(() => framingReads), 0);
+        await probe.evaluate(() => fixture.setMode('dark')); await probe.waitForTimeout(150);
+        const before = await probe.evaluate(() => framingReads); assert.ok(before > 0);
+        await probe.evaluate(() => { for (let i = 0; i < 40; i++) { const p = document.createElement('p'); p.textContent = 'streamed text ' + i; document.querySelector('.assistant-text').append(p); } });
+        await probe.waitForTimeout(150); assert.equal(await probe.evaluate(() => framingReads), before);
+        await probe.evaluate(() => { const panel = document.createElement('aside'); panel.className = 'app-shell-right-panel'; panel.style.cssText = 'position:fixed;right:0;top:44px;bottom:0;width:240px'; document.body.append(panel); });
+        await probe.waitForTimeout(150); assert.ok(await probe.evaluate(() => framingReads) > before);
+        await probe.evaluate(() => fixture.setMode('light')); await probe.waitForTimeout(80);
+        const light = await probe.evaluate(() => framingReads);
+        await probe.setViewportSize({ width: 1400, height: 900 }); await probe.waitForTimeout(100);
+        assert.equal(await probe.evaluate(() => framingReads), light);
+        await probe.evaluate(() => { __SUNLIT_GALLERY__.dispose(); fixture.setMode('dark'); document.querySelector('.app-shell-right-panel').remove(); });
+        await probe.setViewportSize({ width: 1500, height: 950 }); await probe.waitForTimeout(100);
+        assert.equal(await probe.evaluate(() => framingReads), light);
+      } finally { await probe.close(); }
     });
     await check('native upward project menus remain hit-accessible and preserve keyboard focus at desktop and narrow widths', async () => {
       evidence.menus = [];
