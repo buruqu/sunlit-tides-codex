@@ -81,6 +81,72 @@ async function main() {
       const unchanged = await apply(); assert.equal(unchanged.unchanged, true);
       assert.equal(await page.locator('#tessalume-theme-root').count(), 1);
     });
+    await check('panorama layout is shared across modes, preserves preferences and native geometry, and restores independent sidebar', async () => {
+      await page.evaluate(() => { fixture.setView('chat'); fixture.setMode('light'); });
+      const initial = await page.evaluate(() => __SIGRIKA_DENIA_FUSION__.getSettings());
+      assert.equal(initial.common.layout, 'panorama');
+      await page.getByRole('button', { name: '调色板', exact: true }).click();
+      await page.getByText('背景', { exact: true }).click();
+      const selector = page.getByRole('combobox', { name: '背景布局（亮暗通用）', exact: true });
+      const geometry = () => page.evaluate(() => {
+        const main = document.querySelector('main'), sidebar = document.querySelector('aside.app-shell-left-panel');
+        const nativeHeader = document.querySelector('.chat-header').getBoundingClientRect();
+        const r = main.getBoundingClientRect(), canvas = main.querySelector('canvas:not([hidden])');
+        const b = document.querySelector('[data-fusion-bubbles]').getBoundingClientRect();
+        return { main: { left:r.left,right:r.right,width:r.width }, sidebarImage:getComputedStyle(sidebar,'::after').display,
+          header:{ left:nativeHeader.left,width:nativeHeader.width }, rightArtScale:getComputedStyle(document.querySelector('[data-fusion-card=primary] [data-theme-part=task-card-art]')).scale, pseudo:{ left:getComputedStyle(main,'::before').left,width:parseFloat(getComputedStyle(main,'::before').width),veilWidth:parseFloat(getComputedStyle(main,'::after').width) },
+          canvas:canvas ? {left:canvas.getBoundingClientRect().left,width:canvas.getBoundingClientRect().width}:null,bubbles:{left:b.left,width:b.width} };
+      });
+      evidence.panorama = [];
+      for (const mode of ['light','dark']) {
+        await page.evaluate(mode => fixture.setMode(mode), mode); await page.waitForTimeout(350);
+        await selector.selectOption('panorama'); await page.waitForTimeout(350);
+        const wide = await geometry();
+        assert.equal(wide.main.left, 0); assert.equal(wide.sidebarImage, 'none'); assert.equal(wide.rightArtScale,'-1 1');
+        assert.equal(wide.pseudo.left, '0px'); assert.equal(wide.pseudo.width, wide.main.width); assert.equal(wide.pseudo.veilWidth,wide.main.width);
+        if(wide.canvas) { assert.equal(wide.canvas.left,0); assert.equal(wide.canvas.width,wide.main.width); }
+        assert.equal(wide.bubbles.left,0); assert.equal(wide.bubbles.width,wide.main.width);
+        await page.screenshot({path:path.join(output,'panorama-'+mode+'.png')});
+        await selector.selectOption('sidebar'); await page.waitForTimeout(350);
+        const separate = await geometry();
+        assert.equal(separate.main.left,240); assert.equal(separate.sidebarImage,'block'); assert.equal(separate.rightArtScale,'none'); assert.deepEqual(separate.header,wide.header);
+        assert.deepEqual((await page.evaluate(() => __SIGRIKA_DENIA_FUSION__.getSettings())).modes,initial.modes);
+        await page.screenshot({path:path.join(output,'sidebar-'+mode+'.png')});
+        evidence.panorama.push({mode,wide,separate});
+      }
+      await page.waitForTimeout(300);
+      await evaluateFile('/remove.js'); await apply();
+      assert.equal((await page.evaluate(() => __SIGRIKA_DENIA_FUSION__.getSettings())).common.layout,'sidebar');
+      await page.getByRole('button', { name: '调色板', exact: true }).click();
+      await page.getByText('背景', { exact: true }).click();
+      await selector.selectOption('panorama'); await page.waitForTimeout(300);
+      await page.evaluate(() => fixture.setMode('light'));
+      await page.getByText('背景', { exact: true }).click();
+      await page.getByRole('button', { name: '调色板', exact: true }).click();
+    });
+    await check('panorama preserves 800px reading at 1280 and paints native content above background characters', async () => {
+      await page.setViewportSize({width:1280,height:1000}); await page.evaluate(() => fixture.setView('chat')); await page.waitForTimeout(350);
+      for (const mode of ['light','dark']) {
+        await page.evaluate(mode=>fixture.setMode(mode),mode);await page.waitForTimeout(250);
+        const actual=await page.evaluate(()=>{
+          const paper=document.querySelector('.thread-content-max-width'),r=paper.getBoundingClientRect(),root=document.getElementById('tessalume-theme-root'),main=paper.closest('main');
+          const branch=[...main.children].find(node=>node.contains(paper)),ambient=document.querySelector('[data-sunlit-ambient]');
+          const portrait=document.querySelector('[data-fusion-card="primary"]').getBoundingClientRect(),gif=document.querySelector('[data-sunlit-companion="denia"]').getBoundingClientRect(),composer=document.querySelector('#chat-view .composer-surface-chrome').getBoundingClientRect();
+          const baselineWouldOverlapComposer=gif.left<composer.right&&gif.right>composer.left&&portrait.bottom>composer.top&&portrait.bottom-gif.height<composer.bottom;
+          const pair={baselineWouldOverlapComposer,baselineDifference:Math.abs(gif.bottom-portrait.bottom),composerGap:composer.top-gif.bottom};
+          const order=document.elementsFromPoint(r.right-12,innerHeight-80).map(node=>node.id||node.className);
+          return {width:r.width,left:r.left,right:r.right,rootOwned:root.parentElement===main,ambientOwned:ambient.parentElement===main,
+            nativeZ:Number(getComputedStyle(branch).zIndex),stageZ:Number(getComputedStyle(root.querySelector('[data-theme-stage]')).zIndex),ambientZ:Number(getComputedStyle(ambient).zIndex),pair,order};
+        });
+        assert.ok(actual.width>=790,JSON.stringify(actual));assert.ok(actual.left>=240&&actual.right<=1280);assert.equal(actual.rootOwned,true);assert.equal(actual.ambientOwned,true);
+        assert.ok(actual.nativeZ>actual.stageZ&&actual.nativeZ>actual.ambientZ,JSON.stringify(actual));
+        assert.equal(actual.pair.baselineWouldOverlapComposer,true);assert.ok(actual.pair.composerGap>=12,JSON.stringify(actual.pair));
+        await page.getByRole('textbox',{name:'聊天输入',exact:true}).fill('背景人物之上的输入验证');await page.getByRole('textbox',{name:'聊天输入',exact:true}).fill('');
+        await page.screenshot({path:path.join(output,'panorama-reading-1280-'+mode+'.png')});
+        (evidence.panoramaReading||=[]).push({mode,...actual});
+      }
+      await page.setViewportSize({width:1600,height:1000});await page.evaluate(()=>fixture.setMode('light'));
+    });
     await check('actual packaged scenes paint orchard/light and night/dark and produce synthetic previews', async () => {
       evidence.paint = [];
       await page.evaluate(() => fixture.setView('chat'));
@@ -119,6 +185,8 @@ async function main() {
           const card = document.querySelector('[data-fusion-card="left"]'), art = card.querySelector('[data-theme-part="task-card-art"]');
           const emote = document.querySelector('[data-sunlit-companion="xixi-emote"]'), image = emote.querySelector('img');
           const r = card.getBoundingClientRect(), e = emote.getBoundingClientRect();
+          const rightCard = document.querySelector('[data-fusion-card="primary"]'), rightGif = document.querySelector('[data-sunlit-companion="denia"]');
+          const rightRect = rightCard.getBoundingClientRect(), rightGifRect = rightGif.getBoundingClientRect(), composerRect=document.querySelector('#chat-view .composer-surface-chrome').getBoundingClientRect();
           const intersects = (a, b) => a.left < b.right && a.right > b.left && a.top < b.bottom && a.bottom > b.top;
           const obstacles = [...document.querySelectorAll('.thread-content-max-width,.composer-surface-chrome,.app-shell-right-panel')].filter(node => !node.closest('[hidden]')).map(node => node.getBoundingClientRect());
           const url = getComputedStyle(art).backgroundImage.match(/^url\("(.*)"\)$/)?.[1];
@@ -130,6 +198,11 @@ async function main() {
           const rightPortrait = await new Promise(resolve => { const reader = new FileReader(); reader.onload = () => resolve(reader.result); reader.readAsDataURL(rightBlob); });
           return { mode: document.documentElement.dataset.theme, portraitMatches: portrait === expected.portrait,
             rightPortraitMatches: rightPortrait === expected.right,
+            rightPair: { visible: rightCard.dataset.fusionHidden === 'false' && !rightGif.hidden,
+              portraitHeight: rightRect.height, leftOfPortrait: rightGifRect.right <= rightRect.left - 8,
+              portraitScale:getComputedStyle(rightArt).scale, gifScale:getComputedStyle(rightGif.querySelector('img')).scale,
+              baselineWouldOverlapComposer:rightGifRect.left<composerRect.right&&rightGifRect.right>composerRect.left&&rightRect.bottom>composerRect.top&&rightRect.bottom-rightGifRect.height<composerRect.bottom,
+              composerGap:composerRect.top-rightGifRect.bottom,baselineDifference: Math.abs(rightGifRect.bottom - rightRect.bottom), safeRight: rightRect.right <= innerWidth - 16 },
             emoteBackground: getComputedStyle(image).backgroundColor,
             emoteMatches: image.getAttribute('src') === expected.emote, emoteLoaded: image.complete && image.naturalWidth > 0,
             visible: getComputedStyle(card).display !== 'none' && !emote.hidden, contain: getComputedStyle(art).backgroundSize,
@@ -139,6 +212,13 @@ async function main() {
         evidence.xixiModes.push(actual);
         assert.equal(actual.portraitMatches, true, JSON.stringify(actual)); assert.equal(actual.emoteMatches, true, JSON.stringify(actual)); assert.equal(actual.emoteLoaded, true, JSON.stringify(actual));
         assert.equal(actual.rightPortraitMatches, true);
+        assert.equal(actual.rightPair.visible, true, JSON.stringify(actual.rightPair));
+        assert.equal(actual.rightPair.portraitHeight, 344);
+        assert.equal(actual.rightPair.leftOfPortrait, true);
+        assert.equal(actual.rightPair.portraitScale,'-1 1'); assert.equal(actual.rightPair.gifScale,'none');
+        assert.equal(actual.card.x,40); assert.equal(actual.sticker.x,actual.card.x+actual.card.width+14);
+        if(actual.rightPair.baselineWouldOverlapComposer)assert.ok(actual.rightPair.composerGap>=12);else assert.ok(actual.rightPair.baselineDifference<=8);
+        assert.equal(actual.rightPair.safeRight, true);
         assert.equal(actual.emoteBackground, 'rgba(0, 0, 0, 0)');
         assert.equal(actual.visible, true); assert.equal(actual.contain, 'contain'); assert.equal(actual.overlaps, false);
         if (mode === 'dark') await page.screenshot({ path: path.join(output, 'preview-dark-xixi.png') });
@@ -185,7 +265,7 @@ async function main() {
           return { canvasWidth, imageWidth, imageHeight, offset, positionY: css.backgroundPositionY,
             mainWidth: area.width, mainHeight: area.height, availableWidth, center: pairX / availableWidth, faces };
         });
-        assert.ok(Math.abs(framing.canvasWidth - (width - 240)) <= 1, JSON.stringify(framing));
+        assert.ok(Math.abs(framing.canvasWidth - width) <= 1, JSON.stringify(framing));
         assert.ok(framing.imageWidth >= framing.canvasWidth && framing.imageHeight >= framing.mainHeight - 1, JSON.stringify(framing));
         assert.ok(framing.offset <= 0 && framing.offset + framing.imageWidth >= framing.canvasWidth - 1, JSON.stringify(framing));
         assert.ok(framing.center >= .49 && framing.center <= (dock ? .66 : .56), JSON.stringify(framing));

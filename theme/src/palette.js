@@ -13,7 +13,7 @@ function createFusionPalette({ document, initialState, mode, title, companionsEn
   const style = document.createElement('style');
   style.textContent = `
     :host{font:13px/1.5 system-ui,"Microsoft YaHei",sans-serif;color:#293245;color-scheme:light}
-    *{box-sizing:border-box}button,input{font:inherit}button{cursor:pointer}
+    *{box-sizing:border-box}button,input,select{font:inherit}button{cursor:pointer}
     button:focus-visible,input:focus-visible,summary:focus-visible{outline:2px solid #628ce8;outline-offset:3px}
     .toggle{position:absolute;right:12px;top:12px;border:1px solid #d3d9e7;border-radius:20px;padding:7px 13px;background:#fff9;backdrop-filter:blur(16px);color:inherit;pointer-events:auto;box-shadow:0 3px 12px #16223618}
     .panel{position:absolute;right:12px;top:54px;width:min(340px,calc(100% - 24px));max-height:min(600px,calc(100% - 66px));overflow:auto;overscroll-behavior:contain;pointer-events:auto;border:1px solid #d3d9e7;border-radius:16px;padding:16px;background:#f8fafdf5;box-shadow:0 10px 40px #17223730;backdrop-filter:blur(20px)}
@@ -112,6 +112,16 @@ function createFusionPalette({ document, initialState, mode, title, companionsEn
     }
   }
   const background = group('背景');
+  const layoutLabel = element('label', 'control', '背景布局（亮暗通用）');
+  const layoutSelect = element('select');
+  layoutSelect.setAttribute('aria-label', '背景布局（亮暗通用）');
+  layoutSelect.style.cssText = 'display:block;width:100%;margin-top:7px;padding:7px;border:1px solid #8997b460;border-radius:8px;background:transparent;color:inherit';
+  for (const [value, label] of [['panorama', '背景贯穿'], ['sidebar', '独立侧栏']]) {
+    const option = element('option', '', label); option.value = value; layoutSelect.append(option);
+  }
+  layoutLabel.append(layoutSelect); background.append(layoutLabel);
+  controls.push(() => { layoutSelect.value = state.common.layout; });
+  listen(layoutSelect, 'change', () => change('common', 'layout', null, layoutSelect.value));
   const galleryActions = element('div', 'actions');
   const galleryButton = element('button', '', '选择背景');
   galleryButton.type = 'button';
@@ -121,18 +131,18 @@ function createFusionPalette({ document, initialState, mode, title, companionsEn
   galleryActions.append(galleryButton);
   background.append(galleryActions, element('p', 'note', '果园午后为亮色默认，夜色相依为暗色默认；相册选择按亮暗模式分别保存。'));
   range(background, '背景强度', 'mode', 'backgroundStrength', 0, 100, '%');
-  if (sidebarEnabled) check(background, '左侧栏人物背景', 'common', 'sidebarArt');
+  if (sidebarEnabled) check(background, '独立侧栏人物背景', 'common', 'sidebarArt');
   if (sidebarEnabled) check(background, '正文与导航渐变字', 'common', 'gradientText');
   const motion = group('动效');
   if (companionsEnabled) check(motion, '动态 Q 版伙伴（总开关）', 'common', 'companions');
-  if (xixiEmoteEnabled) check(motion, '西西立绘上方表情', 'common', 'sidebarEmote');
+  if (xixiEmoteEnabled) check(motion, '西西动态表情', 'common', 'sidebarEmote');
   if (sceneEffectsEnabled) check(motion, '场景光影与氛围', 'common', 'sceneEffects');
   if (sceneEffectsEnabled) check(motion, '背景动态（总开关）', 'common', 'wallpaperMotion');
   if (sceneEffectsEnabled) check(motion, '主背景人物眨眼', 'common', 'livingScene');
   if (sceneEffectsEnabled) check(motion, '主背景头发与衣摆摆动', 'common', 'layeredScene');
-  check(motion, sceneEffectsEnabled ? '漂浮粒子 / 气泡' : '气泡', 'common', 'bubbles');
-  range(motion, '气泡数量', 'common', 'bubbleCount', 5, 40);
-  range(motion, '气泡速度', 'common', 'bubbleSpeed', 30, 200, '%');
+  check(motion, '场景粒子（果园落叶 / 其他原有特效）', 'common', 'bubbles');
+  range(motion, '粒子数量', 'common', 'bubbleCount', 5, 40);
+  range(motion, '粒子速度', 'common', 'bubbleSpeed', 30, 200, '%');
   check(motion, '减少动效', 'common', 'reduceMotion');
   const startup = group('启动动画');
   const startupLabel = element('label', 'check');

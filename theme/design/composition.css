@@ -74,3 +74,62 @@ html.sgk-theme .sgk-home-title {
   backdrop-filter:none!important;
 }
 html.sgk-theme .sgk-identity { backdrop-filter:none!important; }
+
+/* One scene owns the entire navigation + reading plane. Extend the native
+   surface itself so both static art and existing canvas render at full width;
+   padding preserves native transcript, title and composer coordinates. */
+html.sgk-theme.tessalume-theme-active[data-fusion-layout="panorama"] main[data-fusion-panorama-main="true"] {
+  width:calc(100% + var(--fusion-panorama-inset,0px))!important;
+  max-width:none!important;
+  margin-left:calc(-1 * var(--fusion-panorama-inset,0px))!important;
+  padding-left:var(--fusion-panorama-inset,0px)!important;
+  box-sizing:border-box!important;
+}
+html.sgk-theme.tessalume-theme-active[data-fusion-layout="panorama"] [data-fusion-panorama-carrier="true"] {
+  overflow:visible!important;
+}
+/* Background and foreground decorations have the same visible image
+   contribution after the reading veil. Keep native controls fully opaque. */
+html.sgk-theme.tessalume-theme-active[data-fusion-layout="panorama"] {
+  --sunlit-panorama-art-opacity:calc(var(--fusion-background-strength,1) * (1 - clamp(var(--sgk-reading-veil-min,.60),var(--fusion-message-opacity,.60),.82)));
+}
+html.sgk-theme.tessalume-theme-active[data-fusion-layout="panorama"] #tessalume-theme-root [data-fusion-card][data-fusion-hidden="false"],
+html.sgk-theme.tessalume-theme-active[data-fusion-layout="panorama"] .sunlit-ambient-host {
+  opacity:var(--sunlit-panorama-art-opacity)!important;
+}
+html.sgk-theme.tessalume-theme-active[data-fusion-layout="panorama"] #tessalume-theme-root .sgk-task-card [data-theme-part="task-card-art"],
+html.sgk-theme.tessalume-theme-active[data-fusion-layout="panorama"] .sunlit-ambient-companion>img {
+  filter:none!important;
+}
+
+/* Canonical compatibility framing normally restricts these slots to chat.
+   Panorama explicitly owns the full extended main, including its shared veil. */
+html.sgk-theme.tessalume-theme-active[data-fusion-layout="panorama"].tessalume-is-task main[data-tessalume-surface="main"]::before,
+html.sgk-theme.tessalume-theme-active[data-fusion-layout="panorama"].tessalume-is-task main[data-tessalume-surface="main"]::after {
+  left:0!important;right:0!important;width:100%!important;
+}
+/* Home retains its authored title collage over the same quiet full-width scene. */
+html.sgk-theme.tessalume-theme-active[data-fusion-layout="panorama"].tessalume-is-home main[data-fusion-panorama-main="true"] {
+  isolation:isolate;
+}
+html.sgk-theme.tessalume-theme-active[data-fusion-layout="panorama"].tessalume-is-home main[data-fusion-panorama-main="true"]::before,
+html.sgk-theme.tessalume-theme-active[data-fusion-layout="panorama"].tessalume-is-home main[data-fusion-panorama-main="true"]::after {
+  content:"";position:absolute;inset:0;pointer-events:none;
+}
+html.sgk-theme.tessalume-theme-active[data-fusion-layout="panorama"].tessalume-is-home main[data-fusion-panorama-main="true"]::before {
+  z-index:-2;background:var(--sgk-scene-image) var(--sgk-scene-position,center) / cover no-repeat;
+  opacity:var(--fusion-background-strength,1);
+}
+html.sgk-theme.tessalume-theme-active[data-fusion-layout="panorama"].tessalume-is-home main[data-fusion-panorama-main="true"]::after {
+  z-index:-1;background:rgb(var(--sgk-reading-veil-rgb) / var(--sgk-reading-veil));
+}
+
+/* Panorama decorations belong to the active native main. Its own content
+   branches paint above the existing fixed artwork stage and GIF host. */
+html.sgk-theme.tessalume-theme-active[data-fusion-layout="panorama"] main>[data-fusion-panorama-content="static"] {position:relative!important;}
+html.sgk-theme.tessalume-theme-active[data-fusion-layout="panorama"] main>[data-fusion-panorama-content]:not([data-fusion-panorama-content="false"]) {z-index:20!important;}
+
+/* Panorama mirrors only Yaya's standee; her animated companion retains its source direction. */
+html.sgk-theme.tessalume-theme-active[data-fusion-layout="panorama"] #tessalume-theme-root .sgk-task-card-primary [data-theme-part="task-card-art"] {
+  scale:-1 1!important;
+}

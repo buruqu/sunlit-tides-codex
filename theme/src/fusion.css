@@ -113,6 +113,29 @@ html[data-fusion-active="true"][data-fusion-reduced-motion="true"] #tessalume-th
   85% { opacity: .4; }
   100% { transform: translate3d(var(--bubble-drift), calc(-1 * var(--fusion-bubble-travel, 1100px)), 0); opacity: 0; }
 }
+/* Orchard alone has falling leaves. Its parent receives the background effective opacity once. */
+html[data-sgk-scene="orchard"] [data-fusion-bubbles] > i {
+  position:absolute;display:block;left:var(--bubble-x);
+  width:var(--bubble-size);height:calc(var(--bubble-size) * .56);
+  top:-60px;bottom:auto;corner-shape:round;border-radius:4% 90% 5% 90%;
+  border:1px solid hsl(var(--leaf-hue,112) 44% 25% / .75);
+  background:linear-gradient(34deg,transparent 46%,hsl(78 55% 80% / .85) 48%,hsl(78 55% 80% / .85) 51%,transparent 53%),linear-gradient(145deg,hsl(var(--leaf-hue,112) 52% calc(var(--leaf-light,43%) + 14%)),hsl(var(--leaf-hue,112) 47% var(--leaf-light,43%)) 48%,hsl(var(--leaf-hue,112) 49% 26%));
+  box-shadow:inset 0 1px 2px hsl(80 70% 90% / .34),0 2px 3px #18351c18;
+  transform-origin:50% 50%;pointer-events:none!important;
+  opacity:1;
+  animation:fusion-leaf-fall var(--bubble-duration) linear var(--bubble-delay) infinite;
+}
+html[data-sgk-scene="orchard"] [data-fusion-bubbles] > i::before {content:"";position:absolute;inset:12% 10%;border-radius:inherit;background:repeating-linear-gradient(145deg,transparent 0 19%,hsl(78 65% 83% / .5) 20% 22%,transparent 23% 36%);clip-path:polygon(0 0,100% 55%,100% 100%,0 45%);pointer-events:none}
+html[data-sgk-scene="orchard"] [data-fusion-bubbles] > i::after {content:none}
+@keyframes fusion-leaf-fall {
+  0% {transform:translate3d(0,0,0) rotate(-24deg) scaleX(.86)}
+  10% {}
+  24% {transform:translate3d(calc(var(--bubble-drift) * .85),calc(var(--fusion-bubble-travel,1100px) * .24),0) rotate(18deg) scaleX(.68)}
+  47% {transform:translate3d(calc(var(--bubble-drift) * .15),calc(var(--fusion-bubble-travel,1100px) * .47),0) rotate(-35deg) scaleX(1)}
+  70% {transform:translate3d(var(--bubble-drift),calc(var(--fusion-bubble-travel,1100px) * .70),0) rotate(30deg) scaleX(.72)}
+  90% {transform:translate3d(calc(var(--bubble-drift) * .3),calc(var(--fusion-bubble-travel,1100px) * .9),0) rotate(-12deg) scaleX(.93)}
+  100% {transform:translate3d(calc(var(--bubble-drift) * .7),var(--fusion-bubble-travel,1100px),0) rotate(42deg) scaleX(.8)}
+}
 @media (prefers-reduced-motion: reduce) {
   [data-fusion-bubbles] { display: none; }
 }

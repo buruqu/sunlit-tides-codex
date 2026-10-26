@@ -1,0 +1,15 @@
+{
+  "id": "sunlit-tides",
+  "name": "晴光与泡影",
+  "nameEn": "Sunlit Tides",
+  "author": "buruqu",
+  "tagline": "果园午后 · 夜色相依 · 西西泪光",
+  "description": "西格莉卡与达妮娅的双人动态主题，支持背景相册、风吹发束、叶片、眨眼、泪光与 120fps 绘制上限。",
+  "tags": ["anime", "wuthering-waves", "sigrika", "denia", "animated"],
+  "accent": "#a17cdf",
+  "bodyAttr": "data-dsh-sunlit",
+  "package": "@dsh-external/dsh-client-ui-skin-sunlit-tides",
+  "wiring": {"id": "ui-skin-sunlit-tides", "bundleWired": false},
+  "preview": {"light": "preview/light.png", "dark": "preview/dark.png"},
+  "order": 9
+}

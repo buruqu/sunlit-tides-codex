@@ -2,7 +2,7 @@
   "schemaVersion": 2,
   "id": "sunlit-tides.codex",
   "name": "晴光与泡影 · Codex 独立主题",
-  "version": "1.2.6",
+  "version": "1.2.10",
   "author": "Sunlit Tides contributors; upstream credits in NOTICE.md",
   "description": "果园午后 / 夜色相依，随 Codex 明暗模式切换的独立 Windows 主题。",
   "engineVersion": 2,
@@ -85,7 +85,7 @@
     "night-motion-blink": "assets/night-motion-blink.png"
   },
   "config": {
-    "designVersion": "1.2.6",
+    "designVersion": "1.2.10",
     "title": "晴光与泡影",
     "subtitle": "把期待写成晴光，让灵感泛起涟漪。",
     "memory": "晴光落在身旁，泡影轻轻回响。",
@@ -145,7 +145,48 @@
           ],
           "period": 5.4,
           "phase": 0,
-          "blink": false
+          "blink": false,
+          "meshStep": 8,
+          "motionTip": [
+            365,
+            717
+          ],
+          "breathRegions": [
+            {
+              "center": [
+                365,
+                717
+              ],
+              "radius": [
+                110,
+                98
+              ],
+              "amount": [
+                0.6,
+                -4.2
+              ],
+              "expansion": 2.2,
+              "period": 4.8,
+              "phase": 0
+            },
+            {
+              "center": [
+                515,
+                626
+              ],
+              "radius": [
+                47,
+                76
+              ],
+              "amount": [
+                -0.7,
+                -3.4
+              ],
+              "expansion": 0.8,
+              "period": 4.8,
+              "phase": 0
+            }
+          ]
         },
         {
           "asset": "orchard-layer-denia-body",
@@ -164,7 +205,48 @@
           ],
           "period": 7.1,
           "phase": 0,
-          "blink": true
+          "blink": true,
+          "meshStep": 8,
+          "motionTip": [
+            760,
+            676
+          ],
+          "breathRegions": [
+            {
+              "center": [
+                760,
+                676
+              ],
+              "radius": [
+                98,
+                126
+              ],
+              "amount": [
+                -0.55,
+                -4.4
+              ],
+              "expansion": 2.3,
+              "period": 5.4,
+              "phase": 0.38
+            },
+            {
+              "center": [
+                986,
+                550
+              ],
+              "radius": [
+                65,
+                83
+              ],
+              "amount": [
+                -0.35,
+                -2.8
+              ],
+              "expansion": 1.1,
+              "period": 5.4,
+              "phase": 0.38
+            }
+          ]
         },
         {
           "asset": "orchard-layer-xixi-braid-mid",
@@ -180,7 +262,7 @@
             720.6399999999999
           ],
           "radius": 133.54172681225893,
-          "rotation": 9.504,
+          "rotation": 10.64448,
           "translation": [
             0,
             0
@@ -244,7 +326,7 @@
             809.984
           ],
           "radius": 114.47740388391063,
-          "rotation": 11.088,
+          "rotation": 12.418560000000001,
           "translation": [
             0,
             0
@@ -298,7 +380,7 @@
             934.4
           ],
           "radius": 298.5937420643641,
-          "rotation": 6.336,
+          "rotation": 6.779520000000001,
           "translation": [
             0,
             0
@@ -330,7 +412,7 @@
             ]
           ],
           "anchorLock": 20,
-          "anchorFade": 44,
+          "anchorFade": 46,
           "motionTip": [
             1241,
             912
@@ -362,7 +444,7 @@
             1114.88
           ],
           "radius": 265.89377202183584,
-          "rotation": 7.128,
+          "rotation": 6.4152000000000005,
           "translation": [
             0,
             0
@@ -416,7 +498,7 @@
             1227.52
           ],
           "radius": 217.0585073200311,
-          "rotation": 7.92,
+          "rotation": 7.128,
           "translation": [
             0,
             0
@@ -470,7 +552,7 @@
             1049.6
           ],
           "radius": 418.7599584487513,
-          "rotation": 4.752,
+          "rotation": 4.2768,
           "translation": [
             0,
             0
@@ -677,7 +759,7 @@
             676
           ],
           "radius": 53,
-          "rotation": 6,
+          "rotation": 8.52,
           "period": 4.7,
           "anchorFade": 18,
           "parent": "orchard-layer-xixi-body",
@@ -686,8 +768,8 @@
           "kind": "hair",
           "motionClass": "detail",
           "tipBudget": [
-            1.5,
-            6
+            2,
+            8.6
           ],
           "extractFromAsset": "duo-orchard",
           "cutFromAssets": [
@@ -747,7 +829,7 @@
             664
           ],
           "radius": 80,
-          "rotation": 5,
+          "rotation": 7.1,
           "period": 5.2,
           "anchorFade": 20,
           "parent": "orchard-layer-xixi-body",
@@ -756,8 +838,8 @@
           "kind": "hair",
           "motionClass": "detail",
           "tipBudget": [
-            1.5,
-            6
+            2,
+            8.6
           ],
           "extractFromAsset": "duo-orchard",
           "cutFromAssets": [
@@ -817,7 +899,7 @@
             530
           ],
           "radius": 62,
-          "rotation": 5.8,
+          "rotation": 8.235999999999999,
           "period": 4.8,
           "anchorFade": 20,
           "parent": "orchard-layer-denia-body",
@@ -826,8 +908,8 @@
           "kind": "hair",
           "motionClass": "detail",
           "tipBudget": [
-            1.5,
-            6
+            2,
+            8.6
           ],
           "extractFromAsset": "duo-orchard",
           "cutFromAssets": [
@@ -887,7 +969,7 @@
             525
           ],
           "radius": 57,
-          "rotation": 6.3,
+          "rotation": 8.946,
           "period": 5.4,
           "anchorFade": 20,
           "parent": "orchard-layer-denia-body",
@@ -896,8 +978,8 @@
           "kind": "hair",
           "motionClass": "detail",
           "tipBudget": [
-            1.5,
-            6
+            2,
+            8.6
           ],
           "extractFromAsset": "duo-orchard",
           "cutFromAssets": [
@@ -3440,6 +3522,7 @@
       "defaults": {
         "schemaVersion": 1,
         "common": {
+          "layout": "panorama",
           "chatWidth": 800,
           "avoidPanels": true,
           "focusMode": false,

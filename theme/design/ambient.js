@@ -98,8 +98,9 @@ function mountSunlitAmbient(context) {
     observe([workspace, main, paper, composer, ...panels, ...cards]);
     if (!workspace || !main || !paper || !composer || html.classList.contains("tessalume-code-review-open")) { hideAll(); scrollGuard?.clear(); return; }
     const area = box(workspace), mainBox = box(main), paperBox = box(paper), composerBox = box(composer);
-    const bounds = rect(Math.max(0, area.left, mainBox.left), Math.max(58, area.top, mainBox.top),
-      Math.min(win.innerWidth, area.right, mainBox.right) - Math.max(0, area.left, mainBox.left),
+    const panorama = settings?.common?.layout === "panorama";
+    const bounds = rect(panorama ? Math.max(0, mainBox.left) : Math.max(0, area.left, mainBox.left), Math.max(58, area.top, mainBox.top),
+      Math.min(win.innerWidth, area.right, mainBox.right) - (panorama ? Math.max(0, mainBox.left) : Math.max(0, area.left, mainBox.left)),
       Math.min(win.innerHeight, Math.max(area.bottom, composerBox.bottom), mainBox.bottom) - Math.max(58, area.top, mainBox.top));
     const lane = rect(Math.min(paperBox.left, composerBox.left) - 8, bounds.top,
       Math.max(paperBox.right, composerBox.right) - Math.min(paperBox.left, composerBox.left) + 16, bounds.height);
@@ -129,7 +130,15 @@ function mountSunlitAmbient(context) {
         const anchor = cards.find(node => node.matches('[data-fusion-card="left"]') && node.dataset.fusionHidden !== "true");
         if (anchor) {
           const card = box(anchor), side = sides.left;
-          for (const size of [96, 88, 80, 64, 52]) {
+          if (panorama) {
+            // Same baseline, immediately right of Xixi. Never float above her.
+            for (const size of [96, 88, 80, 64, 52]) {
+              const candidate = rect(Math.round(card.right + 14), Math.round(card.bottom - size), size, size);
+              if (candidate.right <= bounds.right - 16 && candidate.bottom <= bounds.bottom - 8 && candidate.top >= bounds.top + 12 &&
+                !panels.some(panel => overlap(candidate, box(panel), 8))) { position = candidate; break; }
+            }
+          }
+          for (const size of panorama ? [] : [96, 88, 80, 64, 52]) {
             const x = Math.round(card.left + (card.width - size) / 2);
             const top = card.top - 64 - size;
             const tops = [top, ...occupied.map(other => other.top - size - 10)];
@@ -142,13 +151,28 @@ function mountSunlitAmbient(context) {
           }
         }
       }
-      for (const sideName of partner.id === "xixi-emote" ? [] : [partner.preferredSide, partner.preferredSide === "left" ? "right" : "left"]) {
+      if (panorama && partner.id === 'denia') {
+        const anchor = cards.find(node => node.matches('[data-fusion-card="primary"]') && node.dataset.fusionHidden !== 'true');
+        if (anchor) {
+          const card = box(anchor);
+          for (const size of [96, 88, 80, 64, 52]) {
+            const x = Math.round(card.left - 14 - size);
+            let y = Math.round(card.bottom - size);
+            // Lift only the GIF when its ordinary baseline runs behind the editor.
+            if (overlap(rect(x, y, size, size), composerBox)) y = Math.round(composerBox.top - size - 12);
+            const candidate = rect(x, y, size, size);
+            if (candidate.left >= bounds.left + 8 && candidate.right <= bounds.right - 16 && candidate.top >= bounds.top + 12 &&
+              !panels.some(panel => overlap(candidate, box(panel), 8))) { position = candidate; break; }
+          }
+        }
+      }
+      for (const sideName of partner.id === "xixi-emote" || panorama && partner.id === 'denia' ? [] : [partner.preferredSide, partner.preferredSide === "left" ? "right" : "left"]) {
         const side = sides[sideName], available = Math.floor(side.right - side.left);
         const sizes = [...new Set([Math.min(partner.animated ? 112 : 96, available), 96, 80, 64, 60, 52])].filter(size => size >= 52 && size <= available && size <= (partner.animated ? 112 : 96));
         for (const size of sizes) {
           const sameSideCards = cardBoxes.filter(card => sideName === "left" ? card.right <= lane.left : card.left >= lane.right);
-          const tops = [bounds.top + 46];
-          if (sameSideCards.length) tops.unshift(Math.min(...sameSideCards.map(card => card.top)) - size - 22);
+          const tops = [panorama ? bounds.bottom - size - 32 : bounds.top + 46];
+          if (!panorama && sameSideCards.length) tops.unshift(Math.min(...sameSideCards.map(card => card.top)) - size - 22);
           for (const obstacle of occupied) { tops.push(obstacle.bottom + 10, obstacle.top - size - 10); }
           for (let y = bounds.top + 46; y + size <= bounds.bottom - 16; y += size + 22) tops.push(y);
           const xs = [Math.round(side.left + (side.right - side.left - size) / 2), Math.ceil(side.left), Math.floor(side.right - size)];

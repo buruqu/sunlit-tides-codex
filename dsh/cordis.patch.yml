@@ -1,0 +1,3 @@
+- insert:
+    - id: ui-skin-sunlit-tides
+      name: '@dsh-external/dsh-client-ui-skin-sunlit-tides'

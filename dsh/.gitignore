@@ -1,0 +1,7 @@
+node_modules/
+test-results/
+release/
+*.tgz
+*.log
+/lib/client.js
+/lib/build.json

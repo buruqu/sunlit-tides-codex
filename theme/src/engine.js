@@ -198,10 +198,11 @@ function mountFusion(context) {
   bubbles.dataset.fusionBubbles = "true";
   bubbles.setAttribute("aria-hidden", "true");
   doc.body.append(bubbles);
+  const leafScene = () => html.dataset.sgkScene === "orchard";
   let bubbleSignature = "", bubbleSeeds = [];
   function syncBubbles() {
     const { bubbleCount, bubbleSpeed } = state.common;
-    const signature = bubbleCount + ":" + bubbleSpeed;
+    const signature = (leafScene() ? "leaf:" : "bubble:") + bubbleCount + ":" + bubbleSpeed;
     if (signature !== bubbleSignature) {
       bubbleSignature = signature;
       bubbles.replaceChildren();
@@ -217,29 +218,39 @@ function mountFusion(context) {
         // Deterministic seeds avoid continually changing the scene on slider edits.
         const seed = random(i, 1);
         const duration = (24 + random(i, 2) * 22) * 100 / bubbleSpeed;
+        const size = leafScene() ? 18 + seed * 18 : 12 + seed * 30;
         bubble.style.setProperty("--bubble-x", (2 + random(i, 3) * 93) + "%");
-        bubble.style.setProperty("--bubble-size", (12 + seed * 30) + "px");
+        bubble.style.setProperty("--bubble-size", size + "px");
         bubble.style.setProperty("--bubble-duration", duration + "s");
         bubble.style.setProperty("--bubble-delay", (-random(i, 4) * duration) + "s");
         bubble.style.setProperty("--bubble-drift", ((random(i, 5) - .5) * 90) + "px");
-        bubbleSeeds.push({ node: bubble, size: 12 + seed * 30, x: .02 + random(i, 3) * .93, drift: (random(i, 5) - .5) * 90 });
+        bubble.style.setProperty("--leaf-hue", (94 + random(i, 6) * 35) + "");
+        bubble.style.setProperty("--leaf-light", (34 + random(i, 7) * 18) + "%");
+        bubbleSeeds.push({ node: bubble, size, x: .02 + random(i, 3) * .93, drift: (random(i, 5) - .5) * 90 });
         fragment.append(bubble);
       }
       bubbles.append(fragment);
     }
   }
   function placeBubbles(width, readingLeft, readingRight) {
-    const wind = state.common.sceneEffects && html.dataset.sunlitSceneFamily === "wind";
-    for (const { node, size, x, drift: requestedDrift } of bubbleSeeds) {
+    const narrowLeaves = state.common.layout !== 'panorama' && leafScene() && width >= 540 && width < 760;
+    const wind = !leafScene() && state.common.sceneEffects && html.dataset.sunlitSceneFamily === "wind";
+    for (const [index, seed] of bubbleSeeds.entries()) {
+      const { node, x } = seed;
+      const size = narrowLeaves ? 10 + index % 4 : seed.size;
+      const requestedDrift = narrowLeaves ? (index % 2 ? -4 : 4) : seed.drift;
+      node.style.setProperty("--bubble-size", size + "px");
+      if (narrowLeaves && index >= 6) { node.hidden = true; continue; }
       // Preserve the original screen-wide density: particles seeded inside the
       // reading lane stay absent. Visible particles keep their entire silhouette
       // and drift path in a side corridor, instead of being cut by a lane mask.
-      const seededX = x * width;
-      const corridor = seededX < readingLeft ? [8, readingLeft - 8] : seededX > readingRight ? [readingRight + 8, width - 8] : null;
+      const seededX = narrowLeaves ? index % 2 ? width - 18 : 18 : x * width;
+      const edge = narrowLeaves ? 4 : 8;
+      const corridor = seededX < readingLeft ? [edge, readingLeft - edge] : seededX > readingRight ? [readingRight + edge, width - edge] : null;
       if (!corridor) { node.hidden = true; continue; }
       // Includes every authored particle's scale/rotation and its soft rim.
       // This uses stored seeds and existing layout measurements, no frame reads.
-      const particleWidth = size * 1.75, rim = size * .4 + 4;
+      const particleWidth = size * (narrowLeaves ? 1.4 : 1.75), rim = size * (narrowLeaves ? .2 : .4) + (narrowLeaves ? 2 : 4);
       const room = corridor[1] - corridor[0] - particleWidth - rim * 2;
       const drift = Math.max(-Math.max(0, room), Math.min(Math.max(0, room), requestedDrift));
       const minOffset = wind ? Math.min(-30, drift + 80) : Math.min(0, drift);
@@ -256,6 +267,7 @@ function mountFusion(context) {
     if (disposed) return;
     const current = state.modes[mode()];
     attr(html, "data-fusion-active", "true");
+    attr(html, "data-fusion-layout", state.common.layout);
     attr(html, "data-fusion-focus", state.common.focusMode);
     attr(html, "data-fusion-message-panel", current.messagePanel);
     attr(html, "data-fusion-reduced-motion", state.common.reduceMotion);
@@ -293,6 +305,49 @@ function mountFusion(context) {
       verticalOffset: Number.isFinite(geometry?.verticalOffset) ? geometry.verticalOffset : 0
     };
   });
+  let panoramaMain = null, panoramaCarrier = null, panoramaInset = 0;
+  const panoramaContent = new Set(), rootParent = root.parentElement;
+  let panoramaAmbient = null, ambientParent = null;
+  function placePanoramaLayers(main, enabled) {
+    const target = enabled && main && html.classList.contains('tessalume-is-task') ? main : null;
+    if (root.parentElement !== (target || rootParent)) (target || rootParent)?.append(root);
+    const ambient = doc.querySelector('[data-sunlit-ambient]');
+    if (ambient && ambient !== panoramaAmbient) { panoramaAmbient = ambient; ambientParent = ambient.parentElement; }
+    if (ambient && ambient.parentElement !== (target || ambientParent)) (target || ambientParent)?.append(ambient);
+    for (const node of panoramaContent) if (!target || node.parentElement !== target) {
+      attr(node, 'data-fusion-panorama-content', 'false'); panoramaContent.delete(node);
+    }
+    if (target) for (const node of target.children) {
+      if (node === root || node.hasAttribute('data-fusion-ui')) continue;
+      const current = node.getAttribute('data-fusion-panorama-content');
+      if (!panoramaContent.has(node)) attr(node, 'data-fusion-panorama-content', win.getComputedStyle(node).position === 'static' ? 'static' : 'positioned');
+      panoramaContent.add(node);
+    }
+  }
+  function fitPanorama(main) {
+    const enabled = state.common.layout === 'panorama';
+    if (panoramaMain && panoramaMain !== main) {
+      attr(panoramaMain, 'data-fusion-panorama-main', 'false');
+      if (panoramaCarrier) attr(panoramaCarrier, 'data-fusion-panorama-carrier', 'false');
+      panoramaMain = null; panoramaCarrier = null; panoramaInset = 0;
+    }
+    placePanoramaLayers(main, enabled);
+    if (!main) return 0;
+    const sidebar = [...doc.querySelectorAll('aside.app-shell-left-panel,[data-tessalume-surface="sidebar"]')].find(node => {
+      const r = node.getBoundingClientRect(), css = win.getComputedStyle(node);
+      return !node.closest('[hidden],[aria-hidden="true"],[inert]') && r.width > 2 && r.height > 2 && css.display !== 'none' && css.visibility !== 'hidden';
+    });
+    const box = rectOf(main), side = rectOf(sidebar);
+    // Recover the native origin from our previous inset. No accumulating offsets.
+    const nativeLeft = box.left + (panoramaMain === main ? panoramaInset : 0);
+    const inset = enabled && side ? Math.max(0, Math.round(nativeLeft - Math.max(0, side.left))) : 0;
+    panoramaMain = main; panoramaInset = inset;
+    attr(main, 'data-fusion-panorama-main', enabled);
+    panoramaCarrier = main.parentElement;
+    if (panoramaCarrier) attr(panoramaCarrier, 'data-fusion-panorama-carrier', enabled);
+    style(main, '--fusion-panorama-inset', inset + 'px');
+    return inset;
+  }
   const splitNodes = new Map();
   function clearSplitNodes(keep = new Set()) {
     for (const [node, entry] of splitNodes) if (!keep.has(node)) {
@@ -327,13 +382,20 @@ function mountFusion(context) {
     const rightPanels = panelRects.filter(box => box.left > safeArea.left + safeArea.width * .45 && box.left < safeArea.right);
     const textRight = Math.min(safeArea.right - 16, ...rightPanels.map(box => box.left - 16));
     let columnLeft = safeArea.left + 16, columnRight = textRight, scale = 1, active = false;
-    if (!state.common.focusMode && safeArea.width >= 760 && safeArea.height >= 400) {
+    if (state.common.layout !== 'panorama' && !state.common.focusMode && safeArea.width >= 760 && safeArea.height >= 400) {
       for (const candidate of [1, .85, .7, .55]) {
         const leftRail = current.left.visible ? Math.round(left.width * current.left.size / 100 * candidate) + 32 : 16;
-        const rightRail = current.primary.visible ? Math.round(right.width * current.primary.size / 100 * candidate) + 32 : 16;
+        const panoramaRight = state.common.layout === 'panorama';
+        const rightRail = current.primary.visible ? Math.round((panoramaRight ? 198 * current.primary.size / 100 + 110 : right.width * current.primary.size / 100) * candidate) + 32 : 16;
         const start = safeArea.left + leftRail, end = Math.min(textRight, safeArea.right - rightRail);
         if (end - start >= Math.min(480, state.common.chatWidth)) { columnLeft = start; columnRight = end; scale = candidate; active = true; break; }
       }
+    }
+    // Small leaves need an actual rail outside both the paper and footer.
+    // Preserve the ordinary reading width when disabled or too narrow.
+    if (state.common.layout !== 'panorama' && leafScene() && state.common.bubbles && !state.common.focusMode && safeArea.width >= 540 && safeArea.width < 760) {
+      columnLeft = safeArea.left + 50;
+      columnRight = Math.min(textRight, safeArea.right - 50);
     }
     const width = Math.max(1, Math.min(state.common.chatWidth, columnRight - columnLeft));
     const center = (columnLeft + columnRight) / 2;
@@ -451,6 +513,8 @@ function mountFusion(context) {
       lastMainSurface = currentMainSurface;
       win.dispatchEvent(new win.CustomEvent('sunlit-tides:main-surface-change', { detail: { main: currentMainSurface } }));
     }
+    const panorama = state.common.layout === "panorama";
+    const panoramaInset = fitPanorama(main);
     const mainRect = rectOf(main) || makeRect(0, 44, win.innerWidth, win.innerHeight - 44);
     const area = rectOf(workspace) || mainRect;
     let paperRect = rectOf(paper);
@@ -473,19 +537,22 @@ function mountFusion(context) {
     scrollGeometry = splitSides && context.config.reading?.style === "scene" && workspace && paper && composer
       ? { workspace, paper, composer } : null;
     palette.setBounds(safeArea);
+    // Reading geometry is unchanged; the decorative corridor can include navigation.
+    if (panorama) { safeArea.left = Math.max(0, safeArea.left - panoramaInset); safeArea.width = safeArea.right - safeArea.left; }
     const chatLeft = paperRect?.left ?? composerRect?.left ?? safeArea.left;
     const chatRight = paperRect?.right ?? composerRect?.right ?? safeArea.right;
     const occupiedLeft = Math.min(chatLeft, composerRect?.left ?? chatLeft);
     const occupiedRight = Math.max(chatRight, composerRect?.right ?? chatRight);
     const protectedLane = makeRect(occupiedLeft - 10, safeArea.top, occupiedRight - occupiedLeft + 20, safeArea.height);
-    const canDecorate = !!workspace && !!composer && safeArea.width >= 600 && (!splitSides || split.active) &&
+    const canDecorate = !!workspace && !!composer && safeArea.width >= 600 && (panorama || !splitSides || split.active) &&
       !state.common.focusMode && !html.classList.contains("tessalume-code-review-open");
     const placements = [];
     const reasons = {};
     const planned = new Map();
     let placementStrategy = "authored";
-    const requested = card => ({ width: Math.round(card.width * current[card.slot].size / 100), height: Math.round(card.height * current[card.slot].size / 100) });
-    const collides = (box, extra = []) => intersects(box, protectedLane) ||
+    const dimensions = card => panorama && card.slot === 'left' ? { width: 234, height: 350 } : panorama && card.slot === 'primary' ? { width: 198, height: 344 } : card;
+    const requested = card => ({ width: Math.round(dimensions(card).width * current[card.slot].size / 100), height: Math.round(dimensions(card).height * current[card.slot].size / 100) });
+    const collides = (box, extra = []) => (!panorama && intersects(box, protectedLane)) ||
       (state.common.avoidPanels && panelRects.some(p => intersects(box, p, 8))) || extra.some(p => intersects(box, p, 6));
     const fitsArea = box => box.left >= safeArea.left + 4 && box.right <= safeArea.right - 4 && box.top >= safeArea.top + 28 && box.bottom <= safeArea.bottom - 8;
     const authored = card => {
@@ -494,7 +561,23 @@ function mountFusion(context) {
         clamp((card.anchor === "top" ? safeArea.top + 66 : safeArea.bottom - height - 32) + values.y + card.verticalOffset, safeArea.top + 48, safeArea.bottom - height - 10), width, height);
     };
     const pairedCards = cards.filter(card => card.slot === "left" || card.slot === "primary");
-    if (canDecorate && splitSides) {
+    if (canDecorate && panorama) {
+      placementStrategy = 'panorama-background';
+      for (const card of pairedCards) {
+        const values = current[card.slot], desired = requested(card);
+        if (!values.visible) continue;
+        const scale = Math.min(1, safeArea.width / 1000, (safeArea.height - 80) / desired.height);
+        const width = Math.round(desired.width * scale), height = Math.round(desired.height * scale);
+        const leftSide = card.slot === 'left';
+        // Keep the left pair together; the right portrait now follows its GIF.
+        const x = clamp((leftSide ? safeArea.left + 40 : safeArea.right - width - 16) + values.x,
+          safeArea.left + (leftSide ? 8 : 118), safeArea.right - width - (leftSide ? 126 : 16));
+        const y = clamp(safeArea.bottom - height - 32 + values.y, safeArea.top + 28, safeArea.bottom - height - 8);
+        const candidate = makeRect(x, y, width, height);
+        if (fitsArea(candidate) && !collides(candidate)) planned.set(card.slot, candidate);
+      }
+    }
+    if (canDecorate && splitSides && !panorama) {
       placementStrategy = "split-sides";
       for (const card of pairedCards) {
         const values = current[card.slot];
@@ -502,10 +585,12 @@ function mountFusion(context) {
         const side = card.slot === "left" ? "left" : "right";
         const gutter = side === "left" ? { left: safeArea.left + 12, right: protectedLane.left - 8 } : { left: protectedLane.right + 8, right: safeArea.right - 16 };
         const desired = requested(card);
-        for (let scale = split.scale; scale >= .4 && !planned.has(card.slot); scale -= .05) {
+        for (let scale = panorama && card.slot === "left" ? 1 : split.scale; scale >= .4 && !planned.has(card.slot); scale -= .05) {
           const width = Math.round(desired.width * scale), height = Math.round(desired.height * scale);
-          if (width < 60 || width > gutter.right - gutter.left) continue;
-          const x = clamp(side === "left" ? gutter.left + values.x : gutter.right - width + values.x, gutter.left, gutter.right - width);
+          const companionRail = panorama && side === 'right' ? Math.max(52, Math.round(96 * scale)) + 14 : 0;
+          if (width < 60 || width + companionRail > gutter.right - gutter.left) continue;
+          const rightEdge = gutter.right - companionRail;
+          const x = clamp(side === "left" ? gutter.left + values.x : rightEdge - width + values.x, gutter.left, rightEdge - width);
           const preferredY = (card.anchor === "top" ? safeArea.top + 66 : safeArea.bottom - height - 32) + values.y + card.verticalOffset;
           const ys = [preferredY, ...panelRects.flatMap(box => [box.bottom + 10, box.top - height - 10])];
           const found = ys.map(y => makeRect(x, y, width, height)).find(box => fitsArea(box) && !collides(box));
@@ -550,8 +635,7 @@ function mountFusion(context) {
       if (!node) continue;
       const values = current[card.slot];
       let compactStack = false;
-      let width = Math.round(card.width * values.size / 100);
-      let height = Math.round(card.height * values.size / 100);
+      let { width, height } = requested(card);
       let x = card.side === "left" ? safeArea.left + 8 + values.x : safeArea.right - width - 12 + values.x;
       let y = (card.anchor === "top" ? safeArea.top + 66 : safeArea.bottom - height - 32) + values.y + card.verticalOffset;
       let companionGroup = null;
@@ -591,7 +675,7 @@ function mountFusion(context) {
         }
       }
       x = box.left; y = box.top; width = box.width; height = box.height;
-      const collision = intersects(box, protectedLane) ||
+      const collision = (!panorama && intersects(box, protectedLane)) ||
         (state.common.avoidPanels && panelRects.some(p => intersects(box, p, 8))) ||
         placements.some(p => !p.hidden && intersects(box, p.rect, 6));
       const fits = box.right <= safeArea.right && box.bottom <= safeArea.bottom;
@@ -634,11 +718,16 @@ function mountFusion(context) {
     bubbles.style.setProperty("--fusion-bubble-travel", (safeArea.height + 90) + "px");
     bubbles.style.setProperty("--fusion-reading-left", clamp(protectedLane.left - safeArea.left, 0, safeArea.width) + "px");
     bubbles.style.setProperty("--fusion-reading-right", clamp(protectedLane.right - safeArea.left, 0, safeArea.width) + "px");
+    syncBubbles();
+    // Same effective source used by layered/living backgrounds; neither shares an opacity parent.
+    bubbles.style.opacity = leafScene()
+      ? state.common.layout === 'panorama' ? 'var(--sunlit-panorama-art-opacity)' : 'calc(var(--fusion-background-strength,1) * (1 - var(--sgk-reading-veil)))'
+      : '1';
     placeBubbles(safeArea.width, clamp(protectedLane.left - safeArea.left, 0, safeArea.width), clamp(protectedLane.right - safeArea.left, 0, safeArea.width));
     bubbles.dataset.paused = String(!workspace || !state.common.bubbles || state.common.focusMode ||
       state.common.reduceMotion || media.matches || doc.hidden ||
       html.dataset.tessalumeMotion === "reduced" || html.dataset.tessalumeMotion === "off");
-    observeGeometry([main, workspace, composer, paper, split.footer, ...panels]);
+    observeGeometry([main, main?.parentElement, ...doc.querySelectorAll("aside.app-shell-left-panel"), workspace, composer, paper, split.footer, ...panels]);
     layoutStatus = { mode: currentMode, width: Math.round(safeArea.width), cards: reasons, panels: panels.length, placementStrategy,
       geometry: { safeArea, readingLane: protectedLane, composer: composerRect ? makeRect(composerRect.left, composerRect.top, composerRect.width, composerRect.height) : null,
         split: splitSides ? { active: split.active, scale: split.scale, width: split.width, center: split.center } : null } };
@@ -670,7 +759,7 @@ function mountFusion(context) {
     if (meaningful) schedule();
   });
   mutation.observe(html, { childList: true, subtree: true, attributes: true,
-    attributeFilter: ["class", "style", "hidden", "aria-hidden", "inert", "data-theme", "data-tessalume-motion", "data-tessalume-page-kind", "data-sunlit-scene-family"] });
+    attributeFilter: ["class", "style", "hidden", "aria-hidden", "inert", "data-theme", "data-tessalume-motion", "data-tessalume-page-kind", "data-sunlit-scene-family", "data-sgk-scene"] });
   listen(win, "resize", schedule, { passive: true });
   listen(doc, "scroll", scroll, { passive: true, capture: true });
   listen(doc, "visibilitychange", schedule);

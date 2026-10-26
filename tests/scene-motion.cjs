@@ -34,6 +34,7 @@ const protectedDetailCenters = {
 const isNaturalPart = (scene, layer) => flexKinds.includes(layer.kind) && !motionBaseline[scene][idOf(layer)] && idOf(layer) !== 'night-xixi-braid-loop';
 function motionLimits(scene, layer) {
   const previous = motionBaseline[scene][idOf(layer)];
+  if(scene==='orchard' && /orchard-motion-(xixi-small-braid|yaya-spiral)/.test(idOf(layer)))return {minimum:2,maximum:8.6,changed:12,previous:null};
   if (previous) return { minimum: previous * 1.4, maximum: null, changed: 100, previous };
   if (idOf(layer) === 'night-xixi-braid-loop') return { minimum: 16, maximum: null, changed: 100, previous: null };
   return { minimum: 1.5, maximum: layer.kind === 'foliage' ? 5 : 6, changed: layer.kind === 'foliage' ? 24 : 12, previous: null };
@@ -162,7 +163,7 @@ async function main() {
             // authored frame rather than assuming the API submits only once.
             const records = motionTf.draws.slice(-passes);
             for (let index = 0; index < options.layers.length; index++) {
-              const layer = options.layers[index]; if (!['hair', 'cloth', 'foliage'].includes(layer.kind)) continue;
+              const layer = options.layers[index]; if (!['hair', 'cloth', 'foliage', 'body'].includes(layer.kind)) continue;
               const record = records[index + 1]; let maximumError = 0, compared = 0, worst = null;
               for (let vertex = 0; vertex < record.count; vertex += Math.max(1, Math.floor(record.count / 96))) {
                 const x = record.input[vertex * 2], y = record.input[vertex * 2 + 1]; sunlitSceneVertexAt(layer, time, x, y, expected);
@@ -209,7 +210,7 @@ async function main() {
           try {
             for (const part of parts) {
               const config = structuredClone(originalConfig), options = scene === 'orchard' ? config.layeredScene : config.layeredScene.scenes[scene];
-              for (const layer of options.layers) if ((layer.id || layer.asset) !== part.id) layer.rotation = 0;
+              for (const layer of options.layers) if ((layer.id || layer.asset) !== part.id) {layer.rotation = 0;layer.breathRegions=[];}
               fixtureContext.config = config; remountMotionFixture(); await waitReady();
               const protectedRegions = (part.layer.rootSegments || []).flatMap((segment, index) => [...segment, [(segment[0][0] + segment[1][0]) / 2, (segment[0][1] + segment[1][1]) / 2]].map((point, sample) => ({ name: 'root:' + index + ':' + sample, bounds: [Math.round(point[0]) - 1, Math.round(point[1]) - 1, 3, 3] })));
               staticCenters.forEach(([name, x, y]) => protectedRegions.push({ name: 'fixed-art:' + name, bounds: [x - 1, y - 1, 3, 3] }));

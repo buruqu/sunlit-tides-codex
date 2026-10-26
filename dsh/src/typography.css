@@ -1,0 +1,55 @@
+/* Codex palette, adapted to DSH's native text-only slots. Keep code, links,
+   controls and status colors solid; never clip a painted card or list marker. */
+body[data-dsh-sunlit][data-sunlit-gradient=on]{
+  --sunlit-prose-ink:#291737;
+  --sunlit-prose-gradient:linear-gradient(105deg,#291737,#3d1830 48%,#102b29);
+}
+body[data-dsh-sunlit][data-sunlit-gradient=on][data-sunlit-mode=dark]{
+  --sunlit-prose-ink:#eddbfb;
+  --sunlit-prose-gradient:linear-gradient(105deg,#eddbfb,#ffd6e7 48%,#f8e4c7);
+}
+body[data-dsh-sunlit][data-sunlit-gradient=on] [data-sunlit-host]
+:is([data-chat-flow-kind=assistant-step] [class*='_markdown_'] :is(p,h1,h2,h3,h4,h5,h6,th,td,strong,b,em),
+    :is([data-chat-flow-kind=user],[data-chat-flow-kind=steering]) [class*='_plainRun_']:not(button *,[data-ref-chip],[data-ref-chip] *),
+    [class*='_crumbCurrent'],[class*='_tabLabel'],
+    [class*='_sidebarCol'] :is([class*='_brandName'],[class*='_panelTitle'],[class*='_newSessionLabel'],[class*='_title'],[class*='_projectText'],[class*='_sectionLabel'])):not(:where(pre,pre *,code,code *,kbd,kbd *,samp,samp *,a,a *,button,input,textarea,select,[contenteditable],[contenteditable] *,[role=status],[role=status] *,[data-status],[data-status] *,[data-tool-call],[data-tool-call] *,[class*='_composerSeat'] *,[data-sunlit-gradient=false],[data-sunlit-gradient=false] *)){
+  color:var(--sunlit-prose-ink)!important;
+  -webkit-text-fill-color:currentColor!important;
+  text-shadow:none!important;
+}
+@supports (background-clip:text){
+  body[data-dsh-sunlit][data-sunlit-gradient=on] [data-sunlit-host]
+  :is([data-chat-flow-kind=assistant-step] [class*='_markdown_'] :is(p,h1,h2,h3,h4,h5,h6,th,td,strong,b,em),
+      :is([data-chat-flow-kind=user],[data-chat-flow-kind=steering]) [class*='_plainRun_']:not(button *,[data-ref-chip],[data-ref-chip] *),
+      [class*='_crumbCurrent'],[class*='_tabLabel'],
+      [class*='_sidebarCol'] :is([class*='_brandName'],[class*='_panelTitle'],[class*='_newSessionLabel'],[class*='_title'],[class*='_projectText'],[class*='_sectionLabel'])):not(:where(pre,pre *,code,code *,kbd,kbd *,samp,samp *,a,a *,button,input,textarea,select,[contenteditable],[contenteditable] *,[role=status],[role=status] *,[data-status],[data-status] *,[data-tool-call],[data-tool-call] *,[class*='_composerSeat'] *,[style*='background' i],[class*='bg-'],[data-sunlit-gradient=false],[data-sunlit-gradient=false] *)):not(:has(:is(ul,ol,li,a,pre,code,kbd,samp,button,input,textarea,select,[contenteditable],svg,[role=img],[role=status],[data-status],[data-tool-call],[data-sunlit-gradient=false]))){
+    background-image:var(--sunlit-prose-gradient)!important;
+    background-clip:text!important;-webkit-background-clip:text!important;
+    background-size:380px 100%;background-repeat:repeat-x;
+    -webkit-text-fill-color:transparent!important;
+    -webkit-box-decoration-break:clone;box-decoration-break:clone;
+  }
+}
+/* A semantic inline child opts the containing paragraph out of clipping.
+   Its emphasis descendants must also keep their native surface and ink. */
+body[data-dsh-sunlit][data-sunlit-gradient=on] [data-sunlit-host]
+:is(a,pre,code,kbd,samp,[role=status],[data-status],[data-tool-call],[class*='_composerSeat']) :is(span,strong,em,b,i){
+  background-image:none!important;-webkit-text-fill-color:currentColor!important;
+}
+body[data-dsh-sunlit][data-sunlit-gradient=on] [data-sunlit-host]
+:is([class*='_markdown_'],[class*='_sidebarCol'],[class*='_crumbCurrent'],[class*='_tabLabel']) ::selection{
+  background:#5f456e!important;color:#fff6fa!important;-webkit-text-fill-color:#fff6fa!important;
+}
+body[data-dsh-sunlit][data-sunlit-gradient=on] [data-sunlit-host]
+:is([class*='_crumbCurrent'],[class*='_tabLabel'],[class*='_plainRun_'])::selection{
+  background:#5f456e!important;color:#fff6fa!important;-webkit-text-fill-color:#fff6fa!important;
+}
+@media(forced-colors:active){
+  body[data-dsh-sunlit][data-sunlit-gradient=on][data-sunlit-mode] [data-sunlit-host]
+  :is([data-chat-flow-kind=assistant-step] [class*='_markdown_'] :is(p,h1,h2,h3,h4,h5,h6,th,td,strong,b,em),
+      :is([data-chat-flow-kind=user],[data-chat-flow-kind=steering]) [class*='_plainRun_']:not(button *,[data-ref-chip],[data-ref-chip] *),
+      [class*='_crumbCurrent'],[class*='_tabLabel'],
+      [class*='_sidebarCol'] :is([class*='_brandName'],[class*='_panelTitle'],[class*='_newSessionLabel'],[class*='_title'],[class*='_projectText'],[class*='_sectionLabel'])){
+    background-image:none!important;color:CanvasText!important;-webkit-text-fill-color:currentColor!important;
+  }
+}

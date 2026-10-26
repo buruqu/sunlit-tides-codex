@@ -1,0 +1,3748 @@
+{
+  "schemaVersion": 2,
+  "id": "sunlit-tides.codex",
+  "name": "晴光与泡影 · Codex 独立主题",
+  "version": "1.2.7",
+  "author": "Sunlit Tides contributors; upstream credits in NOTICE.md",
+  "description": "果园午后 / 夜色相依，随 Codex 明暗模式切换的独立 Windows 主题。",
+  "engineVersion": 2,
+  "type": "advanced",
+  "template": {
+    "id": "flagship",
+    "version": "1.0",
+    "style": "shared"
+  },
+  "capabilities": {
+    "light": true,
+    "dark": true
+  },
+  "compatibility": {
+    "petOverlay": false
+  },
+  "entryPoints": {
+    "css": "skin.css",
+    "script": "theme.js",
+    "artworkDefaults": "artwork-defaults.json"
+  },
+  "previews": {
+    "light": "assets/duo-orchard.jpg",
+    "dark": "assets/duo-night-companion.jpg"
+  },
+  "assets": {
+    "hero-light": "assets/duo-orchard.jpg",
+    "hero-dark": "assets/duo-night-companion-clean.svg",
+    "sidebar-light": "assets/sigrika-breeze.jpg",
+    "sidebar-dark": "assets/sigrika-dream.jpg",
+    "sigrika-emote": "assets/sigrika-emote.gif",
+    "sigrika-emote-dark": "assets/sigrika-night-emote.gif",
+    "orchard-blink": "assets/orchard-blink.png",
+    "orchard-clean-plate": "assets/orchard-layer-underpaint.png",
+    "orchard-layer-background-original": "assets/layered/background-original.png",
+    "orchard-layer-xixi-body": "assets/layered/xixi-body.png",
+    "orchard-layer-denia-body": "assets/layered/denia-body.png",
+    "orchard-layer-xixi-braid-mid": "assets/layered/xixi-braid-mid.png",
+    "orchard-layer-xixi-braid-low": "assets/layered/xixi-braid-low.png",
+    "orchard-layer-denia-hair-middle": "assets/layered/denia-hair-middle.png",
+    "orchard-layer-denia-hair-lower": "assets/layered/denia-hair-lower.png",
+    "orchard-layer-denia-hair-tip": "assets/layered/denia-hair-tip.png",
+    "orchard-layer-denia-skirt-hem": "assets/layered/denia-skirt-hem.png",
+    "orchard-layer-foreground-fixed": "assets/layered/foreground-fixed.png",
+    "orchard-layer-xixi-braid-mid-root": "assets/layered/xixi-braid-mid-root.png",
+    "orchard-layer-xixi-braid-low-root": "assets/layered/xixi-braid-low-root.png",
+    "orchard-layer-denia-hair-middle-root": "assets/layered/denia-hair-middle-root.png",
+    "orchard-layer-denia-hair-lower-root": "assets/layered/denia-hair-lower-root.png",
+    "orchard-layer-denia-hair-tip-root": "assets/layered/denia-hair-tip-root.png",
+    "orchard-layer-denia-skirt-hem-root": "assets/layered/denia-skirt-hem-root.png",
+    "chat-light": "assets/duo-orchard.jpg",
+    "chat-dark": "assets/duo-night-companion-clean.svg",
+    "memory-light": "assets/duo-story.jpg",
+    "memory-dark": "assets/duo-evening.jpg",
+    "task-left": "assets/sigrika-cutout.png",
+    "task-left-dark": "assets/sigrika-night-cutout.png",
+    "task-right-primary": "assets/dsh/denia_character_right.webp",
+    "task-right-primary-dark": "assets/dsh/denia_character_left_dark.webp",
+    "task-right-secondary": "assets/xixi-dumpling.jpg",
+    "denia-dark": "assets/dsh/denia_character_right_dark.webp",
+    "dumpling-denia": "assets/yaya-dumpling.jpg",
+    "denia-chibi": "assets/dsh/denia_chibi.gif",
+    "denia-chibi-dark": "assets/dsh/denia_chibi_dark.gif",
+    "duo-sunset": "assets/duo-sunset.jpg",
+    "duo-heart": "assets/duo-heart.jpg",
+    "duo-orchard": "assets/duo-orchard.jpg",
+    "duo-story": "assets/duo-story.jpg",
+    "duo-evening": "assets/duo-evening.jpg",
+    "sigrika-train": "assets/sigrika-train.jpg",
+    "sigrika-breeze": "assets/sigrika-breeze.jpg",
+    "sigrika-dream": "assets/sigrika-dream.jpg",
+    "duo-night": "assets/duo-night-companion-clean.svg",
+    "sigrika-daydream": "assets/sigrika-daydream.jpg",
+    "sigrika-paws": "assets/sigrika-paws.jpg",
+    "denia-paws": "assets/denia-paws.jpg",
+    "dsh-palace-light": "assets/dsh/denia_palace_light.webp",
+    "dsh-palace-dark": "assets/dsh/denia_palace_dark.webp",
+    "duo-night-original": "assets/duo-night.png",
+    "night-motion-clean": "assets/night-motion-clean.png",
+    "night-motion-blink": "assets/night-motion-blink.png"
+  },
+  "config": {
+    "designVersion": "1.2.7",
+    "title": "晴光与泡影",
+    "subtitle": "把期待写成晴光，让灵感泛起涟漪。",
+    "memory": "晴光落在身旁，泡影轻轻回响。",
+    "ambient": {
+      "companions": true,
+      "xixiEmote": true
+    },
+    "avatars": {
+      "enabled": true
+    },
+    "sidebar": {
+      "enabled": true
+    },
+    "sceneEffects": {
+      "enabled": true
+    },
+    "livingScene": {
+      "enabled": true
+    },
+    "layeredScene": {
+      "enabled": true,
+      "baseAsset": "orchard-clean-plate",
+      "layers": [
+        {
+          "asset": "orchard-layer-background-original",
+          "kind": "rigid",
+          "bounds": [
+            0,
+            0,
+            1280,
+            1280
+          ],
+          "radius": 1483.1988999456546,
+          "rotation": 0,
+          "translation": [
+            0,
+            0
+          ],
+          "period": 7.1,
+          "phase": 0,
+          "blink": false
+        },
+        {
+          "asset": "orchard-layer-xixi-body",
+          "kind": "body",
+          "bounds": [
+            0,
+            234,
+            639,
+            1046
+          ],
+          "radius": 1003.9790812561783,
+          "rotation": 0,
+          "translation": [
+            0,
+            0
+          ],
+          "period": 5.4,
+          "phase": 0,
+          "blink": false,
+          "meshStep": 8,
+          "motionTip": [
+            365,
+            717
+          ],
+          "breathRegions": [
+            {
+              "center": [
+                365,
+                717
+              ],
+              "radius": [
+                110,
+                98
+              ],
+              "amount": [
+                0.6,
+                -4.2
+              ],
+              "expansion": 2.2,
+              "period": 4.8,
+              "phase": 0
+            },
+            {
+              "center": [
+                515,
+                626
+              ],
+              "radius": [
+                47,
+                76
+              ],
+              "amount": [
+                -0.7,
+                -3.4
+              ],
+              "expansion": 0.8,
+              "period": 4.8,
+              "phase": 0
+            }
+          ]
+        },
+        {
+          "asset": "orchard-layer-denia-body",
+          "kind": "body",
+          "bounds": [
+            0,
+            0,
+            1280,
+            1280
+          ],
+          "radius": 1483.1988999456546,
+          "rotation": 0,
+          "translation": [
+            0,
+            0
+          ],
+          "period": 7.1,
+          "phase": 0,
+          "blink": true,
+          "meshStep": 8,
+          "motionTip": [
+            760,
+            676
+          ],
+          "breathRegions": [
+            {
+              "center": [
+                760,
+                676
+              ],
+              "radius": [
+                98,
+                126
+              ],
+              "amount": [
+                -0.55,
+                -4.4
+              ],
+              "expansion": 2.3,
+              "period": 5.4,
+              "phase": 0.38
+            },
+            {
+              "center": [
+                986,
+                550
+              ],
+              "radius": [
+                65,
+                83
+              ],
+              "amount": [
+                -0.35,
+                -2.8
+              ],
+              "expansion": 1.1,
+              "period": 5.4,
+              "phase": 0.38
+            }
+          ]
+        },
+        {
+          "asset": "orchard-layer-xixi-braid-mid",
+          "kind": "hair",
+          "bounds": [
+            10,
+            709,
+            122,
+            110
+          ],
+          "pivot": [
+            98.56,
+            720.6399999999999
+          ],
+          "radius": 133.54172681225893,
+          "rotation": 10.64448,
+          "translation": [
+            0,
+            0
+          ],
+          "period": 4.8,
+          "phase": 0,
+          "parent": "orchard-layer-xixi-body",
+          "blink": false,
+          "rootSegments": [
+            [
+              [
+                81.31,
+                721.02
+              ],
+              [
+                102.34,
+                716.15
+              ]
+            ],
+            [
+              [
+                19.44,
+                809.2
+              ],
+              [
+                52.32,
+                813.57
+              ]
+            ]
+          ],
+          "anchorLock": 20,
+          "anchorFade": 28,
+          "motionTip": [
+            10,
+            761
+          ],
+          "motionTipSelection": "maximum weighted opaque source pixel with both braid junctions fixed",
+          "motionResponse": {
+            "enabled": true,
+            "localMix": 0.015,
+            "lagSeconds": 0,
+            "groupDelay": 0.035,
+            "returnMix": 0,
+            "returnDelay": 0.22,
+            "windSign": -1,
+            "waveScale": 1,
+            "localPeriod": 4.8
+          }
+        },
+        {
+          "asset": "orchard-layer-xixi-braid-low",
+          "kind": "hair",
+          "bounds": [
+            0,
+            804,
+            74,
+            120
+          ],
+          "pivot": [
+            41.984,
+            809.984
+          ],
+          "radius": 114.47740388391063,
+          "rotation": 12.418560000000001,
+          "translation": [
+            0,
+            0
+          ],
+          "period": 4.8,
+          "phase": 0,
+          "parent": "orchard-layer-xixi-body",
+          "blink": false,
+          "rootSegments": [
+            [
+              [
+                19.44,
+                809.2
+              ],
+              [
+                52.32,
+                813.57
+              ]
+            ]
+          ],
+          "anchorLock": 20,
+          "anchorFade": 28,
+          "motionTip": [
+            0,
+            923
+          ],
+          "motionTipSelection": "maximum weighted opaque source pixel",
+          "motionResponse": {
+            "enabled": true,
+            "localMix": 0.015,
+            "lagSeconds": 0,
+            "groupDelay": 0.035,
+            "returnMix": 0,
+            "returnDelay": 0.22,
+            "windSign": -1,
+            "waveScale": 1,
+            "localPeriod": 4.8
+          }
+        },
+        {
+          "asset": "orchard-layer-denia-hair-middle",
+          "kind": "hair",
+          "bounds": [
+            989,
+            800,
+            280,
+            235
+          ],
+          "pivot": [
+            999.6800000000001,
+            934.4
+          ],
+          "radius": 298.5937420643641,
+          "rotation": 6.779520000000001,
+          "translation": [
+            0,
+            0
+          ],
+          "period": 5.4,
+          "phase": 0,
+          "parent": "orchard-layer-denia-body",
+          "blink": false,
+          "rootSegments": [
+            [
+              [
+                1000.28,
+                1032.32
+              ],
+              [
+                1004.69,
+                888.84
+              ]
+            ],
+            [
+              [
+                1241.76,
+                800.37
+              ],
+              [
+                1244.71,
+                850.72
+              ]
+            ]
+          ],
+          "anchorLock": 20,
+          "anchorFade": 46,
+          "motionTip": [
+            1241,
+            912
+          ],
+          "motionTipSelection": "maximum weighted opaque source pixel",
+          "motionResponse": {
+            "enabled": true,
+            "localMix": 0.015,
+            "lagSeconds": 0,
+            "groupDelay": 0.23,
+            "returnMix": 0,
+            "returnDelay": 0.22,
+            "windSign": 1,
+            "waveScale": 1,
+            "localPeriod": 5.4
+          }
+        },
+        {
+          "asset": "orchard-layer-denia-hair-lower",
+          "kind": "hair",
+          "bounds": [
+            981,
+            1017,
+            268,
+            185
+          ],
+          "pivot": [
+            992,
+            1114.88
+          ],
+          "radius": 265.89377202183584,
+          "rotation": 6.4152000000000005,
+          "translation": [
+            0,
+            0
+          ],
+          "period": 5.4,
+          "phase": 0,
+          "parent": "orchard-layer-denia-body",
+          "blink": false,
+          "rootSegments": [
+            [
+              [
+                991.05,
+                1195.93
+              ],
+              [
+                991.91,
+                1104.92
+              ]
+            ]
+          ],
+          "anchorLock": 20,
+          "anchorFade": 28,
+          "motionTip": [
+            1247,
+            1023
+          ],
+          "motionTipSelection": "maximum weighted opaque source pixel",
+          "motionResponse": {
+            "enabled": true,
+            "localMix": 0.015,
+            "lagSeconds": 0,
+            "groupDelay": 0.23,
+            "returnMix": 0,
+            "returnDelay": 0.22,
+            "windSign": 1,
+            "waveScale": 1,
+            "localPeriod": 5.4
+          }
+        },
+        {
+          "asset": "orchard-layer-denia-hair-tip",
+          "kind": "hair",
+          "bounds": [
+            962,
+            1192,
+            251,
+            88
+          ],
+          "pivot": [
+            988.1600000000001,
+            1227.52
+          ],
+          "radius": 217.0585073200311,
+          "rotation": 7.128,
+          "translation": [
+            0,
+            0
+          ],
+          "period": 5.4,
+          "phase": 0,
+          "parent": "orchard-layer-denia-body",
+          "blink": false,
+          "rootSegments": [
+            [
+              [
+                973.21,
+                1282
+              ],
+              [
+                987.58,
+                1228.35
+              ]
+            ]
+          ],
+          "anchorLock": 20,
+          "anchorFade": 28,
+          "motionTip": [
+            1212,
+            1208
+          ],
+          "motionTipSelection": "maximum weighted opaque source pixel",
+          "motionResponse": {
+            "enabled": true,
+            "localMix": 0.015,
+            "lagSeconds": 0,
+            "groupDelay": 0.23,
+            "returnMix": 0,
+            "returnDelay": 0.22,
+            "windSign": 1,
+            "waveScale": 1,
+            "localPeriod": 5.4
+          }
+        },
+        {
+          "asset": "orchard-layer-denia-skirt-hem",
+          "kind": "cloth",
+          "bounds": [
+            463,
+            980,
+            415,
+            300
+          ],
+          "pivot": [
+            755.1999999999999,
+            1049.6
+          ],
+          "radius": 418.7599584487513,
+          "rotation": 4.2768,
+          "translation": [
+            0,
+            0
+          ],
+          "period": 5.2,
+          "phase": 0,
+          "parent": "orchard-layer-denia-body",
+          "blink": false,
+          "rootSegments": [
+            [
+              [
+                631.18,
+                1104.24
+              ],
+              [
+                734.6,
+                1028.95
+              ]
+            ],
+            [
+              [
+                863.42,
+                991.68
+              ],
+              [
+                878.43,
+                982.28
+              ]
+            ]
+          ],
+          "anchorLock": 20,
+          "anchorFade": 28,
+          "motionTip": [
+            463,
+            1279
+          ],
+          "motionTipSelection": "maximum weighted opaque source pixel",
+          "motionResponse": {
+            "enabled": true,
+            "localMix": 0.02,
+            "lagSeconds": 0,
+            "groupDelay": 0.41000000000000003,
+            "returnMix": 0,
+            "returnDelay": 0.22,
+            "windSign": -1,
+            "waveScale": 1,
+            "localPeriod": 11.3
+          }
+        },
+        {
+          "asset": "orchard-layer-foreground-fixed",
+          "kind": "rigid",
+          "bounds": [
+            0,
+            0,
+            1280,
+            1280
+          ],
+          "radius": 1483.1988999456546,
+          "rotation": 0,
+          "translation": [
+            0,
+            0
+          ],
+          "period": 7.1,
+          "phase": 0,
+          "blink": false
+        },
+        {
+          "asset": "orchard-layer-xixi-braid-mid-root",
+          "kind": "rigid",
+          "rotation": 0,
+          "translation": [
+            0,
+            0
+          ],
+          "parent": "orchard-layer-xixi-body",
+          "bounds": [
+            82,
+            709,
+            23,
+            16
+          ],
+          "period": 7.1,
+          "phase": 0
+        },
+        {
+          "asset": "orchard-layer-xixi-braid-low-root",
+          "kind": "rigid",
+          "rotation": 0,
+          "translation": [
+            0,
+            0
+          ],
+          "parent": "orchard-layer-xixi-body",
+          "bounds": [
+            20,
+            804,
+            33,
+            13
+          ],
+          "period": 7.1,
+          "phase": 0
+        },
+        {
+          "asset": "orchard-layer-denia-hair-middle-root",
+          "kind": "rigid",
+          "rotation": 0,
+          "translation": [
+            0,
+            0
+          ],
+          "parent": "orchard-layer-denia-body",
+          "bounds": [
+            990,
+            800,
+            268,
+            233
+          ],
+          "period": 7.1,
+          "phase": 0
+        },
+        {
+          "asset": "orchard-layer-denia-hair-lower-root",
+          "kind": "rigid",
+          "rotation": 0,
+          "translation": [
+            0,
+            0
+          ],
+          "parent": "orchard-layer-denia-body",
+          "bounds": [
+            981,
+            1105,
+            20,
+            92
+          ],
+          "period": 7.1,
+          "phase": 0
+        },
+        {
+          "asset": "orchard-layer-denia-hair-tip-root",
+          "kind": "rigid",
+          "rotation": 0,
+          "translation": [
+            0,
+            0
+          ],
+          "parent": "orchard-layer-denia-body",
+          "bounds": [
+            962,
+            1228,
+            29,
+            52
+          ],
+          "period": 7.1,
+          "phase": 0
+        },
+        {
+          "asset": "orchard-layer-denia-skirt-hem-root",
+          "kind": "rigid",
+          "rotation": 0,
+          "translation": [
+            0,
+            0
+          ],
+          "parent": "orchard-layer-denia-body",
+          "bounds": [
+            629,
+            980,
+            249,
+            128
+          ],
+          "period": 7.1,
+          "phase": 0
+        },
+        {
+          "asset": "orchard-motion-xixi-small-braid-left",
+          "path": "M222 628 C212 646 217 663 234 678 C224 671 218 657 221 648 L228 632 Z",
+          "bounds": [
+            210,
+            627,
+            26,
+            53
+          ],
+          "pivot": [
+            225,
+            630
+          ],
+          "rootSegments": [
+            [
+              [
+                222,
+                628
+              ],
+              [
+                228,
+                632
+              ]
+            ]
+          ],
+          "motionTip": [
+            233,
+            676
+          ],
+          "radius": 53,
+          "rotation": 8.52,
+          "period": 4.7,
+          "anchorFade": 18,
+          "parent": "orchard-layer-xixi-body",
+          "colorFamily": "orange",
+          "id": "orchard-motion-xixi-small-braid-left",
+          "kind": "hair",
+          "motionClass": "detail",
+          "tipBudget": [
+            2,
+            8.6
+          ],
+          "extractFromAsset": "duo-orchard",
+          "cutFromAssets": [
+            "orchard-layer-xixi-body"
+          ],
+          "underfillTargetAsset": "orchard-layer-xixi-body",
+          "meshStep": 4,
+          "anchorLock": 8,
+          "phase": 0,
+          "translation": [
+            0,
+            0
+          ],
+          "coveragePadding": 0.5,
+          "underfillExclusionPadding": 2,
+          "underfillMode": "boundary-extend",
+          "underfillPixels": 20,
+          "motionResponse": {
+            "enabled": true,
+            "localMix": 0.08,
+            "lagSeconds": 0.24,
+            "groupDelay": 0.035,
+            "returnMix": 0.06,
+            "returnDelay": 0.22,
+            "windSign": -1,
+            "waveScale": 1,
+            "localPeriod": 4.7
+          }
+        },
+        {
+          "asset": "orchard-motion-xixi-small-braid-right",
+          "path": "M298 600 C281 598 264 601 258 612 C248 626 262 650 284 659 L303 666 L292 656 C300 659 308 659 316 654 C299 658 281 643 273 631 C265 618 275 609 292 607 Z",
+          "bounds": [
+            246,
+            597,
+            73,
+            71
+          ],
+          "pivot": [
+            298,
+            602
+          ],
+          "rootSegments": [
+            [
+              [
+                291,
+                600
+              ],
+              [
+                299,
+                605
+              ]
+            ]
+          ],
+          "motionTip": [
+            302,
+            664
+          ],
+          "radius": 80,
+          "rotation": 7.1,
+          "period": 5.2,
+          "anchorFade": 20,
+          "parent": "orchard-layer-xixi-body",
+          "colorFamily": "orange",
+          "id": "orchard-motion-xixi-small-braid-right",
+          "kind": "hair",
+          "motionClass": "detail",
+          "tipBudget": [
+            2,
+            8.6
+          ],
+          "extractFromAsset": "duo-orchard",
+          "cutFromAssets": [
+            "orchard-layer-xixi-body"
+          ],
+          "underfillTargetAsset": "orchard-layer-xixi-body",
+          "meshStep": 4,
+          "anchorLock": 8,
+          "phase": 0,
+          "translation": [
+            0,
+            0
+          ],
+          "coveragePadding": 0.5,
+          "underfillExclusionPadding": 2,
+          "underfillMode": "boundary-extend",
+          "underfillPixels": 20,
+          "motionResponse": {
+            "enabled": true,
+            "localMix": 0.08,
+            "lagSeconds": 0.24,
+            "groupDelay": 0.035,
+            "returnMix": 0.06,
+            "returnDelay": 0.22,
+            "windSign": -1,
+            "waveScale": 1,
+            "localPeriod": 5.2
+          }
+        },
+        {
+          "asset": "orchard-motion-yaya-spiral-left",
+          "path": "M758 476 C765 489 764 507 753 521 L743 532 C754 526 769 515 773 500 C777 488 770 478 766 473 Z",
+          "bounds": [
+            742,
+            472,
+            36,
+            62
+          ],
+          "pivot": [
+            765,
+            478
+          ],
+          "rootSegments": [
+            [
+              [
+                758,
+                476
+              ],
+              [
+                766,
+                473
+              ]
+            ]
+          ],
+          "motionTip": [
+            746,
+            530
+          ],
+          "radius": 62,
+          "rotation": 8.235999999999999,
+          "period": 4.8,
+          "anchorFade": 20,
+          "parent": "orchard-layer-denia-body",
+          "colorFamily": "pink",
+          "id": "orchard-motion-yaya-spiral-left",
+          "kind": "hair",
+          "motionClass": "detail",
+          "tipBudget": [
+            2,
+            8.6
+          ],
+          "extractFromAsset": "duo-orchard",
+          "cutFromAssets": [
+            "orchard-layer-denia-body"
+          ],
+          "underfillTargetAsset": "orchard-layer-denia-body",
+          "meshStep": 4,
+          "anchorLock": 8,
+          "phase": 0,
+          "translation": [
+            0,
+            0
+          ],
+          "coveragePadding": 0.5,
+          "underfillExclusionPadding": 2,
+          "underfillMode": "boundary-extend",
+          "underfillPixels": 20,
+          "motionResponse": {
+            "enabled": true,
+            "localMix": 0.12,
+            "lagSeconds": 0.24,
+            "groupDelay": 0.23,
+            "returnMix": 0.18,
+            "returnDelay": 0.3,
+            "windSign": -1,
+            "waveScale": 1,
+            "localPeriod": 4.8
+          }
+        },
+        {
+          "asset": "orchard-motion-yaya-spiral-right",
+          "path": "M906 474 C897 486 893 503 904 516 L919 527 C902 524 891 513 891 500 C891 488 897 478 901 472 Z",
+          "bounds": [
+            889,
+            471,
+            32,
+            58
+          ],
+          "pivot": [
+            905,
+            477
+          ],
+          "rootSegments": [
+            [
+              [
+                901,
+                472
+              ],
+              [
+                909,
+                477
+              ]
+            ]
+          ],
+          "motionTip": [
+            916,
+            525
+          ],
+          "radius": 57,
+          "rotation": 8.946,
+          "period": 5.4,
+          "anchorFade": 20,
+          "parent": "orchard-layer-denia-body",
+          "colorFamily": "pink",
+          "id": "orchard-motion-yaya-spiral-right",
+          "kind": "hair",
+          "motionClass": "detail",
+          "tipBudget": [
+            2,
+            8.6
+          ],
+          "extractFromAsset": "duo-orchard",
+          "cutFromAssets": [
+            "orchard-layer-denia-body"
+          ],
+          "underfillTargetAsset": "orchard-layer-denia-body",
+          "meshStep": 4,
+          "anchorLock": 8,
+          "phase": 0,
+          "translation": [
+            0,
+            0
+          ],
+          "coveragePadding": 0.5,
+          "underfillExclusionPadding": 2,
+          "underfillMode": "boundary-extend",
+          "underfillPixels": 20,
+          "motionResponse": {
+            "enabled": true,
+            "localMix": 0.12,
+            "lagSeconds": 0.24,
+            "groupDelay": 0.23,
+            "returnMix": 0.18,
+            "returnDelay": 0.3,
+            "windSign": -1,
+            "waveScale": 1,
+            "localPeriod": 5.4
+          }
+        },
+        {
+          "asset": "orchard-motion-xixi-ahoge",
+          "path": "M334 250 C325 250 325 239 330 237 C336 234 343 239 345 245 L341 248 C339 242 334 238 331 241 C329 244 331 247 334 247 Z",
+          "bounds": [
+            324,
+            233,
+            23,
+            20
+          ],
+          "pivot": [
+            343,
+            248
+          ],
+          "rootSegments": [
+            [
+              [
+                334,
+                247
+              ],
+              [
+                341,
+                248
+              ]
+            ]
+          ],
+          "motionTip": [
+            328,
+            240
+          ],
+          "radius": 20,
+          "rotation": 14,
+          "period": 4.9,
+          "anchorFade": 8,
+          "parent": "orchard-layer-xixi-body",
+          "colorFamily": "orange",
+          "id": "orchard-motion-xixi-ahoge",
+          "kind": "hair",
+          "motionClass": "detail",
+          "tipBudget": [
+            1.5,
+            6
+          ],
+          "extractFromAsset": "duo-orchard",
+          "cutFromAssets": [
+            "orchard-layer-xixi-body"
+          ],
+          "underfillTargetAsset": "orchard-layer-xixi-body",
+          "meshStep": 2,
+          "anchorLock": 5,
+          "phase": 0,
+          "translation": [
+            0,
+            0
+          ],
+          "coveragePadding": 0.5,
+          "underfillExclusionPadding": 2,
+          "underfillMode": "boundary-extend",
+          "underfillPixels": 20,
+          "motionResponse": {
+            "enabled": true,
+            "localMix": 0.08,
+            "lagSeconds": 0.12,
+            "groupDelay": 0.035,
+            "returnMix": 0.06,
+            "returnDelay": 0.22,
+            "windSign": 1,
+            "waveScale": 1,
+            "localPeriod": 4.9
+          }
+        },
+        {
+          "asset": "orchard-motion-yaya-bang-tip",
+          "path": "M716 433 C715 445 706 454 694 459 C703 461 714 456 721 448 L721 440 Z",
+          "bounds": [
+            693,
+            432,
+            30,
+            31
+          ],
+          "pivot": [
+            718,
+            438
+          ],
+          "rootSegments": [
+            [
+              [
+                716,
+                433
+              ],
+              [
+                721,
+                440
+              ]
+            ]
+          ],
+          "motionTip": [
+            698,
+            459
+          ],
+          "radius": 32,
+          "rotation": 9,
+          "period": 5.7,
+          "anchorFade": 12,
+          "parent": "orchard-layer-denia-body",
+          "colorFamily": "pink",
+          "id": "orchard-motion-yaya-bang-tip",
+          "kind": "hair",
+          "motionClass": "detail",
+          "tipBudget": [
+            1.5,
+            6
+          ],
+          "extractFromAsset": "duo-orchard",
+          "cutFromAssets": [
+            "orchard-layer-denia-body"
+          ],
+          "underfillTargetAsset": "orchard-layer-denia-body",
+          "meshStep": 4,
+          "anchorLock": 8,
+          "phase": 0,
+          "translation": [
+            0,
+            0
+          ],
+          "coveragePadding": 0.5,
+          "underfillExclusionPadding": 2,
+          "underfillMode": "boundary-extend",
+          "underfillPixels": 20,
+          "motionResponse": {
+            "enabled": true,
+            "localMix": 0.08,
+            "lagSeconds": 0.18,
+            "groupDelay": 0.23,
+            "returnMix": 0.06,
+            "returnDelay": 0.22,
+            "windSign": -1,
+            "waveScale": 1,
+            "localPeriod": 5.7
+          }
+        },
+        {
+          "asset": "orchard-motion-leaf-upper",
+          "path": "M22 498 C39 488 58 485 77 479 L91 475 C77 490 54 502 28 506 Z",
+          "bounds": [
+            19,
+            473,
+            75,
+            36
+          ],
+          "pivot": [
+            26,
+            501
+          ],
+          "rootSegments": [
+            [
+              [
+                22,
+                498
+              ],
+              [
+                28,
+                506
+              ]
+            ]
+          ],
+          "motionTip": [
+            87,
+            479
+          ],
+          "radius": 72,
+          "rotation": 3.2,
+          "period": 5.1,
+          "id": "orchard-motion-leaf-upper",
+          "kind": "foliage",
+          "motionClass": "detail",
+          "tipBudget": [
+            1.5,
+            5
+          ],
+          "colorFamily": "foliage",
+          "extractFromAsset": "duo-orchard",
+          "cutFromAssets": [
+            "orchard-layer-background-original",
+            "orchard-layer-foreground-fixed"
+          ],
+          "underfillTargetAsset": "orchard-clean-plate",
+          "meshStep": 4,
+          "anchorLock": 8,
+          "anchorFade": 10,
+          "phase": 0,
+          "translation": [
+            0,
+            0
+          ],
+          "coveragePadding": 0.5,
+          "underfillExclusionPadding": 2,
+          "underfillMode": "boundary-extend",
+          "underfillPixels": 20,
+          "motionResponse": {
+            "enabled": true,
+            "localMix": 0.05,
+            "lagSeconds": 0.16,
+            "groupDelay": 0.08,
+            "returnMix": 0.03,
+            "returnDelay": 0.18,
+            "windSign": 1,
+            "waveScale": 1,
+            "localPeriod": 5.1
+          }
+        },
+        {
+          "asset": "orchard-motion-leaf-lower",
+          "path": "M30 536 C44 529 57 529 65 538 C58 541 44 542 32 544 Z",
+          "bounds": [
+            28,
+            527,
+            40,
+            20
+          ],
+          "pivot": [
+            32,
+            540
+          ],
+          "rootSegments": [
+            [
+              [
+                30,
+                536
+              ],
+              [
+                32,
+                544
+              ]
+            ]
+          ],
+          "motionTip": [
+            63,
+            537
+          ],
+          "radius": 36,
+          "rotation": 7,
+          "period": 4.6,
+          "id": "orchard-motion-leaf-lower",
+          "kind": "foliage",
+          "motionClass": "detail",
+          "tipBudget": [
+            1.5,
+            5
+          ],
+          "colorFamily": "foliage",
+          "extractFromAsset": "duo-orchard",
+          "cutFromAssets": [
+            "orchard-layer-background-original",
+            "orchard-layer-foreground-fixed"
+          ],
+          "underfillTargetAsset": "orchard-clean-plate",
+          "meshStep": 4,
+          "anchorLock": 8,
+          "anchorFade": 10,
+          "phase": 0,
+          "translation": [
+            0,
+            0
+          ],
+          "coveragePadding": 0.5,
+          "underfillExclusionPadding": 2,
+          "underfillMode": "boundary-extend",
+          "underfillPixels": 20,
+          "motionResponse": {
+            "enabled": true,
+            "localMix": 0.05,
+            "lagSeconds": 0.16,
+            "groupDelay": 0.08,
+            "returnMix": 0.03,
+            "returnDelay": 0.18,
+            "windSign": 1,
+            "waveScale": 1,
+            "localPeriod": 4.6
+          }
+        }
+      ],
+      "blinkAsset": "orchard-blink",
+      "scenes": {
+        "night": {
+          "schemaVersion": 6,
+          "width": 1272,
+          "height": 847,
+          "sourceAsset": "duo-night",
+          "baseAsset": "night-motion-clean",
+          "blinkAsset": "night-motion-blink",
+          "coordinateSystem": "SVG paths, bounds, pivots and radius are in decoded 1272x847 source pixels. Eyes use normalized centers and radii; angles are radians. Rotation is degrees; period is seconds; phase is radians.",
+          "ownership": "Each moving path is removed from the fixed original and appears exactly once in its moving source layer. Generated underfill is only behind the resulting holes. Preserve original source RGB; do not warp the entire illustration.",
+          "maxDisplacementSourcePixels": 32,
+          "underfillMode": "boundary-extend",
+          "underfillPixels": 40,
+          "layers": [
+            {
+              "id": "night-xixi-free-hair-end",
+              "kind": "hair",
+              "path": "M 253 642 C 257 645 266 648 276 650 C 285 657 295 662 306 666 C 305 678 295 693 282 697 C 278 699 272 700 267 699 C 275 687 272 678 264 669 C 255 661 251 652 253 642 Z",
+              "bounds": [
+                251,
+                642,
+                55,
+                58
+              ],
+              "pivot": [
+                262,
+                647
+              ],
+              "motionTip": [
+                287,
+                694
+              ],
+              "radius": 65,
+              "rotation": 34,
+              "translation": [
+                0,
+                0
+              ],
+              "period": 4.2,
+              "phase": 0,
+              "feather": 0,
+              "anchorFade": 10,
+              "underfillMode": "boundary-extend",
+              "underfillPixels": 40,
+              "rootSegments": [
+                [
+                  [
+                    253,
+                    642
+                  ],
+                  [
+                    276,
+                    650
+                  ]
+                ]
+              ],
+              "underfill": "Continue orange hair at the upper cut seam, wooden bench behind the lower free end. Purple bow and upper braid stay fixed.",
+              "anchorLock": 14,
+              "motionResponse": {
+                "enabled": true,
+                "localMix": 0.015,
+                "lagSeconds": 0,
+                "groupDelay": 0.035,
+                "returnMix": 0,
+                "returnDelay": 0.22,
+                "windSign": -1,
+                "waveScale": 0.5,
+                "localPeriod": 4.2
+              }
+            },
+            {
+              "id": "night-yaya-free-upper-wisp",
+              "kind": "hair",
+              "path": "M 1004 124 C 1026 119 1047 110 1064 116 C 1070 119 1075 127 1078 137 C 1068 127 1062 121 1053 121 C 1043 121 1028 131 1012 134 Z",
+              "bounds": [
+                1004,
+                113,
+                74,
+                24
+              ],
+              "pivot": [
+                1007,
+                128
+              ],
+              "motionTip": [
+                1076,
+                135
+              ],
+              "radius": 80,
+              "rotation": 36,
+              "translation": [
+                0,
+                0
+              ],
+              "period": 4.6,
+              "phase": 0,
+              "feather": 0,
+              "anchorFade": 10,
+              "underfillMode": "boundary-extend",
+              "underfillPixels": 40,
+              "rootSegments": [
+                [
+                  [
+                    1004,
+                    124
+                  ],
+                  [
+                    1012,
+                    134
+                  ]
+                ]
+              ],
+              "underfill": "Continue pink hair at the left root; continue dark blue station floor/reflection behind the free upper contour. Main ponytail, ribbon, torso and every column remain fixed.",
+              "anchorLock": 14,
+              "motionResponse": {
+                "enabled": true,
+                "localMix": 0.015,
+                "lagSeconds": 0,
+                "groupDelay": 0.23,
+                "returnMix": 0,
+                "returnDelay": 0.22,
+                "windSign": -1,
+                "waveScale": 0.5,
+                "localPeriod": 4.6
+              }
+            },
+            {
+              "id": "night-xixi-loose-cloak-hem",
+              "kind": "cloth",
+              "path": "M 313 726 C 339 735 365 727 386 710 L 405 690 C 396 719 383 742 364 756 C 351 766 338 769 322 764 C 316 762 310 760 307 758 C 312 748 315 736 313 726 Z",
+              "bounds": [
+                307,
+                690,
+                98,
+                78
+              ],
+              "pivot": [
+                366,
+                709
+              ],
+              "motionTip": [
+                346,
+                765
+              ],
+              "radius": 90,
+              "rotation": 36,
+              "translation": [
+                0,
+                0
+              ],
+              "period": 4.8,
+              "phase": 0,
+              "feather": 0,
+              "anchorFade": 28,
+              "underfillMode": "boundary-extend",
+              "underfillPixels": 40,
+              "rootSegments": [
+                [
+                  [
+                    313,
+                    726
+                  ],
+                  [
+                    386,
+                    710
+                  ]
+                ],
+                [
+                  [
+                    386,
+                    710
+                  ],
+                  [
+                    405,
+                    690
+                  ]
+                ],
+                [
+                  [
+                    307,
+                    743
+                  ],
+                  [
+                    307,
+                    758
+                  ]
+                ]
+              ],
+              "underfill": "Continue purple/white cloak at the upper diagonal cut seam, wood beneath the free lower hem. Keep gold cord, round tie and left tassel around x304,y743 fixed. No skin, hand, thigh or bench pixels belong to this path. The left fastening edge at x307,y743–758 remains pinned beside the fixed gold cord.",
+              "anchorLock": 14,
+              "motionResponse": {
+                "enabled": true,
+                "localMix": 0.01,
+                "lagSeconds": 0,
+                "groupDelay": 0.215,
+                "returnMix": 0,
+                "returnDelay": 0.22,
+                "windSign": -1,
+                "waveScale": 0.5,
+                "localPeriod": 9.7
+              }
+            },
+            {
+              "id": "night-xixi-right-hanging-tassel",
+              "kind": "cloth",
+              "path": "M 750 754 C 760 753 768 758 771 765 C 773 772 774 779 773 785 C 772 794 766 801 758 801 C 755 801 752 799 750 797 C 756 788 759 776 755 766 Z",
+              "bounds": [
+                750,
+                753,
+                24,
+                48
+              ],
+              "pivot": [
+                753,
+                758
+              ],
+              "motionTip": [
+                761,
+                800
+              ],
+              "radius": 50,
+              "rotation": 32,
+              "translation": [
+                0,
+                0
+              ],
+              "period": 4,
+              "phase": 0,
+              "feather": 0,
+              "anchorFade": 8,
+              "underfillMode": "boundary-extend",
+              "underfillPixels": 40,
+              "rootSegments": [
+                [
+                  [
+                    750,
+                    754
+                  ],
+                  [
+                    760,
+                    755
+                  ]
+                ]
+              ],
+              "underfill": "Continue the dangling purple ribbon at its top seam and original dark floor behind it. The nearby hem, bench plank edge and bench shadow remain stationary.",
+              "anchorLock": 14,
+              "motionResponse": {
+                "enabled": true,
+                "localMix": 0.02,
+                "lagSeconds": 0,
+                "groupDelay": 0.215,
+                "returnMix": 0,
+                "returnDelay": 0.22,
+                "windSign": -1,
+                "waveScale": 0.5,
+                "localPeriod": 9.7
+              }
+            },
+            {
+              "id": "night-yaya-free-long-hair",
+              "kind": "hair",
+              "path": "M 1134 321 C 1151 331 1164 342 1173 360 C 1185 383 1184 410 1175 437 C 1164 469 1141 493 1118 499 C 1121 486 1130 473 1141 458 C 1153 438 1158 419 1156 396 C 1155 369 1148 343 1134 321 Z",
+              "bounds": [
+                1116,
+                319,
+                71,
+                182
+              ],
+              "pivot": [
+                1146,
+                337
+              ],
+              "motionTip": [
+                1118,
+                498
+              ],
+              "radius": 178,
+              "rotation": 18,
+              "translation": [
+                0,
+                0
+              ],
+              "period": 5.2,
+              "phase": 0,
+              "feather": 0,
+              "anchorFade": 25,
+              "rootSegments": [
+                [
+                  [
+                    1134,
+                    321
+                  ],
+                  [
+                    1164,
+                    342
+                  ]
+                ]
+              ],
+              "underfillMode": "boundary-extend",
+              "underfillPixels": 40,
+              "underfill": "The long solid pink lock falls in front of the blue celestial train. Extend original unowned boundary pixels inward at most 40px, so its inner edge reveals blue train and its outer edge reveals floor; never reveal a floor-only cleanplate against the blue train. The fixed upper hair root is tapered over 25px.",
+              "anchorLock": 14,
+              "coveragePadding": 1.5,
+              "underfillExclusionPadding": 4,
+              "motionResponse": {
+                "enabled": true,
+                "localMix": 0.015,
+                "lagSeconds": 0,
+                "groupDelay": 0.23,
+                "returnMix": 0,
+                "returnDelay": 0.22,
+                "windSign": -1,
+                "waveScale": 0.5,
+                "localPeriod": 5.2
+              }
+            },
+            {
+              "id": "night-yaya-loose-sleeve-hem",
+              "kind": "cloth",
+              "path": "M 1126 584 L 1154 597 L 1198 658 L 1170 685 L 1137 658 L 1157 642 Z",
+              "bounds": [
+                1126,
+                584,
+                72,
+                101
+              ],
+              "pivot": [
+                1140,
+                598
+              ],
+              "motionTip": [
+                1170,
+                684
+              ],
+              "radius": 110,
+              "rotation": 32,
+              "translation": [
+                0,
+                0
+              ],
+              "period": 5,
+              "phase": 0,
+              "feather": 0,
+              "anchorFade": 24,
+              "rootSegments": [
+                [
+                  [
+                    1126,
+                    584
+                  ],
+                  [
+                    1154,
+                    597
+                  ]
+                ]
+              ],
+              "underfillMode": "boundary-extend",
+              "underfillPixels": 40,
+              "underfill": "Only the freely hanging pink-brown sleeve cuff with gold edge. Keep shoulder, braid/cord fastening, upper arm, glove, body and legs fixed. Extend adjacent fixed garment pixels into the ownership hole for the revealed strip; fallback cleanplate only deeper than 40px.",
+              "anchorLock": 14,
+              "motionResponse": {
+                "enabled": true,
+                "localMix": 0.02,
+                "lagSeconds": 0,
+                "groupDelay": 0.41000000000000003,
+                "returnMix": 0,
+                "returnDelay": 0.22,
+                "windSign": -1,
+                "waveScale": 0.5,
+                "localPeriod": 11.3
+              }
+            },
+            {
+              "id": "night-xixi-braid-loop",
+              "kind": "hair",
+              "path": "M358 433 C340 436 321 445 310 460 C304 465 297 470 297 479 C297 493 307 503 314 508 C314 513 309 516 310 524 C306 525 300 527 294 529 C282 534 271 536 266 541 C263 546 263 554 262 565 C261 577 263 582 268 588 C269 592 273 598 276 602 C289 604 309 598 323 591 C333 585 338 577 340 566 C345 554 340 542 331 533 C330 531 329 528 328 525 C334 532 339 532 345 528 C360 525 373 519 383 508 C388 501 391 493 390 485 C378 479 366 474 355 465 C355 452 361 441 358 433 Z M272 541 L275 541 L274 543 L272 546 L270 549 L267 551 L266 550 L267 546 L268 543 Z",
+              "bounds": [
+                258,
+                431,
+                135,
+                175
+              ],
+              "pivot": [
+                354,
+                436
+              ],
+              "motionTip": [
+                339,
+                570
+              ],
+              "radius": 175,
+              "rotation": 26,
+              "translation": [
+                0,
+                0
+              ],
+              "period": 4.8,
+              "phase": 0,
+              "feather": 0,
+              "anchorFade": 64,
+              "anchorLock": 14,
+              "rootSegments": [
+                [
+                  [
+                    350,
+                    434
+                  ],
+                  [
+                    364,
+                    437
+                  ]
+                ],
+                [
+                  [
+                    267,
+                    592
+                  ],
+                  [
+                    284,
+                    599
+                  ]
+                ],
+                [
+                  [
+                    355,
+                    443
+                  ],
+                  [
+                    355,
+                    465
+                  ]
+                ],
+                [
+                  [
+                    355,
+                    465
+                  ],
+                  [
+                    390,
+                    485
+                  ]
+                ]
+              ],
+              "underfillMode": "boundary-extend",
+              "underfillPixels": 40,
+              "underfill": "Two connected orange braid lobes and their clasp bend between fixed upper cape contact and the fixed purple bow. Only original hair/clasp pixels belong to this path. Keep cloak, shoulder, skin, hands and bench fixed; nearest unowned floor/garment extends at most40px into the ownership hole.",
+              "coveragePadding": 2,
+              "fixedHoles": [
+                "M272 543 L273 543 L272 545 L269 548 L267 549 L268 546 L270 543 Z"
+              ],
+              "underfillExclusionPadding": 4,
+              "motionResponse": {
+                "enabled": true,
+                "localMix": 0.015,
+                "lagSeconds": 0,
+                "groupDelay": 0.035,
+                "returnMix": 0,
+                "returnDelay": 0.22,
+                "windSign": -1,
+                "waveScale": 0.5,
+                "localPeriod": 4.8
+              }
+            },
+            {
+              "id": "night-xixi-small-braid-left",
+              "path": "M488 290 L500 290 C505 305 501 323 500 337 C504 350 500 364 500 376 C506 389 505 407 500 420 C498 427 494 434 488 437 C483 434 485 426 486 418 C482 408 487 398 487 386 C481 377 487 364 488 352 C482 342 488 330 488 317 C482 306 485 298 488 290 Z",
+              "bounds": [
+                478,
+                287,
+                30,
+                153
+              ],
+              "pivot": [
+                494,
+                290
+              ],
+              "rootSegments": [
+                [
+                  [
+                    488,
+                    290
+                  ],
+                  [
+                    500,
+                    290
+                  ]
+                ],
+                [
+                  [
+                    486,
+                    427
+                  ],
+                  [
+                    498,
+                    429
+                  ]
+                ]
+              ],
+              "motionTip": [
+                499,
+                386
+              ],
+              "radius": 145,
+              "rotation": 6,
+              "period": 4.8,
+              "anchorFade": 28,
+              "kind": "hair",
+              "motionClass": "detail",
+              "tipBudget": [
+                1.5,
+                6
+              ],
+              "meshStep": 4,
+              "anchorLock": 8,
+              "translation": [
+                0,
+                0
+              ],
+              "phase": 0,
+              "feather": 0,
+              "coveragePadding": 2.5,
+              "underfillMode": "boundary-extend",
+              "underfillPixels": 20,
+              "underfillExclusionPadding": 4,
+              "fixedHoles": [
+                "M475 437 H515 V465 H475 Z"
+              ],
+              "motionResponse": {
+                "enabled": true,
+                "localMix": 0.08,
+                "lagSeconds": 0.24,
+                "groupDelay": 0.035,
+                "returnMix": 0.06,
+                "returnDelay": 0.22,
+                "windSign": -1,
+                "waveScale": 0.5,
+                "localPeriod": 4.8
+              }
+            },
+            {
+              "id": "night-xixi-small-braid-right",
+              "path": "M616 302 L630 302 C634 315 630 328 632 342 C635 353 631 367 632 381 C635 395 631 410 632 421 C632 429 628 434 623 436 C617 432 619 426 618 417 C613 407 619 395 619 383 C614 371 619 360 618 347 C613 333 618 320 616 302 Z",
+              "bounds": [
+                612,
+                301,
+                25,
+                136
+              ],
+              "pivot": [
+                625,
+                302
+              ],
+              "rootSegments": [
+                [
+                  [
+                    617,
+                    302
+                  ],
+                  [
+                    631,
+                    302
+                  ]
+                ],
+                [
+                  [
+                    618,
+                    426
+                  ],
+                  [
+                    633,
+                    428
+                  ]
+                ]
+              ],
+              "motionTip": [
+                630,
+                384
+              ],
+              "radius": 135,
+              "rotation": 6,
+              "period": 5.4,
+              "anchorFade": 28,
+              "kind": "hair",
+              "motionClass": "detail",
+              "tipBudget": [
+                1.5,
+                6
+              ],
+              "meshStep": 4,
+              "anchorLock": 8,
+              "translation": [
+                0,
+                0
+              ],
+              "phase": 0,
+              "feather": 0,
+              "coveragePadding": 0.5,
+              "underfillMode": "boundary-extend",
+              "underfillPixels": 20,
+              "underfillExclusionPadding": 2,
+              "motionResponse": {
+                "enabled": true,
+                "localMix": 0.08,
+                "lagSeconds": 0.24,
+                "groupDelay": 0.035,
+                "returnMix": 0.06,
+                "returnDelay": 0.22,
+                "windSign": -1,
+                "waveScale": 0.5,
+                "localPeriod": 5.4
+              }
+            },
+            {
+              "id": "night-yaya-spiral-left",
+              "path": "M794 291 C802 298 805 311 798 321 C792 330 779 333 770 326 C781 330 792 322 794 314 C797 307 795 300 792 296 Z",
+              "bounds": [
+                769,
+                290,
+                37,
+                44
+              ],
+              "pivot": [
+                794,
+                296
+              ],
+              "rootSegments": [
+                [
+                  [
+                    792,
+                    296
+                  ],
+                  [
+                    799,
+                    299
+                  ]
+                ]
+              ],
+              "motionTip": [
+                775,
+                326
+              ],
+              "radius": 44,
+              "rotation": 16,
+              "period": 4.4,
+              "anchorFade": 16,
+              "kind": "hair",
+              "motionClass": "detail",
+              "tipBudget": [
+                1.5,
+                6
+              ],
+              "meshStep": 4,
+              "anchorLock": 8,
+              "translation": [
+                0,
+                0
+              ],
+              "phase": 0,
+              "feather": 0,
+              "coveragePadding": 0.5,
+              "underfillMode": "boundary-extend",
+              "underfillPixels": 20,
+              "underfillExclusionPadding": 2,
+              "motionResponse": {
+                "enabled": true,
+                "localMix": 0.12,
+                "lagSeconds": 0.24,
+                "groupDelay": 0.23,
+                "returnMix": 0.18,
+                "returnDelay": 0.3,
+                "windSign": -1,
+                "waveScale": 0.5,
+                "localPeriod": 4.4
+              }
+            },
+            {
+              "id": "night-yaya-spiral-right",
+              "path": "M891 270 C883 278 881 287 889 293 L901 298 C889 300 881 296 878 288 C875 280 880 272 887 267 Z",
+              "bounds": [
+                874,
+                266,
+                29,
+                35
+              ],
+              "pivot": [
+                889,
+                271
+              ],
+              "rootSegments": [
+                [
+                  [
+                    887,
+                    267
+                  ],
+                  [
+                    893,
+                    272
+                  ]
+                ]
+              ],
+              "motionTip": [
+                896,
+                297
+              ],
+              "radius": 36,
+              "rotation": 18,
+              "period": 4.9,
+              "anchorFade": 14,
+              "kind": "hair",
+              "motionClass": "detail",
+              "tipBudget": [
+                1.5,
+                6
+              ],
+              "meshStep": 4,
+              "anchorLock": 8,
+              "translation": [
+                0,
+                0
+              ],
+              "phase": 0,
+              "feather": 0,
+              "coveragePadding": 0.5,
+              "underfillMode": "boundary-extend",
+              "underfillPixels": 20,
+              "underfillExclusionPadding": 2,
+              "motionResponse": {
+                "enabled": true,
+                "localMix": 0.12,
+                "lagSeconds": 0.24,
+                "groupDelay": 0.23,
+                "returnMix": 0.18,
+                "returnDelay": 0.3,
+                "windSign": -1,
+                "waveScale": 0.5,
+                "localPeriod": 4.9
+              }
+            },
+            {
+              "id": "night-xixi-bang-tip",
+              "path": "M636 217 C646 228 656 234 668 233 C663 239 657 242 651 241 L661 246 C648 246 639 239 633 230 Z",
+              "bounds": [
+                632,
+                216,
+                37,
+                32
+              ],
+              "pivot": [
+                636,
+                221
+              ],
+              "rootSegments": [
+                [
+                  [
+                    633,
+                    217
+                  ],
+                  [
+                    638,
+                    230
+                  ]
+                ]
+              ],
+              "motionTip": [
+                662,
+                244
+              ],
+              "radius": 36,
+              "rotation": 16,
+              "period": 5.6,
+              "anchorFade": 14,
+              "kind": "hair",
+              "motionClass": "detail",
+              "tipBudget": [
+                1.5,
+                6
+              ],
+              "meshStep": 4,
+              "anchorLock": 8,
+              "translation": [
+                0,
+                0
+              ],
+              "phase": 0,
+              "feather": 0,
+              "coveragePadding": 0.5,
+              "underfillMode": "boundary-extend",
+              "underfillPixels": 20,
+              "underfillExclusionPadding": 2,
+              "motionResponse": {
+                "enabled": true,
+                "localMix": 0.08,
+                "lagSeconds": 0.18,
+                "groupDelay": 0.035,
+                "returnMix": 0.06,
+                "returnDelay": 0.22,
+                "windSign": -1,
+                "waveScale": 0.5,
+                "localPeriod": 5.6
+              }
+            },
+            {
+              "id": "night-yaya-crown-wisp",
+              "path": "M742 91 C734 97 729 100 719 101 C726 105 736 103 743 98 Z",
+              "bounds": [
+                718,
+                90,
+                27,
+                16
+              ],
+              "pivot": [
+                741,
+                95
+              ],
+              "rootSegments": [
+                [
+                  [
+                    740,
+                    91
+                  ],
+                  [
+                    743,
+                    98
+                  ]
+                ]
+              ],
+              "motionTip": [
+                720,
+                102
+              ],
+              "radius": 26,
+              "rotation": 18,
+              "period": 4.7,
+              "anchorFade": 12,
+              "kind": "hair",
+              "motionClass": "detail",
+              "tipBudget": [
+                1.5,
+                6
+              ],
+              "meshStep": 4,
+              "anchorLock": 8,
+              "translation": [
+                0,
+                0
+              ],
+              "phase": 0,
+              "feather": 0,
+              "coveragePadding": 0.5,
+              "underfillMode": "boundary-extend",
+              "underfillPixels": 20,
+              "underfillExclusionPadding": 2,
+              "motionResponse": {
+                "enabled": true,
+                "localMix": 0.08,
+                "lagSeconds": 0.18,
+                "groupDelay": 0.23,
+                "returnMix": 0.06,
+                "returnDelay": 0.22,
+                "windSign": -1,
+                "waveScale": 0.5,
+                "localPeriod": 4.7
+              }
+            }
+          ],
+          "eyes": [
+            {
+              "id": "xixi-left-eye",
+              "group": 0,
+              "center": [
+                0.41981132,
+                0.29279811
+              ],
+              "radius": [
+                0.01415094,
+                0.01062574
+              ],
+              "angle": 0.02,
+              "sourceCenter": [
+                534,
+                248
+              ],
+              "sourceRadius": [
+                18,
+                9
+              ],
+              "sampleCenter": [
+                534,
+                252
+              ]
+            },
+            {
+              "id": "xixi-right-eye",
+              "group": 0,
+              "center": [
+                0.47248428,
+                0.29397875
+              ],
+              "radius": [
+                0.01493711,
+                0.01062574
+              ],
+              "angle": -0.1,
+              "sourceCenter": [
+                601,
+                249
+              ],
+              "sourceRadius": [
+                19,
+                9
+              ],
+              "sampleCenter": [
+                601,
+                253
+              ]
+            },
+            {
+              "id": "yaya-left-eye",
+              "group": 1,
+              "center": [
+                0.61792453,
+                0.17709563
+              ],
+              "radius": [
+                0.01257862,
+                0.01180638
+              ],
+              "angle": 0.38,
+              "sourceCenter": [
+                786,
+                150
+              ],
+              "sourceRadius": [
+                16,
+                10
+              ]
+            },
+            {
+              "id": "yaya-right-eye",
+              "group": 1,
+              "center": [
+                0.66430818,
+                0.19008264
+              ],
+              "radius": [
+                0.01415094,
+                0.01180638
+              ],
+              "angle": 0.08,
+              "sourceCenter": [
+                845,
+                161
+              ],
+              "sourceRadius": [
+                18,
+                10
+              ]
+            }
+          ],
+          "blinkGroups": [
+            {
+              "group": 0,
+              "character": "xixi",
+              "period": 6.7,
+              "phaseSeconds": 0.6,
+              "closedSeconds": 0.12,
+              "transitionSeconds": 0.065
+            },
+            {
+              "group": 1,
+              "character": "yaya",
+              "period": 7.9,
+              "phaseSeconds": 3.1,
+              "closedSeconds": 0.12,
+              "transitionSeconds": 0.065
+            }
+          ],
+          "lightMasks": [
+            {
+              "id": "warm-left-floor-reflections",
+              "channel": 0,
+              "path": "M 0 350 C 74 327 150 322 230 341 L 286 396 L 255 478 L 212 539 L 0 630 Z",
+              "maxLuminanceDelta": 0.115,
+              "geometryDisplacement": 0
+            },
+            {
+              "id": "cool-existing-hair-stars",
+              "channel": 1,
+              "path": "M 1064 284 C 1128 322 1153 383 1161 454 L 1118 502 L 1179 535 L 1245 504 C 1242 435 1213 369 1168 331 L 1095 290 Z",
+              "maxLuminanceDelta": 0.1,
+              "highlightOnly": true,
+              "geometryDisplacement": 0
+            }
+          ],
+          "fixedVerificationRegions": [
+            {
+              "id": "station-pillar",
+              "bounds": [
+                194,
+                10,
+                60,
+                252
+              ]
+            },
+            {
+              "id": "left-empty-bench-plank",
+              "bounds": [
+                94,
+                704,
+                126,
+                62
+              ]
+            },
+            {
+              "id": "bench-front-horizontal-seam",
+              "bounds": [
+                85,
+                769,
+                180,
+                14
+              ]
+            },
+            {
+              "id": "yaya-glove-on-xixi-shoulder",
+              "bounds": [
+                629,
+                268,
+                109,
+                76
+              ]
+            },
+            {
+              "id": "xixi-hands-touching",
+              "bounds": [
+                487,
+                724,
+                119,
+                78
+              ]
+            },
+            {
+              "id": "yaya-bodice-anchor",
+              "bounds": [
+                835,
+                358,
+                170,
+                160
+              ]
+            },
+            {
+              "id": "xixi-face-center",
+              "bounds": [
+                547,
+                260,
+                14,
+                18
+              ]
+            },
+            {
+              "id": "yaya-face-center",
+              "bounds": [
+                818,
+                165,
+                18,
+                18
+              ]
+            }
+          ],
+          "reviewLimitations": "Conservative hand-traced contours. Fine antialias pixels are approximated. Inspect the mask overlay and maximal motion frames before enabling; any mask taking visible wood, floor or skin pixels must be tightened or disabled. No head/torso translation or whole-canvas UV sway is permitted.",
+          "motionModel": "Bounded shared FM breeze with root/mid/tip analytical responses. Only detail layers have spatial delay; old large pieces keep a scalar response and the exact existing geometric amplitude envelope. Positive delayed returns are a visual approximation, not an integrated spring or full Live2D rig."
+        },
+        "night-tears": {
+          "schemaVersion": 6,
+          "width": 1272,
+          "height": 847,
+          "sourceAsset": "duo-night",
+          "baseAsset": "night-motion-clean",
+          "blinkAsset": "night-motion-blink",
+          "coordinateSystem": "SVG paths, bounds, pivots and radius are in decoded 1272x847 source pixels. Eyes use normalized centers and radii; angles are radians. Rotation is degrees; period is seconds; phase is radians.",
+          "ownership": "Each moving path is removed from the fixed original and appears exactly once in its moving source layer. Generated underfill is only behind the resulting holes. Preserve original source RGB; do not warp the entire illustration.",
+          "maxDisplacementSourcePixels": 32,
+          "underfillMode": "boundary-extend",
+          "underfillPixels": 40,
+          "layers": [
+            {
+              "id": "night-xixi-free-hair-end",
+              "kind": "hair",
+              "path": "M 253 642 C 257 645 266 648 276 650 C 285 657 295 662 306 666 C 305 678 295 693 282 697 C 278 699 272 700 267 699 C 275 687 272 678 264 669 C 255 661 251 652 253 642 Z",
+              "bounds": [
+                251,
+                642,
+                55,
+                58
+              ],
+              "pivot": [
+                262,
+                647
+              ],
+              "motionTip": [
+                287,
+                694
+              ],
+              "radius": 65,
+              "rotation": 34,
+              "translation": [
+                0,
+                0
+              ],
+              "period": 4.2,
+              "phase": 0,
+              "feather": 0,
+              "anchorFade": 10,
+              "underfillMode": "boundary-extend",
+              "underfillPixels": 40,
+              "rootSegments": [
+                [
+                  [
+                    253,
+                    642
+                  ],
+                  [
+                    276,
+                    650
+                  ]
+                ]
+              ],
+              "underfill": "Continue orange hair at the upper cut seam, wooden bench behind the lower free end. Purple bow and upper braid stay fixed.",
+              "anchorLock": 14,
+              "motionResponse": {
+                "enabled": true,
+                "localMix": 0.015,
+                "lagSeconds": 0,
+                "groupDelay": 0.035,
+                "returnMix": 0,
+                "returnDelay": 0.22,
+                "windSign": -1,
+                "waveScale": 0.5,
+                "localPeriod": 4.2
+              }
+            },
+            {
+              "id": "night-yaya-free-upper-wisp",
+              "kind": "hair",
+              "path": "M 1004 124 C 1026 119 1047 110 1064 116 C 1070 119 1075 127 1078 137 C 1068 127 1062 121 1053 121 C 1043 121 1028 131 1012 134 Z",
+              "bounds": [
+                1004,
+                113,
+                74,
+                24
+              ],
+              "pivot": [
+                1007,
+                128
+              ],
+              "motionTip": [
+                1076,
+                135
+              ],
+              "radius": 80,
+              "rotation": 36,
+              "translation": [
+                0,
+                0
+              ],
+              "period": 4.6,
+              "phase": 0,
+              "feather": 0,
+              "anchorFade": 10,
+              "underfillMode": "boundary-extend",
+              "underfillPixels": 40,
+              "rootSegments": [
+                [
+                  [
+                    1004,
+                    124
+                  ],
+                  [
+                    1012,
+                    134
+                  ]
+                ]
+              ],
+              "underfill": "Continue pink hair at the left root; continue dark blue station floor/reflection behind the free upper contour. Main ponytail, ribbon, torso and every column remain fixed.",
+              "anchorLock": 14,
+              "motionResponse": {
+                "enabled": true,
+                "localMix": 0.015,
+                "lagSeconds": 0,
+                "groupDelay": 0.23,
+                "returnMix": 0,
+                "returnDelay": 0.22,
+                "windSign": -1,
+                "waveScale": 0.5,
+                "localPeriod": 4.6
+              }
+            },
+            {
+              "id": "night-xixi-loose-cloak-hem",
+              "kind": "cloth",
+              "path": "M 313 726 C 339 735 365 727 386 710 L 405 690 C 396 719 383 742 364 756 C 351 766 338 769 322 764 C 316 762 310 760 307 758 C 312 748 315 736 313 726 Z",
+              "bounds": [
+                307,
+                690,
+                98,
+                78
+              ],
+              "pivot": [
+                366,
+                709
+              ],
+              "motionTip": [
+                346,
+                765
+              ],
+              "radius": 90,
+              "rotation": 36,
+              "translation": [
+                0,
+                0
+              ],
+              "period": 4.8,
+              "phase": 0,
+              "feather": 0,
+              "anchorFade": 28,
+              "underfillMode": "boundary-extend",
+              "underfillPixels": 40,
+              "rootSegments": [
+                [
+                  [
+                    313,
+                    726
+                  ],
+                  [
+                    386,
+                    710
+                  ]
+                ],
+                [
+                  [
+                    386,
+                    710
+                  ],
+                  [
+                    405,
+                    690
+                  ]
+                ],
+                [
+                  [
+                    307,
+                    743
+                  ],
+                  [
+                    307,
+                    758
+                  ]
+                ]
+              ],
+              "underfill": "Continue purple/white cloak at the upper diagonal cut seam, wood beneath the free lower hem. Keep gold cord, round tie and left tassel around x304,y743 fixed. No skin, hand, thigh or bench pixels belong to this path. The left fastening edge at x307,y743–758 remains pinned beside the fixed gold cord.",
+              "anchorLock": 14,
+              "motionResponse": {
+                "enabled": true,
+                "localMix": 0.01,
+                "lagSeconds": 0,
+                "groupDelay": 0.215,
+                "returnMix": 0,
+                "returnDelay": 0.22,
+                "windSign": -1,
+                "waveScale": 0.5,
+                "localPeriod": 9.7
+              }
+            },
+            {
+              "id": "night-xixi-right-hanging-tassel",
+              "kind": "cloth",
+              "path": "M 750 754 C 760 753 768 758 771 765 C 773 772 774 779 773 785 C 772 794 766 801 758 801 C 755 801 752 799 750 797 C 756 788 759 776 755 766 Z",
+              "bounds": [
+                750,
+                753,
+                24,
+                48
+              ],
+              "pivot": [
+                753,
+                758
+              ],
+              "motionTip": [
+                761,
+                800
+              ],
+              "radius": 50,
+              "rotation": 32,
+              "translation": [
+                0,
+                0
+              ],
+              "period": 4,
+              "phase": 0,
+              "feather": 0,
+              "anchorFade": 8,
+              "underfillMode": "boundary-extend",
+              "underfillPixels": 40,
+              "rootSegments": [
+                [
+                  [
+                    750,
+                    754
+                  ],
+                  [
+                    760,
+                    755
+                  ]
+                ]
+              ],
+              "underfill": "Continue the dangling purple ribbon at its top seam and original dark floor behind it. The nearby hem, bench plank edge and bench shadow remain stationary.",
+              "anchorLock": 14,
+              "motionResponse": {
+                "enabled": true,
+                "localMix": 0.02,
+                "lagSeconds": 0,
+                "groupDelay": 0.215,
+                "returnMix": 0,
+                "returnDelay": 0.22,
+                "windSign": -1,
+                "waveScale": 0.5,
+                "localPeriod": 9.7
+              }
+            },
+            {
+              "id": "night-yaya-free-long-hair",
+              "kind": "hair",
+              "path": "M 1134 321 C 1151 331 1164 342 1173 360 C 1185 383 1184 410 1175 437 C 1164 469 1141 493 1118 499 C 1121 486 1130 473 1141 458 C 1153 438 1158 419 1156 396 C 1155 369 1148 343 1134 321 Z",
+              "bounds": [
+                1116,
+                319,
+                71,
+                182
+              ],
+              "pivot": [
+                1146,
+                337
+              ],
+              "motionTip": [
+                1118,
+                498
+              ],
+              "radius": 178,
+              "rotation": 18,
+              "translation": [
+                0,
+                0
+              ],
+              "period": 5.2,
+              "phase": 0,
+              "feather": 0,
+              "anchorFade": 25,
+              "rootSegments": [
+                [
+                  [
+                    1134,
+                    321
+                  ],
+                  [
+                    1164,
+                    342
+                  ]
+                ]
+              ],
+              "underfillMode": "boundary-extend",
+              "underfillPixels": 40,
+              "underfill": "The long solid pink lock falls in front of the blue celestial train. Extend original unowned boundary pixels inward at most 40px, so its inner edge reveals blue train and its outer edge reveals floor; never reveal a floor-only cleanplate against the blue train. The fixed upper hair root is tapered over 25px.",
+              "anchorLock": 14,
+              "coveragePadding": 1.5,
+              "underfillExclusionPadding": 4,
+              "motionResponse": {
+                "enabled": true,
+                "localMix": 0.015,
+                "lagSeconds": 0,
+                "groupDelay": 0.23,
+                "returnMix": 0,
+                "returnDelay": 0.22,
+                "windSign": -1,
+                "waveScale": 0.5,
+                "localPeriod": 5.2
+              }
+            },
+            {
+              "id": "night-yaya-loose-sleeve-hem",
+              "kind": "cloth",
+              "path": "M 1126 584 L 1154 597 L 1198 658 L 1170 685 L 1137 658 L 1157 642 Z",
+              "bounds": [
+                1126,
+                584,
+                72,
+                101
+              ],
+              "pivot": [
+                1140,
+                598
+              ],
+              "motionTip": [
+                1170,
+                684
+              ],
+              "radius": 110,
+              "rotation": 32,
+              "translation": [
+                0,
+                0
+              ],
+              "period": 5,
+              "phase": 0,
+              "feather": 0,
+              "anchorFade": 24,
+              "rootSegments": [
+                [
+                  [
+                    1126,
+                    584
+                  ],
+                  [
+                    1154,
+                    597
+                  ]
+                ]
+              ],
+              "underfillMode": "boundary-extend",
+              "underfillPixels": 40,
+              "underfill": "Only the freely hanging pink-brown sleeve cuff with gold edge. Keep shoulder, braid/cord fastening, upper arm, glove, body and legs fixed. Extend adjacent fixed garment pixels into the ownership hole for the revealed strip; fallback cleanplate only deeper than 40px.",
+              "anchorLock": 14,
+              "motionResponse": {
+                "enabled": true,
+                "localMix": 0.02,
+                "lagSeconds": 0,
+                "groupDelay": 0.41000000000000003,
+                "returnMix": 0,
+                "returnDelay": 0.22,
+                "windSign": -1,
+                "waveScale": 0.5,
+                "localPeriod": 11.3
+              }
+            },
+            {
+              "id": "night-xixi-braid-loop",
+              "kind": "hair",
+              "path": "M358 433 C340 436 321 445 310 460 C304 465 297 470 297 479 C297 493 307 503 314 508 C314 513 309 516 310 524 C306 525 300 527 294 529 C282 534 271 536 266 541 C263 546 263 554 262 565 C261 577 263 582 268 588 C269 592 273 598 276 602 C289 604 309 598 323 591 C333 585 338 577 340 566 C345 554 340 542 331 533 C330 531 329 528 328 525 C334 532 339 532 345 528 C360 525 373 519 383 508 C388 501 391 493 390 485 C378 479 366 474 355 465 C355 452 361 441 358 433 Z M272 541 L275 541 L274 543 L272 546 L270 549 L267 551 L266 550 L267 546 L268 543 Z",
+              "bounds": [
+                258,
+                431,
+                135,
+                175
+              ],
+              "pivot": [
+                354,
+                436
+              ],
+              "motionTip": [
+                339,
+                570
+              ],
+              "radius": 175,
+              "rotation": 26,
+              "translation": [
+                0,
+                0
+              ],
+              "period": 4.8,
+              "phase": 0,
+              "feather": 0,
+              "anchorFade": 64,
+              "anchorLock": 14,
+              "rootSegments": [
+                [
+                  [
+                    350,
+                    434
+                  ],
+                  [
+                    364,
+                    437
+                  ]
+                ],
+                [
+                  [
+                    267,
+                    592
+                  ],
+                  [
+                    284,
+                    599
+                  ]
+                ],
+                [
+                  [
+                    355,
+                    443
+                  ],
+                  [
+                    355,
+                    465
+                  ]
+                ],
+                [
+                  [
+                    355,
+                    465
+                  ],
+                  [
+                    390,
+                    485
+                  ]
+                ]
+              ],
+              "underfillMode": "boundary-extend",
+              "underfillPixels": 40,
+              "underfill": "Two connected orange braid lobes and their clasp bend between fixed upper cape contact and the fixed purple bow. Only original hair/clasp pixels belong to this path. Keep cloak, shoulder, skin, hands and bench fixed; nearest unowned floor/garment extends at most40px into the ownership hole.",
+              "coveragePadding": 2,
+              "fixedHoles": [
+                "M272 543 L273 543 L272 545 L269 548 L267 549 L268 546 L270 543 Z"
+              ],
+              "underfillExclusionPadding": 4,
+              "motionResponse": {
+                "enabled": true,
+                "localMix": 0.015,
+                "lagSeconds": 0,
+                "groupDelay": 0.035,
+                "returnMix": 0,
+                "returnDelay": 0.22,
+                "windSign": -1,
+                "waveScale": 0.5,
+                "localPeriod": 4.8
+              }
+            },
+            {
+              "id": "night-xixi-small-braid-left",
+              "path": "M488 290 L500 290 C505 305 501 323 500 337 C504 350 500 364 500 376 C506 389 505 407 500 420 C498 427 494 434 488 437 C483 434 485 426 486 418 C482 408 487 398 487 386 C481 377 487 364 488 352 C482 342 488 330 488 317 C482 306 485 298 488 290 Z",
+              "bounds": [
+                478,
+                287,
+                30,
+                153
+              ],
+              "pivot": [
+                494,
+                290
+              ],
+              "rootSegments": [
+                [
+                  [
+                    488,
+                    290
+                  ],
+                  [
+                    500,
+                    290
+                  ]
+                ],
+                [
+                  [
+                    486,
+                    427
+                  ],
+                  [
+                    498,
+                    429
+                  ]
+                ]
+              ],
+              "motionTip": [
+                499,
+                386
+              ],
+              "radius": 145,
+              "rotation": 6,
+              "period": 4.8,
+              "anchorFade": 28,
+              "kind": "hair",
+              "motionClass": "detail",
+              "tipBudget": [
+                1.5,
+                6
+              ],
+              "meshStep": 4,
+              "anchorLock": 8,
+              "translation": [
+                0,
+                0
+              ],
+              "phase": 0,
+              "feather": 0,
+              "coveragePadding": 2.5,
+              "underfillMode": "boundary-extend",
+              "underfillPixels": 20,
+              "underfillExclusionPadding": 4,
+              "fixedHoles": [
+                "M475 437 H515 V465 H475 Z"
+              ],
+              "motionResponse": {
+                "enabled": true,
+                "localMix": 0.08,
+                "lagSeconds": 0.24,
+                "groupDelay": 0.035,
+                "returnMix": 0.06,
+                "returnDelay": 0.22,
+                "windSign": -1,
+                "waveScale": 0.5,
+                "localPeriod": 4.8
+              }
+            },
+            {
+              "id": "night-xixi-small-braid-right",
+              "path": "M616 302 L630 302 C634 315 630 328 632 342 C635 353 631 367 632 381 C635 395 631 410 632 421 C632 429 628 434 623 436 C617 432 619 426 618 417 C613 407 619 395 619 383 C614 371 619 360 618 347 C613 333 618 320 616 302 Z",
+              "bounds": [
+                612,
+                301,
+                25,
+                136
+              ],
+              "pivot": [
+                625,
+                302
+              ],
+              "rootSegments": [
+                [
+                  [
+                    617,
+                    302
+                  ],
+                  [
+                    631,
+                    302
+                  ]
+                ],
+                [
+                  [
+                    618,
+                    426
+                  ],
+                  [
+                    633,
+                    428
+                  ]
+                ]
+              ],
+              "motionTip": [
+                630,
+                384
+              ],
+              "radius": 135,
+              "rotation": 6,
+              "period": 5.4,
+              "anchorFade": 28,
+              "kind": "hair",
+              "motionClass": "detail",
+              "tipBudget": [
+                1.5,
+                6
+              ],
+              "meshStep": 4,
+              "anchorLock": 8,
+              "translation": [
+                0,
+                0
+              ],
+              "phase": 0,
+              "feather": 0,
+              "coveragePadding": 0.5,
+              "underfillMode": "boundary-extend",
+              "underfillPixels": 20,
+              "underfillExclusionPadding": 2,
+              "motionResponse": {
+                "enabled": true,
+                "localMix": 0.08,
+                "lagSeconds": 0.24,
+                "groupDelay": 0.035,
+                "returnMix": 0.06,
+                "returnDelay": 0.22,
+                "windSign": -1,
+                "waveScale": 0.5,
+                "localPeriod": 5.4
+              }
+            },
+            {
+              "id": "night-yaya-spiral-left",
+              "path": "M794 291 C802 298 805 311 798 321 C792 330 779 333 770 326 C781 330 792 322 794 314 C797 307 795 300 792 296 Z",
+              "bounds": [
+                769,
+                290,
+                37,
+                44
+              ],
+              "pivot": [
+                794,
+                296
+              ],
+              "rootSegments": [
+                [
+                  [
+                    792,
+                    296
+                  ],
+                  [
+                    799,
+                    299
+                  ]
+                ]
+              ],
+              "motionTip": [
+                775,
+                326
+              ],
+              "radius": 44,
+              "rotation": 16,
+              "period": 4.4,
+              "anchorFade": 16,
+              "kind": "hair",
+              "motionClass": "detail",
+              "tipBudget": [
+                1.5,
+                6
+              ],
+              "meshStep": 4,
+              "anchorLock": 8,
+              "translation": [
+                0,
+                0
+              ],
+              "phase": 0,
+              "feather": 0,
+              "coveragePadding": 0.5,
+              "underfillMode": "boundary-extend",
+              "underfillPixels": 20,
+              "underfillExclusionPadding": 2,
+              "motionResponse": {
+                "enabled": true,
+                "localMix": 0.12,
+                "lagSeconds": 0.24,
+                "groupDelay": 0.23,
+                "returnMix": 0.18,
+                "returnDelay": 0.3,
+                "windSign": -1,
+                "waveScale": 0.5,
+                "localPeriod": 4.4
+              }
+            },
+            {
+              "id": "night-yaya-spiral-right",
+              "path": "M891 270 C883 278 881 287 889 293 L901 298 C889 300 881 296 878 288 C875 280 880 272 887 267 Z",
+              "bounds": [
+                874,
+                266,
+                29,
+                35
+              ],
+              "pivot": [
+                889,
+                271
+              ],
+              "rootSegments": [
+                [
+                  [
+                    887,
+                    267
+                  ],
+                  [
+                    893,
+                    272
+                  ]
+                ]
+              ],
+              "motionTip": [
+                896,
+                297
+              ],
+              "radius": 36,
+              "rotation": 18,
+              "period": 4.9,
+              "anchorFade": 14,
+              "kind": "hair",
+              "motionClass": "detail",
+              "tipBudget": [
+                1.5,
+                6
+              ],
+              "meshStep": 4,
+              "anchorLock": 8,
+              "translation": [
+                0,
+                0
+              ],
+              "phase": 0,
+              "feather": 0,
+              "coveragePadding": 0.5,
+              "underfillMode": "boundary-extend",
+              "underfillPixels": 20,
+              "underfillExclusionPadding": 2,
+              "motionResponse": {
+                "enabled": true,
+                "localMix": 0.12,
+                "lagSeconds": 0.24,
+                "groupDelay": 0.23,
+                "returnMix": 0.18,
+                "returnDelay": 0.3,
+                "windSign": -1,
+                "waveScale": 0.5,
+                "localPeriod": 4.9
+              }
+            },
+            {
+              "id": "night-xixi-bang-tip",
+              "path": "M636 217 C646 228 656 234 668 233 C663 239 657 242 651 241 L661 246 C648 246 639 239 633 230 Z",
+              "bounds": [
+                632,
+                216,
+                37,
+                32
+              ],
+              "pivot": [
+                636,
+                221
+              ],
+              "rootSegments": [
+                [
+                  [
+                    633,
+                    217
+                  ],
+                  [
+                    638,
+                    230
+                  ]
+                ]
+              ],
+              "motionTip": [
+                662,
+                244
+              ],
+              "radius": 36,
+              "rotation": 16,
+              "period": 5.6,
+              "anchorFade": 14,
+              "kind": "hair",
+              "motionClass": "detail",
+              "tipBudget": [
+                1.5,
+                6
+              ],
+              "meshStep": 4,
+              "anchorLock": 8,
+              "translation": [
+                0,
+                0
+              ],
+              "phase": 0,
+              "feather": 0,
+              "coveragePadding": 0.5,
+              "underfillMode": "boundary-extend",
+              "underfillPixels": 20,
+              "underfillExclusionPadding": 2,
+              "motionResponse": {
+                "enabled": true,
+                "localMix": 0.08,
+                "lagSeconds": 0.18,
+                "groupDelay": 0.035,
+                "returnMix": 0.06,
+                "returnDelay": 0.22,
+                "windSign": -1,
+                "waveScale": 0.5,
+                "localPeriod": 5.6
+              }
+            },
+            {
+              "id": "night-yaya-crown-wisp",
+              "path": "M742 91 C734 97 729 100 719 101 C726 105 736 103 743 98 Z",
+              "bounds": [
+                718,
+                90,
+                27,
+                16
+              ],
+              "pivot": [
+                741,
+                95
+              ],
+              "rootSegments": [
+                [
+                  [
+                    740,
+                    91
+                  ],
+                  [
+                    743,
+                    98
+                  ]
+                ]
+              ],
+              "motionTip": [
+                720,
+                102
+              ],
+              "radius": 26,
+              "rotation": 18,
+              "period": 4.7,
+              "anchorFade": 12,
+              "kind": "hair",
+              "motionClass": "detail",
+              "tipBudget": [
+                1.5,
+                6
+              ],
+              "meshStep": 4,
+              "anchorLock": 8,
+              "translation": [
+                0,
+                0
+              ],
+              "phase": 0,
+              "feather": 0,
+              "coveragePadding": 0.5,
+              "underfillMode": "boundary-extend",
+              "underfillPixels": 20,
+              "underfillExclusionPadding": 2,
+              "motionResponse": {
+                "enabled": true,
+                "localMix": 0.08,
+                "lagSeconds": 0.18,
+                "groupDelay": 0.23,
+                "returnMix": 0.06,
+                "returnDelay": 0.22,
+                "windSign": -1,
+                "waveScale": 0.5,
+                "localPeriod": 4.7
+              }
+            }
+          ],
+          "eyes": [
+            {
+              "id": "xixi-left-eye",
+              "group": 0,
+              "center": [
+                0.41981132,
+                0.29279811
+              ],
+              "radius": [
+                0.01415094,
+                0.01062574
+              ],
+              "angle": 0.02,
+              "sourceCenter": [
+                534,
+                248
+              ],
+              "sourceRadius": [
+                18,
+                9
+              ],
+              "sampleCenter": [
+                534,
+                252
+              ]
+            },
+            {
+              "id": "xixi-right-eye",
+              "group": 0,
+              "center": [
+                0.47248428,
+                0.29397875
+              ],
+              "radius": [
+                0.01493711,
+                0.01062574
+              ],
+              "angle": -0.1,
+              "sourceCenter": [
+                601,
+                249
+              ],
+              "sourceRadius": [
+                19,
+                9
+              ],
+              "sampleCenter": [
+                601,
+                253
+              ]
+            },
+            {
+              "id": "yaya-left-eye",
+              "group": 1,
+              "center": [
+                0.61792453,
+                0.17709563
+              ],
+              "radius": [
+                0.01257862,
+                0.01180638
+              ],
+              "angle": 0.38,
+              "sourceCenter": [
+                786,
+                150
+              ],
+              "sourceRadius": [
+                16,
+                10
+              ]
+            },
+            {
+              "id": "yaya-right-eye",
+              "group": 1,
+              "center": [
+                0.66430818,
+                0.19008264
+              ],
+              "radius": [
+                0.01415094,
+                0.01180638
+              ],
+              "angle": 0.08,
+              "sourceCenter": [
+                845,
+                161
+              ],
+              "sourceRadius": [
+                18,
+                10
+              ]
+            }
+          ],
+          "blinkGroups": [
+            {
+              "group": 0,
+              "character": "xixi",
+              "period": 6.7,
+              "phaseSeconds": 0.6,
+              "closedSeconds": 0.12,
+              "transitionSeconds": 0.065
+            },
+            {
+              "group": 1,
+              "character": "yaya",
+              "period": 7.9,
+              "phaseSeconds": 3.1,
+              "closedSeconds": 0.12,
+              "transitionSeconds": 0.065
+            }
+          ],
+          "lightMasks": [
+            {
+              "id": "warm-left-floor-reflections",
+              "channel": 0,
+              "path": "M 0 350 C 74 327 150 322 230 341 L 286 396 L 255 478 L 212 539 L 0 630 Z",
+              "maxLuminanceDelta": 0.115,
+              "geometryDisplacement": 0
+            },
+            {
+              "id": "cool-existing-hair-stars",
+              "channel": 1,
+              "path": "M 1064 284 C 1128 322 1153 383 1161 454 L 1118 502 L 1179 535 L 1245 504 C 1242 435 1213 369 1168 331 L 1095 290 Z",
+              "maxLuminanceDelta": 0.1,
+              "highlightOnly": true,
+              "geometryDisplacement": 0
+            }
+          ],
+          "fixedVerificationRegions": [
+            {
+              "id": "station-pillar",
+              "bounds": [
+                194,
+                10,
+                60,
+                252
+              ]
+            },
+            {
+              "id": "left-empty-bench-plank",
+              "bounds": [
+                94,
+                704,
+                126,
+                62
+              ]
+            },
+            {
+              "id": "bench-front-horizontal-seam",
+              "bounds": [
+                85,
+                769,
+                180,
+                14
+              ]
+            },
+            {
+              "id": "yaya-glove-on-xixi-shoulder",
+              "bounds": [
+                629,
+                268,
+                109,
+                76
+              ]
+            },
+            {
+              "id": "xixi-hands-touching",
+              "bounds": [
+                487,
+                724,
+                119,
+                78
+              ]
+            },
+            {
+              "id": "yaya-bodice-anchor",
+              "bounds": [
+                835,
+                358,
+                170,
+                160
+              ]
+            },
+            {
+              "id": "xixi-face-center",
+              "bounds": [
+                547,
+                260,
+                14,
+                18
+              ]
+            },
+            {
+              "id": "yaya-face-center",
+              "bounds": [
+                818,
+                165,
+                18,
+                18
+              ]
+            }
+          ],
+          "reviewLimitations": "Conservative hand-traced contours. Fine antialias pixels are approximated. Inspect the mask overlay and maximal motion frames before enabling; any mask taking visible wood, floor or skin pixels must be tightened or disabled. No head/torso translation or whole-canvas UV sway is permitted.",
+          "canonicalArtworkScene": "night",
+          "tearEffects": {
+            "enabled": true,
+            "opacity": 0.55,
+            "refraction": 0.22,
+            "bounds": [
+              530,
+              250,
+              76,
+              52
+            ],
+            "streams": [
+              {
+                "id": "xixi-left",
+                "start": [
+                  540,
+                  254
+                ],
+                "control1": [
+                  537.5,
+                  262
+                ],
+                "control2": [
+                  541,
+                  278
+                ],
+                "end": [
+                  537.5,
+                  285.5
+                ],
+                "period": 5.8,
+                "delay": 0.8,
+                "travelSeconds": 2.5,
+                "dropSeconds": 0.65,
+                "dropDistance": 12,
+                "width": 1.05,
+                "poolRadius": [
+                  3.4,
+                  1.05
+                ],
+                "dropRadius": 1.45
+              },
+              {
+                "id": "xixi-right",
+                "start": [
+                  598,
+                  256
+                ],
+                "control1": [
+                  600,
+                  264
+                ],
+                "control2": [
+                  592,
+                  277
+                ],
+                "end": [
+                  588,
+                  282.8
+                ],
+                "period": 6.4,
+                "delay": 2.5,
+                "travelSeconds": 2.8,
+                "dropSeconds": 0.7,
+                "dropDistance": 11,
+                "width": 1,
+                "poolRadius": [
+                  3.2,
+                  1
+                ],
+                "dropRadius": 1.35
+              }
+            ]
+          },
+          "motionModel": "Bounded shared FM breeze with root/mid/tip analytical responses. Only detail layers have spatial delay; old large pieces keep a scalar response and the exact existing geometric amplitude envelope. Positive delayed returns are a visual approximation, not an integrated spring or full Live2D rig."
+        }
+      },
+      "underfillMode": "boundary-extend",
+      "underfillPixels": 40,
+      "underfillSourceAsset": "duo-orchard",
+      "maxDisplacementSourcePixels": 36,
+      "edgeExtensionPixels": 48
+    },
+    "reading": {
+      "continuous": true,
+      "style": "scene"
+    },
+    "fusion": {
+      "paletteTitle": "晴光与泡影 · 调色板",
+      "defaults": {
+        "schemaVersion": 1,
+        "common": {
+          "chatWidth": 800,
+          "avoidPanels": true,
+          "focusMode": false,
+          "bubbles": true,
+          "companions": true,
+          "bubbleCount": 22,
+          "bubbleSpeed": 85,
+          "reduceMotion": false,
+          "sidebarArt": true,
+          "sidebarEmote": true,
+          "sceneEffects": true,
+          "wallpaperMotion": true,
+          "gradientText": true,
+          "livingScene": true,
+          "layeredScene": true
+        },
+        "modes": {
+          "light": {
+            "backgroundStrength": 100,
+            "messagePanel": true,
+            "messageOpacity": 60,
+            "left": {
+              "visible": true,
+              "size": 100,
+              "x": 0,
+              "y": 0
+            },
+            "primary": {
+              "visible": true,
+              "size": 100,
+              "x": 0,
+              "y": 0
+            },
+            "secondary": {
+              "visible": true,
+              "size": 100,
+              "x": 0,
+              "y": 0
+            }
+          },
+          "dark": {
+            "backgroundStrength": 100,
+            "messagePanel": true,
+            "messageOpacity": 64,
+            "left": {
+              "visible": true,
+              "size": 100,
+              "x": 0,
+              "y": 0
+            },
+            "primary": {
+              "visible": true,
+              "size": 100,
+              "x": 0,
+              "y": 0
+            },
+            "secondary": {
+              "visible": true,
+              "size": 100,
+              "x": 0,
+              "y": 0
+            }
+          }
+        }
+      },
+      "pairCards": true,
+      "splitSides": true,
+      "runtimePerformance": true,
+      "cards": {
+        "left": {
+          "width": 154,
+          "height": 230,
+          "anchor": "bottom"
+        },
+        "primary": {
+          "width": 132,
+          "height": 230,
+          "anchor": "bottom"
+        },
+        "secondary": {
+          "width": 144,
+          "height": 65,
+          "side": "left"
+        }
+      }
+    },
+    "gallery": {
+      "scenes": [
+        {
+          "id": "orchard",
+          "label": "果园午后",
+          "kicker": "双人 · 日光",
+          "asset": "duo-orchard",
+          "position": "50% 32%",
+          "description": "苹果、阳光，还有陪在身边的人。"
+        },
+        {
+          "id": "night",
+          "label": "夜色相依",
+          "kicker": "双人 · 静静相伴",
+          "asset": "duo-night",
+          "position": "55% 0%",
+          "description": "肩头相依，把温柔留在身旁。"
+        },
+        {
+          "id": "night-tears",
+          "label": "夜色相依·泪光",
+          "kicker": "双人 · 西西泪光",
+          "asset": "duo-night",
+          "position": "55% 0%",
+          "description": "西西悄悄落泪，娅娅仍守在身旁。"
+        },
+        {
+          "id": "sunset",
+          "label": "并肩晴空",
+          "kicker": "双人 · 金色回响",
+          "asset": "duo-sunset",
+          "position": "50% 40%",
+          "description": "让两个人站进同一片金色晴空。"
+        },
+        {
+          "id": "night-original",
+          "label": "昭日遇见暗潮",
+          "kicker": "双人 · 夜色试探",
+          "asset": "duo-night-original",
+          "position": "70% 45%",
+          "description": "递出一束暖光，等一个轻轻的回应。"
+        },
+        {
+          "id": "heart",
+          "label": "心意相通",
+          "kicker": "双人 · 比心",
+          "asset": "duo-heart",
+          "position": "50% 40%",
+          "description": "把心意悄悄比给你。"
+        },
+        {
+          "id": "story",
+          "label": "靠近的瞬间",
+          "kicker": "双人 · 贴贴",
+          "asset": "duo-story",
+          "position": "50% 76%",
+          "description": "有些故事，靠近一点就懂了。"
+        },
+        {
+          "id": "evening",
+          "label": "镜片里的晚霞",
+          "kicker": "双人 · 日常",
+          "asset": "duo-evening",
+          "position": "50% 45%",
+          "description": "把普通的一天也变成合照。"
+        },
+        {
+          "id": "train",
+          "label": "晴日慢车",
+          "kicker": "西格莉卡 · 旅途",
+          "asset": "sigrika-train",
+          "position": "50% 50%",
+          "description": "风经过的地方，也想带你去。"
+        },
+        {
+          "id": "dream",
+          "label": "抱进梦里",
+          "kicker": "西格莉卡 · 晚安",
+          "asset": "sigrika-dream",
+          "position": "50% 42%",
+          "description": "晚安，把一点牵挂留在枕边。"
+        },
+        {
+          "id": "breeze",
+          "label": "风与发梢",
+          "kicker": "西格莉卡 · 晴光",
+          "asset": "sigrika-breeze",
+          "position": "50% 36%",
+          "description": "微风翻过发梢，灵感也轻轻抵达。"
+        },
+        {
+          "id": "daydream",
+          "label": "薄荷白日梦",
+          "kicker": "西格莉卡 · 等你",
+          "asset": "sigrika-daydream",
+          "position": "50% 38%",
+          "description": "托着下巴，等你说说今天。"
+        },
+        {
+          "id": "sigrika-paws",
+          "label": "晴光击掌",
+          "kicker": "西格莉卡 · 举手",
+          "asset": "sigrika-paws",
+          "position": "50% 38%",
+          "description": "和泡影一起举起手。"
+        },
+        {
+          "id": "denia-paws",
+          "label": "泡影击掌",
+          "kicker": "达妮娅 · 举手",
+          "asset": "denia-paws",
+          "position": "50% 40%",
+          "description": "来自另一边的可爱回应。"
+        },
+        {
+          "id": "dsh-palace-light",
+          "label": "布景之形",
+          "kicker": "DSH 达妮娅 · 亮色原景",
+          "asset": "dsh-palace-light",
+          "position": "50% 45%",
+          "description": "粉色宫殿与轻盈泡影，来自 DSH 达妮娅原作。"
+        },
+        {
+          "id": "dsh-palace-dark",
+          "label": "幻灭之形",
+          "kicker": "DSH 达妮娅 · 暗色原景",
+          "asset": "dsh-palace-dark",
+          "position": "50% 45%",
+          "description": "星夜、冷蓝与虚无之泡，来自 DSH 达妮娅原作。"
+        }
+      ],
+      "defaults": {
+        "light": "orchard",
+        "dark": "night"
+      }
+    }
+  }
+}

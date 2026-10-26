@@ -29,6 +29,16 @@ function sunlitSceneMotionWave(layer,time,progress=0){
   const a=Math.fround(sunlitSceneResponseAt(layer,time,0)),b=Math.fround(sunlitSceneResponseAt(layer,time,.5)),c=Math.fround(sunlitSceneResponseAt(layer,time,1));
   const p=Math.max(0,Math.min(1,progress)),u=p<=.5?p*2:(p-.5)*2,k=u*u*(3-2*u);return p<=.5?a+(b-a)*k:b+(c-b)*k;
 }
+/* Compact support keeps the body silhouette, face, hands and hair junctions fixed.
+   The same source-pixel field is evaluated by diagnostics and the shared GPU. */
+function sunlitSceneBreathOffset(layer,time,x,y,out){
+  out[0]=out[1]=0;
+  for(const region of layer.breathRegions || []){
+    const qx=(x-region.center[0])/region.radius[0],qy=(y-region.center[1])/region.radius[1],support=Math.max(0,1-qx*qx-qy*qy),wave=Math.sin(time*2*Math.PI/region.period+region.phase)*(time<=0?0:1-Math.exp(-time*time/.64)),weight=support*support*wave;
+    out[0]+=(region.amount[0]+qx*region.expansion)*weight;out[1]+=region.amount[1]*weight;
+  }
+  return out;
+}
 function sunlitSceneVertexAt(layer,time,x,y,out){
   const pivot=layer.pivot || [0,0],dx=x-pivot[0],dy=y-pivot[1],flex=layer.kind==='hair' || layer.kind==='cloth' || layer.kind==='foliage';
   const smooth=(a,b,v)=>{const n=Math.max(0,Math.min(1,(v-a)/(b-a)));return n*n*(3-2*n);};
@@ -37,7 +47,8 @@ function sunlitSceneVertexAt(layer,time,x,y,out){
   const wave=sunlitSceneMotionWave(layer,time,progress),rotation=Number.isFinite(layer.rotationRadians)?layer.rotationRadians:(layer.rotation || 0)*Math.PI/180,angle=layer.kind==='body'?0:rotation*wave*weight;
   const translation=layer.translation || [0,0],baseWave=sunlitSceneMotionWave(layer,time,0),parent=layer.parentBody,parentWave=parent?Math.sin(time*2*Math.PI/parent.period+parent.phase):0;
   const tx=(flex?0:translation[0]*baseWave)+(parent?parent.translation[0]*parentWave:0),ty=(flex?0:translation[1]*baseWave)+(parent?parent.translation[1]*parentWave:0);
-  out[0]=pivot[0]+Math.cos(angle)*dx-Math.sin(angle)*dy+tx;out[1]=pivot[1]+Math.sin(angle)*dx+Math.cos(angle)*dy+ty;out[2]=angle;out[3]=wave;return out;
+  sunlitSceneBreathOffset(layer,time,x,y,out);const bx=out[0],by=out[1];
+  out[0]=bx+pivot[0]+Math.cos(angle)*dx-Math.sin(angle)*dy+tx;out[1]=by+pivot[1]+Math.sin(angle)*dx+Math.cos(angle)*dy+ty;out[2]=angle;out[3]=wave;return out;
 }
 /* The two cheek streams are source-space water shading only. Their timing is
    shared by the GPU backend and diagnostics; no face vertex ever moves. */
@@ -70,6 +81,7 @@ function sunlitCreateSceneGpuBackend(config){
   const textures=new Map();const finite=(n,f,a,b)=>Number.isFinite(n)?Math.max(a,Math.min(b,n)):f;
   const vertexSource=`attribute vec2 aPosition; varying vec2 vUv;
     uniform vec4 uCover; uniform vec2 uSourceSize; uniform vec2 uPivot; uniform vec2 uTranslation;
+    uniform float uTime;uniform vec4 uBreathA[2];uniform vec4 uBreathB[2];uniform vec2 uBreathExpansion;uniform int uBreathCount;
     uniform float uAngle; uniform vec3 uMotionWave; uniform float uRadius; uniform int uKind; uniform vec4 uRoots[4];uniform int uRootCount;uniform float uAnchorFade;uniform float uAnchorLock;
     void main(){
       vUv=aPosition/uSourceSize;
@@ -78,6 +90,7 @@ function sunlitCreateSceneGpuBackend(config){
       for(int i=0;i<4;i++){if(i>=uRootCount)break;vec4 root=uRoots[i];vec2 segment=root.zw-root.xy;float t=clamp(dot(aPosition-root.xy,segment)/max(dot(segment,segment),.001),0.0,1.0);weight*=smoothstep(uAnchorLock,uAnchorLock+uAnchorFade,length(aPosition-root.xy-t*segment));}
       float station=progress<=.5?smoothstep(0.0,.5,progress):smoothstep(.5,1.0,progress);float response=progress<=.5?mix(uMotionWave.x,uMotionWave.y,station):mix(uMotionWave.y,uMotionWave.z,station);float angle=uAngle*weight*response;
       vec2 p=uPivot+vec2(cos(angle)*d.x-sin(angle)*d.y,sin(angle)*d.x+cos(angle)*d.y)+uTranslation;
+      for(int i=0;i<2;i++){if(i>=uBreathCount)break;vec4 a=uBreathA[i],b=uBreathB[i];vec2 q=(aPosition-a.xy)/a.zw;float support=max(0.0,1.0-dot(q,q));float activation=uTime<=0.0?0.0:1.0-exp(-uTime*uTime/.64);float wave=sin(uTime*6.28318530718/b.z+b.w)*activation;float expansion=i==0?uBreathExpansion.x:uBreathExpansion.y;p+=vec2(b.x+q.x*expansion,b.y)*support*support*wave;}
       vec2 viewport=(p/uSourceSize-uCover.zw)/uCover.xy;
       gl_Position=vec4(viewport.x*2.0-1.0,1.0-viewport.y*2.0,0.0,1.0);
     }`;
@@ -148,7 +161,7 @@ function sunlitCreateSceneGpuBackend(config){
       program=gl.createProgram();gl.attachShader(program,vertex);gl.attachShader(program,fragment);gl.linkProgram(program);if(!gl.getProgramParameter(program,gl.LINK_STATUS))throw new Error(gl.getProgramInfoLog(program) || "shader-link");
       gl.useProgram(program);buffer=gl.createBuffer();gl.bindBuffer(gl.ARRAY_BUFFER,buffer);gl.bufferData(gl.ARRAY_BUFFER,new Float32Array(positions),gl.STATIC_DRAW);
       const attribute=gl.getAttribLocation(program,"aPosition");gl.enableVertexAttribArray(attribute);gl.vertexAttribPointer(attribute,2,gl.FLOAT,false,0,0);
-      uniforms=Object.fromEntries(["uCover","uSourceSize","uPivot","uTranslation","uAngle","uMotionWave","uRadius","uKind","uRoots[0]","uRootCount","uAnchorFade","uAnchorLock","uImage","uBlink","uMask","uSource","uLight","uComposite","uBlinkAmount","uEyes[0]","uEyeSamples[0]","uEyeAngles","uEyeGroups","uEyeCount","uLightAmount","uLightHighlights","uTime","uTearEnabled","uTearCount","uTearBounds","uTearStyle","uTearA[0]","uTearB[0]","uTearShape[0]","uTearMotion[0]","uTearDrop[0]"].map(name=>[name,gl.getUniformLocation(program,name)]));
+      uniforms=Object.fromEntries(["uBreathA[0]","uBreathB[0]","uBreathExpansion","uBreathCount","uCover","uSourceSize","uPivot","uTranslation","uAngle","uMotionWave","uRadius","uKind","uRoots[0]","uRootCount","uAnchorFade","uAnchorLock","uImage","uBlink","uMask","uSource","uLight","uComposite","uBlinkAmount","uEyes[0]","uEyeSamples[0]","uEyeAngles","uEyeGroups","uEyeCount","uLightAmount","uLightHighlights","uTime","uTearEnabled","uTearCount","uTearBounds","uTearStyle","uTearA[0]","uTearB[0]","uTearShape[0]","uTearMotion[0]","uTearDrop[0]"].map(name=>[name,gl.getUniformLocation(program,name)]));
       gl.enable(gl.BLEND);gl.blendFunc(gl.ONE,gl.ONE_MINUS_SRC_ALPHA);gl.uniform1i(uniforms.uImage,0);gl.uniform1i(uniforms.uBlink,1);gl.uniform1i(uniforms.uMask,2);gl.uniform1i(uniforms.uSource,3);gl.uniform1i(uniforms.uLight,4);gl.uniform2f(uniforms.uSourceSize,sourceWidth,sourceHeight);
       gl.uniform4fv(uniforms["uEyes[0]"],new Float32Array([...eyes.flatMap(e=>[...e.center,...e.radius]),...Array((4-eyes.length)*4).fill(0)]));
       gl.uniform2fv(uniforms["uEyeSamples[0]"],new Float32Array([...eyes.flatMap(e=>e.sampleCenter),...Array((4-eyes.length)*2).fill(0)]));
@@ -177,6 +190,8 @@ function sunlitCreateSceneGpuBackend(config){
     if(!base)sunlitSceneMotionCoefficients(layer,time,layer.motionUniform);gl.uniform3fv(uniforms.uMotionWave,layer.motionUniform);gl.uniform1f(uniforms.uAngle,base || layer.kind==="body"?0:layer.rotation);const roots=base?emptyRoots:layer.rootSegments || emptyRoots;gl.uniform4fv(uniforms["uRoots[0]"],base?noRoots:layer.rootUniform);gl.uniform1i(uniforms.uRootCount,roots.length);gl.uniform1f(uniforms.uAnchorFade,layer.anchorFade || 8);gl.uniform1f(uniforms.uAnchorLock,layer.anchorLock || 0);
     // One-level parent body translation is shared exactly with its children.
     // Flex is still evaluated in artwork coordinates before that shared shift.
+    gl.uniform1i(uniforms.uBreathCount,base?0:layer.breathRegions.length);
+    if(!base && layer.breathRegions.length){gl.uniform4fv(uniforms["uBreathA[0]"],layer.breathUniformA);gl.uniform4fv(uniforms["uBreathB[0]"],layer.breathUniformB);gl.uniform2fv(uniforms.uBreathExpansion,layer.breathExpansion);}
     const parent=layer.parentBody;
     const parentWave=parent?Math.sin(time*2*Math.PI/parent.period+parent.phase):0;
     gl.uniform2f(uniforms.uTranslation,(base || flex?0:layer.translation[0]*wave)+(parent?parent.translation[0]*parentWave:0),(base || flex?0:layer.translation[1]*wave)+(parent?parent.translation[1]*parentWave:0));
@@ -259,7 +274,7 @@ function mountSunlitLayeredScene(context){
   win[key]=api;context.addCleanup?.(dispose);refresh();return dispose;
 }
 /* Authored RGBA orchard layers and source-pixel night pieces. Only the moving
-   ownership regions reveal the fixed clean background; the body stays still. */
+   ownership regions reveal the fixed clean background; compact body breathing stays inside authored garment regions. */
 function mountSunlitLayeredSceneRenderer(context) {
   const { document: doc, window: win } = context;
   const html=doc.documentElement, key="__SUNLIT_LAYERED_SCENE_RENDERER__", options=context.config?.layeredScene || {};
@@ -275,12 +290,13 @@ function mountSunlitLayeredSceneRenderer(context) {
     asset:sourceAsset || layer.asset, id:layer.id || layer.asset, path:layer.path,colorFamily:["orange","pink","foliage"].includes(layer.colorFamily)?layer.colorFamily:null,extractFromAsset:typeof layer.extractFromAsset==="string"?layer.extractFromAsset:null,cutFromAssets:Array.isArray(layer.cutFromAssets)?layer.cutFromAssets.slice(0,6):[],underfillTargetAsset:typeof layer.underfillTargetAsset==="string"?layer.underfillTargetAsset:null,meshStep:Math.round(finite(layer.meshStep,sourceAsset?8:12,2,12)),coveragePadding:finite(layer.coveragePadding,0,0,3),fixedHoles:Array.isArray(layer.fixedHoles)?layer.fixedHoles.slice(0,4):[],underfillExclusionPadding:finite(layer.underfillExclusionPadding,0,0,6),underfillMode:layer.underfillMode || options.underfillMode,underfillPixels:Math.floor(finite(layer.underfillPixels ?? options.underfillPixels,40,1,40)),motionTip:Array.isArray(layer.motionTip)?layer.motionTip.slice(0,2):null, rootSegments:(layer.rootSegments || []).slice(0,4),anchorFade:finite(layer.anchorFade,8,1,64),anchorLock:Math.max(finite(layer.anchorLock,0,0,48),["hair","cloth","foliage"].includes(layer.kind)?Math.ceil(Math.SQRT2*finite(layer.meshStep,sourceAsset?8:12,2,12)+2):0),mask:sourceAsset || layer.extractFromAsset?"mask:"+index:null, parent:typeof layer.parent==="string"?layer.parent:null, kind:["hair","cloth","foliage","body","rigid"].includes(layer.kind)?layer.kind:"rigid",
     pivot:pair(layer.pivot,[640,640],0,1280), radius:finite(layer.radius,500,20,1800),
     rotation:finite(layer.rotation,["hair","cloth","foliage"].includes(layer.kind)?.3:0,-40,40)*Math.PI/180,rotationRadians:finite(layer.rotation,["hair","cloth","foliage"].includes(layer.kind)?.3:0,-40,40)*Math.PI/180,motionUniform:new Float32Array(3),motionResponse:{enabled:layer.motionResponse?.enabled===true,localMix:finite(layer.motionResponse?.localMix,0,0,.25),lagSeconds:finite(layer.motionResponse?.lagSeconds,0,0,.4),groupDelay:finite(layer.motionResponse?.groupDelay,0,0,1),returnMix:finite(layer.motionResponse?.returnMix,0,0,.3),returnDelay:finite(layer.motionResponse?.returnDelay,.25,0,.6),windSign:layer.motionResponse?.windSign===-1?-1:1,waveScale:sourceAsset?.5:1,localPeriod:finite(layer.motionResponse?.localPeriod,layer.period || 6,2,30)},
+    breathRegions:!sourceAsset && layer.kind==="body"?(layer.breathRegions || []).slice(0,2).map(region=>({center:pair(region.center,[640,640],0,1280),radius:pair(region.radius,[80,100],20,180),amount:pair(region.amount,[0,-3],-5,5),expansion:finite(region.expansion,0,0,3),period:finite(region.period,5,3,10),phase:finite(region.phase,0,-Math.PI,Math.PI)})):[],
     translation:pair(layer.translation,[0,0],-1,1), period:finite(layer.period,6,2,60), phase:finite(layer.phase,0,-100,100),
     blink:layer.blink===true || layer.asset===options.blinkLayer,
     bounds:Array.isArray(layer.bounds) && layer.bounds.length===4 && layer.bounds.every(Number.isFinite) && layer.bounds[2]>0 && layer.bounds[3]>0?layer.bounds.slice():[0,0,1280,1280]
   }));
   const blinkAsset=options.blinkAsset || (layers.some(layer=>layer.blink)?"orchard-blink":null);
-  for(const layer of layers){layer.parentBody=layer.kind!=="body" && layer.parent?layers.find(parent=>parent.asset===layer.parent && parent.kind==="body") || null:null;layer.rootUniform=new Float32Array([...layer.rootSegments.flat(2),...Array((4-layer.rootSegments.length)*4).fill(0)]);}
+  for(const layer of layers){layer.breathUniformA=new Float32Array([...layer.breathRegions.flatMap(region=>[...region.center,...region.radius]),...Array((2-layer.breathRegions.length)*4).fill(0)]);layer.breathUniformB=new Float32Array([...layer.breathRegions.flatMap(region=>[...region.amount,region.period,region.phase]),...Array((2-layer.breathRegions.length)*4).fill(0)]);layer.breathExpansion=new Float32Array([layer.breathRegions[0]?.expansion || 0,layer.breathRegions[1]?.expansion || 0]);layer.parentBody=layer.kind!=="body" && layer.parent?layers.find(parent=>parent.asset===layer.parent && parent.kind==="body") || null:null;layer.rootUniform=new Float32Array([...layer.rootSegments.flat(2),...Array((4-layer.rootSegments.length)*4).fill(0)]);}
   const eyes=(options.eyes || [
     {center:[806/1280,315/1280],radius:[35/1280,23/1280],angle:-.55},
     {center:[750/1280,374/1280],radius:[27/1280,21/1280],angle:-.72}
@@ -313,7 +329,7 @@ function mountSunlitLayeredSceneRenderer(context) {
     return {first,count:positions.length/2-first,bounds:[left,top,right-left,bottom-top]};
   }
   const baseMesh=appendMesh([0,0,sourceWidth,sourceHeight],[0,0],false);
-  for(const layer of layers)layer.mesh=appendMesh(layer.bounds,layer.pivot,["hair","cloth","foliage"].includes(layer.kind),layer.meshStep);
+  for(const layer of layers)layer.mesh=appendMesh(layer.bounds,layer.pivot,layer.breathRegions.length>0 || ["hair","cloth","foliage"].includes(layer.kind),layer.meshStep);
   const setAttr=(name,value)=>{if(value===null){if(html.hasAttribute(name))html.removeAttribute(name);}else if(html.getAttribute(name)!==value)html.setAttribute(name,value);};
   function setReady(value){ready=value;setAttr(attrs[1],value?"true":null);if(canvas)canvas.hidden=!value;}
   function sceneTime(timestamp=win.performance.now()){return elapsed+(clockStart===null?0:Math.max(0,timestamp-clockStart)/1000);}
@@ -393,7 +409,7 @@ function mountSunlitLayeredSceneRenderer(context) {
     const bitmaps=[];
     try{
       for(const [id,value]of pendingUploads){const bitmap=await win.createImageBitmap(value.image,{premultiplyAlpha:"premultiply"});bitmaps.push({id,bitmap,nearest:value.nearest});if(disposed || token!==generation){for(const item of bitmaps)item.bitmap.close();return;}}
-      const source=sunlitSceneFrameDue.toString()+"\n"+sunlitSceneWindAt.toString()+"\n"+sunlitSceneResponseAt.toString()+"\n"+sunlitSceneMotionCoefficients.toString()+"\n"+sunlitSceneMotionWave.toString()+"\n"+sunlitSceneVertexAt.toString()+"\n"+sunlitSceneTearEase.toString()+"\n"+sunlitSceneTearAmounts.toString()+"\n"+sunlitCreateSceneGpuBackend.toString()+"\n("+sunlitSceneRenderWorker.toString()+")();";
+      const source=sunlitSceneFrameDue.toString()+"\n"+sunlitSceneWindAt.toString()+"\n"+sunlitSceneResponseAt.toString()+"\n"+sunlitSceneMotionCoefficients.toString()+"\n"+sunlitSceneMotionWave.toString()+"\n"+sunlitSceneBreathOffset.toString()+"\n"+sunlitSceneVertexAt.toString()+"\n"+sunlitSceneTearEase.toString()+"\n"+sunlitSceneTearAmounts.toString()+"\n"+sunlitCreateSceneGpuBackend.toString()+"\n("+sunlitSceneRenderWorker.toString()+")();";
       workerUrl=win.URL.createObjectURL(new win.Blob([source],{type:"text/javascript"}));worker=new win.Worker(workerUrl,{name:"sunlit-scene-"+scene});
       worker.onmessage=event=>{
         if(disposed || token!==generation)return;const message=event.data;
@@ -568,7 +584,7 @@ function mountSunlitLayeredSceneRenderer(context) {
     if(renderThread==="worker"){if(workerReady)postWorker({type:"configure",state:renderState(),width:renderWidth,height:renderHeight,seek:frozen});return workerReady;}
     if(!backend)return false;const result=backend.draw(time,renderState());frames=backend.frames;return result;
   }
-  const hasMotion=()=>tearSettings.enabled || lightingEnabled && lightMaskCount>0 || !!sourceAsset && !!blinkAsset && blinkEnabled || layers.some(layer=>layer.rotation!==0 && layer.kind!=="body" || !["hair","cloth","foliage"].includes(layer.kind) && layer.translation.some(n=>n!==0) || layer.blink && blinkAsset && blinkEnabled);
+  const hasMotion=()=>tearSettings.enabled || lightingEnabled && lightMaskCount>0 || !!sourceAsset && !!blinkAsset && blinkEnabled || layers.some(layer=>layer.breathRegions.length>0 || layer.rotation!==0 && layer.kind!=="body" || !["hair","cloth","foliage"].includes(layer.kind) && layer.translation.some(n=>n!==0) || layer.blink && blinkAsset && blinkEnabled);
   function schedule(){if(disposed || paused || frozen!==null || !hasMotion())return;if(renderThread==="worker"){if(workerReady)postWorker({type:"resume"});return;}if(!frame)frame=win.requestAnimationFrame(tick);}
   function tick(timestamp){
     frame=0;if(disposed || paused || frozen!==null)return;if(!main?.isConnected){refresh();return;}rafCallbacks++;if(observedRafLast!==null){observedRafDuration+=timestamp-observedRafLast;observedRafIntervals++;}observedRafLast=timestamp;

@@ -7,7 +7,7 @@ const FusionSettings = (() => {
   const defaults = () => ({
     schemaVersion: 1,
     common: {
-      chatWidth: 820, avoidPanels: true, focusMode: false, bubbles: true, companions: true,
+      layout: 'panorama', chatWidth: 820, avoidPanels: true, focusMode: false, bubbles: true, companions: true,
       bubbleCount: 16, bubbleSpeed: 100, reduceMotion: false,
       sidebarArt: true, sidebarEmote: true, sceneEffects: true, wallpaperMotion: true,
       gradientText: true, livingScene: true, layeredScene: true
@@ -25,6 +25,7 @@ const FusionSettings = (() => {
     for (const key of ['avoidPanels', 'focusMode', 'bubbles', 'companions', 'reduceMotion', 'sidebarArt', 'sidebarEmote', 'sceneEffects', 'wallpaperMotion', 'gradientText', 'livingScene', 'layeredScene']) {
       result.common[key] = bool(common[key], result.common[key]);
     }
+    result.common.layout = ['panorama', 'sidebar'].includes(common.layout) ? common.layout : 'panorama';
     result.common.chatWidth = number(common.chatWidth, 820, 480, 1440);
     result.common.bubbleCount = Math.round(number(common.bubbleCount, 16, 5, 40));
     result.common.bubbleSpeed = number(common.bubbleSpeed, 100, 30, 200);
@@ -67,6 +68,7 @@ const FusionSettings = (() => {
         if (boolKeys.has(key) && typeof object[key] !== 'boolean') throw new Error(`${path}.${key} 必须是布尔值。`);
       }
     }
+    if ('layout' in value.common && !['panorama', 'sidebar'].includes(value.common.layout)) throw new Error('common.layout 必须是 panorama 或 sidebar。');
     validateFields(value.common, Object.keys(defaults().common), 'common');
     for (const name of ['light', 'dark']) {
       const source = value.modes[name];
