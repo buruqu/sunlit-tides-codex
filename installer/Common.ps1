@@ -4,6 +4,25 @@ $ErrorActionPreference = 'Stop'
 function Get-SunlitRoot {
     [IO.Path]::GetFullPath((Join-Path $env:LOCALAPPDATA 'SunlitTidesCodex')).TrimEnd('\')
 }
+function Sync-SunlitEntrypoints([string]$Root, [string]$Action = 'Install') {
+    . (Join-Path $PSScriptRoot 'Entrypoints.ps1') -Root $Root -Action $Action
+    if ($Action -in @('Restore','Verify')) { return Invoke-SunlitEntrypoints -Action $Action -Root $Root }
+    $package = Get-AppxPackage OpenAI.Codex | Sort-Object Version -Descending | Select-Object -First 1
+    if ($null -eq $package) { throw 'Cannot find the installed Codex package for ordinary shortcuts.' }
+    $manifest = Get-AppxPackageManifest -Package $package.PackageFullName
+    $entry = @($manifest.Package.Applications.Application) | Where-Object { $_.Executable -match '(ChatGPT|Codex)\.exe$' } | Select-Object -First 1
+    if ($null -eq $entry) { throw 'Cannot identify the Codex application entry.' }
+    $exe = [IO.Path]::GetFullPath((Join-Path $package.InstallLocation $entry.Executable))
+    if (-not (Test-SunlitChild $exe $package.InstallLocation)) { throw 'Package entry escaped its installation directory.' }
+    $icon = Join-Path (Split-Path $exe -Parent) 'resources\icon-chatgpt.ico'
+    $stableIcon = Join-Path $Root 'data\entrypoints\codex.ico'
+    Assert-SunlitLocalPath $stableIcon
+    if ($Action -eq 'Install' -and (Test-Path -LiteralPath $icon -PathType Leaf)) {
+        [void][IO.Directory]::CreateDirectory((Split-Path $stableIcon -Parent))
+        Copy-Item -LiteralPath $icon -Destination $stableIcon -Force
+    } else { $stableIcon = $null }
+    Invoke-SunlitEntrypoints -Action $Action -Root $Root -OfficialExe $exe -Aumid ($package.PackageFamilyName + '!' + $entry.Id) -IconPath $stableIcon
+}
 function Get-SunlitHash([string]$Path) {
     # Windows PowerShell's Get-FileHash -LiteralPath calls a property cmdlet that
     # inherits -WhatIf; hash through a read-only stream so preflight still works.

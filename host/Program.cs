@@ -111,7 +111,8 @@ internal sealed class TrayContext : ApplicationContext
         _host.Notice += message => Dispatch(() => _icon.ShowBalloonTip(12000, "Codex · 晴光与泡影", message, ToolTipIcon.Info));
         _host.StartupRequested += window => Dispatch(() => ShowStartup(window));
         _server = SingleInstance.ServeAsync(HandleAsync, _stop.Token);
-        _host.Start(launch: command is "--startup" or "--launch" or "--enable", enable: command is "--launch" or "--enable");
+        _host.Start(launch: command is "--startup" or "--launch" or "--enable" or "--open",
+            enable: command is "--launch" or "--enable", launchWhenDisabled: command == "--open");
         if (command == "--preview-startup") Dispatch(() => ShowStartup(IntPtr.Zero));
     }
 
@@ -131,6 +132,7 @@ internal sealed class TrayContext : ApplicationContext
                 case "restore": await _host.SetEnabledAsync(false, false, _stop.Token); break;
                 case "enable": await _host.SetEnabledAsync(true, true, _stop.Token); break;
                 case "launch": await _host.SetEnabledAsync(true, true, _stop.Token); break;
+                case "open": await _host.LaunchAsync(_stop.Token); break;
                 case "preview-startup": Dispatch(() => ShowStartup(IntPtr.Zero)); break;
                 case "quit":
                     await _host.SetEnabledAsync(false, false, _stop.Token);
@@ -180,7 +182,8 @@ internal sealed class TrayContext : ApplicationContext
         try
         {
             _store.Log("startup-requested");
-            _animation = new(path, target, _host.StartupEnabled, enabled => _ = RunAction(() => _host.SetStartupEnabledAsync(enabled, _stop.Token)), _store.Log);
+            _animation = new(path, target != IntPtr.Zero ? target : _host.PreviewWindow, _host.StartupEnabled,
+                enabled => _ = RunAction(() => _host.SetStartupEnabledAsync(enabled, _stop.Token)), _store.Log);
             _animationAutomatic = target != IntPtr.Zero;
             _animation.Closed += (_, _) => { _animation = null; _animationAutomatic = false; };
             _animation.Show();

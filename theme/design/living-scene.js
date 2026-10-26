@@ -279,7 +279,7 @@ function mountSunlitLivingScene(context) {
     if(disposed)return;
     const enabled=html.dataset.fusionLivingScene===undefined?options.enabled===true:html.dataset.fusionLivingScene==="true";
     const task=html.classList.contains("tessalume-is-task") && html.classList.contains("tessalume-theme-active") && html.classList.contains("sgk-theme");
-    const requested=enabled && task && html.dataset.sgkScene==="orchard" && html.dataset.sunlitLayeredReady!=="true";
+    const requested=enabled && html.dataset.fusionWallpaperMotion!=="false" && task && html.dataset.sgkScene==="orchard" && html.dataset.sunlitLayeredReady!=="true";
     if (!requested) { active=false;setAttr(attributes[0],null);paused=true;reason="inactive";clearInteraction();if(canvas)release();return; }
     const mode=html.dataset.theme==="dark" || (!html.hasAttribute("data-theme") && html.classList.contains("electron-dark"))?"dark":"light";
     const incompatible=nativeCompatibility(mode);
@@ -307,7 +307,7 @@ function mountSunlitLivingScene(context) {
     if(frozen===null && !frame && !blinkTimer) { if(clockStart===null)clockStart=win.performance.now();scheduleTick(); }
   }
   const observer=new win.MutationObserver(refresh);
-  observer.observe(html,{attributes:true,attributeFilter:["class","style","data-theme","data-sgk-scene","data-fusion-living-scene","data-sunlit-layered-ready","data-fusion-focus","data-fusion-reduced-motion","data-tessalume-motion","data-tessalume-visual-placement","data-sunlit-wallpaper-owner"]});
+  observer.observe(html,{attributes:true,attributeFilter:["class","style","data-theme","data-sgk-scene","data-fusion-wallpaper-motion","data-fusion-living-scene","data-sunlit-layered-ready","data-fusion-focus","data-fusion-reduced-motion","data-tessalume-motion","data-tessalume-visual-placement","data-sunlit-wallpaper-owner"]});
   if(context.root && context.root!==html)observer.observe(context.root,{attributes:true,attributeFilter:["data-fusion-focus"]});
   doc.addEventListener("visibilitychange",refresh); media.addEventListener("change",refresh);
   for(const type of ["input","wheel","scroll"])doc.addEventListener(type,interaction,{capture:true,passive:true});

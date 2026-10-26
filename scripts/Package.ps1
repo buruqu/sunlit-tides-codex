@@ -1,4 +1,4 @@
-param([string]$Dotnet = 'dotnet')
+﻿param([string]$Dotnet = 'dotnet')
 $ErrorActionPreference = 'Stop'
 $projectRoot = Split-Path $PSScriptRoot -Parent
 $releaseRoot = Join-Path $projectRoot 'release'
@@ -27,7 +27,7 @@ try {
     Copy-Item -LiteralPath 'media/startup.mp4','media/MEDIA_NOTICE.md' -Destination (Join-Path $appRoot 'media') -Force
     $installerRoot = Join-Path $packageRoot 'installer'
     New-Item -ItemType Directory -Path $installerRoot -Force | Out-Null
-    foreach ($name in @('Common.ps1','Install.ps1','Restore.ps1','Uninstall.ps1','README.md')) {
+    foreach ($name in @('Common.ps1','Install.ps1','Restore.ps1','Uninstall.ps1','Entrypoints.ps1','Manage-Entrypoints.ps1','README.md')) {
         Copy-Item -LiteralPath (Join-Path 'installer' $name) -Destination $installerRoot -Force
     }
     Copy-Item -LiteralPath 'README.md','LICENSE','NOTICE.md' -Destination $packageRoot -Force
@@ -35,6 +35,11 @@ try {
     foreach ($action in @('Install','Restore','Uninstall')) {
         $command = "@echo off`r`npowershell.exe -NoLogo -NoProfile -ExecutionPolicy Bypass -File `"%~dp0installer\$action.ps1`"`r`nif errorlevel 1 pause`r`n"
         [IO.File]::WriteAllText((Join-Path $packageRoot "$action.cmd"), $command, [Text.Encoding]::ASCII)
+    }
+    foreach ($entryAction in @('Install','Restore')) {
+        $entryCommand = "@echo off`r`npowershell.exe -NoLogo -NoProfile -ExecutionPolicy Bypass -File `"%~dp0installer\Manage-Entrypoints.ps1`" -Action $entryAction`r`nif errorlevel 1 pause`r`n"
+        $entryName = if ($entryAction -eq 'Install') { 'Repair-Entrypoints.cmd' } else { 'Restore-Entrypoints.cmd' }
+        [IO.File]::WriteAllText((Join-Path $packageRoot $entryName), $entryCommand, [Text.Encoding]::ASCII)
     }
     $lines = Get-ChildItem -LiteralPath $packageRoot -Recurse -File | Where-Object Name -ne 'SHA256SUMS.txt' | Sort-Object FullName | ForEach-Object {
         $relative = $_.FullName.Substring($packageRoot.Length + 1).Replace('\','/')

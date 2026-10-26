@@ -5,6 +5,7 @@ namespace SunlitTidesCodex;
 internal static class LaunchPolicy
 {
     internal static bool AddDebugArguments(bool enabled, bool alreadyRunning) => enabled && !alreadyRunning;
+    internal static bool ShouldLaunch(bool requested, bool enabled, bool explicitOpen) => requested && (enabled || explicitOpen);
 }
 
 internal static class RestoreOrdering
@@ -43,6 +44,10 @@ internal static class SelfTests
             Assert(LaunchPolicy.AddDebugArguments(true, false), "cold-theme-launch");
             Assert(!LaunchPolicy.AddDebugArguments(true, true), "never-relaunch-running-app");
             Assert(!LaunchPolicy.AddDebugArguments(false, false), "default-mode-no-debug");
+            Assert(LaunchPolicy.ShouldLaunch(true, false, true), "ordinary-open-preserves-disabled-choice-and-still-opens-app");
+            Assert(!LaunchPolicy.ShouldLaunch(true, false, false), "disabled-login-does-not-open-app");
+            Assert(LaunchPolicy.ShouldLaunch(true, true, false), "enabled-login-opens-themed-app");
+            Assert(!LaunchPolicy.ShouldLaunch(false, true, true), "no-unrequested-launch");
             var disabled = new Settings(true, 9340) with { Enabled = false };
             var restored = JsonSerializer.Deserialize<Settings>(JsonSerializer.Serialize(disabled));
             Assert(restored is { Enabled: false, LastPort: 9340 }, "restore-state-roundtrip");
@@ -65,10 +70,11 @@ internal static class SelfTests
             Assert(!playback.Observe(new(4, began.AddSeconds(3).UtcTicks, new IntPtr(40)), true), "toggle-on-does-not-replay-existing-app");
             Assert(!StartupAnimationWindow.ValidVideo(Path.Combine(Path.GetTempPath(), Guid.NewGuid() + ".mp4")), "missing-video-does-not-block-app");
             Assert(!StartupSettingsBridge.Publish(false).Contains("%%") && StartupSettingsBridge.Publish(false).Contains("const enabled = false;"), "startup-script-embedded");
-            foreach (var cli in new[] { "--launch", "--startup", "--status", "--restore", "--enable", "--quit", "--preview-startup" })
+            foreach (var cli in new[] { "--launch", "--open", "--startup", "--watch", "--status", "--restore", "--enable", "--quit", "--preview-startup" })
                 Assert(HostCommands.TryParseCli(cli, out var ipc) && HostCommands.IsIpc(ipc), "every-forwarded-cli-command-passes-server-validation:" + cli);
             Assert(HostCommands.TryParseCli("--preview-startup", out var preview) && preview == "preview-startup" && HostCommands.IsIpc(preview), "preview-command-roundtrip");
             Assert(HostCommands.TryParseCli("--startup", out var login) && login == "status", "existing-host-login-queries-without-relaunch");
+            Assert(HostCommands.TryParseCli("--watch", out var watch) && watch == "status", "background-upgrade-only-starts-monitoring");
             Assert(HostCommands.TryParseCli("--self-test", out var offline) && offline == "" && !HostCommands.IsIpc("self-test"), "self-test-remains-local-only");
             Assert(!HostCommands.TryParseCli("preview-startup", out _) && !HostCommands.TryParseCli("--unknown", out _) && !HostCommands.IsIpc("preview-startup extra"), "reject-malformed-commands");
             var scripts = ScriptBuilder.Build("Promise.resolve({installed:true,themeId:'sunlit-tides.codex'})", "Promise.resolve(true)", new string('a', 64));

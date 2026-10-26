@@ -112,16 +112,24 @@ function createFusionPalette({ document, initialState, mode, title, companionsEn
     }
   }
   const background = group('背景');
+  const galleryActions = element('div', 'actions');
+  const galleryButton = element('button', '', '选择背景');
+  galleryButton.type = 'button';
+  galleryButton.setAttribute('aria-haspopup', 'dialog');
+  galleryButton.setAttribute('aria-controls', 'sgk-background-gallery');
+  listen(galleryButton, 'click', () => win?.__SUNLIT_GALLERY__?.open(galleryButton));
+  galleryActions.append(galleryButton);
+  background.append(galleryActions, element('p', 'note', '果园午后为亮色默认，夜色相依为暗色默认；相册选择按亮暗模式分别保存。'));
   range(background, '背景强度', 'mode', 'backgroundStrength', 0, 100, '%');
   if (sidebarEnabled) check(background, '左侧栏人物背景', 'common', 'sidebarArt');
   if (sidebarEnabled) check(background, '正文与导航渐变字', 'common', 'gradientText');
   const motion = group('动效');
   if (companionsEnabled) check(motion, '动态 Q 版伙伴（总开关）', 'common', 'companions');
   if (xixiEmoteEnabled) check(motion, '西西立绘上方表情', 'common', 'sidebarEmote');
-  if (sceneEffectsEnabled) check(motion, '场景专属氛围', 'common', 'sceneEffects');
-  if (sceneEffectsEnabled) check(motion, '壁纸缓缓流动', 'common', 'wallpaperMotion');
-  if (sceneEffectsEnabled) check(motion, '果园轻眨眼', 'common', 'livingScene');
-  if (sceneEffectsEnabled) check(motion, '果园分层微风', 'common', 'layeredScene');
+  if (sceneEffectsEnabled) check(motion, '场景光影与氛围', 'common', 'sceneEffects');
+  if (sceneEffectsEnabled) check(motion, '背景动态（总开关）', 'common', 'wallpaperMotion');
+  if (sceneEffectsEnabled) check(motion, '主背景人物眨眼', 'common', 'livingScene');
+  if (sceneEffectsEnabled) check(motion, '主背景头发与衣摆摆动', 'common', 'layeredScene');
   check(motion, sceneEffectsEnabled ? '漂浮粒子 / 气泡' : '气泡', 'common', 'bubbles');
   range(motion, '气泡数量', 'common', 'bubbleCount', 5, 40);
   range(motion, '气泡速度', 'common', 'bubbleSpeed', 30, 200, '%');
@@ -153,7 +161,7 @@ function createFusionPalette({ document, initialState, mode, title, companionsEn
   const layout = group('避让与专注');
   check(layout, '避让右侧面板', 'common', 'avoidPanels');
   check(layout, '专注模式', 'common', 'focusMode');
-  panel.appendChild(element('p', 'note', '果园亮色与暗潮夜景跟随 Codex 当前外观，亮暗参数分别保存。调色板参数可导出备份；启动动画由启动器单独保存。'));
+  panel.appendChild(element('p', 'note', '背景与参数跟随 Codex 当前外观，亮暗模式分别保存。调色板参数可导出备份；启动动画由启动器单独保存。'));
   const actions = element('div', 'actions');
   const file = element('input'); file.type = 'file'; file.accept = '.json,application/json'; file.hidden = true;
   const status = element('p', 'status'); status.setAttribute('role', 'status'); status.setAttribute('aria-live', 'polite');

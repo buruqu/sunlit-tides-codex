@@ -7,9 +7,9 @@ registerTheme({
       stageClass: "sgk-stage",
       hero: {
         tag: "section", className: "sgk-hero-copy",
-        html: `<div class="sgk-home-title"><span class="sgk-hero-kicker" data-theme-part="hero-kicker"><i></i><span class="sgk-light-only">西格莉卡 · 达妮娅</span><span class="sgk-dark-only">西格莉卡 · 暗形态达妮娅</span></span>
+        html: `<div class="sgk-home-title"><span class="sgk-hero-kicker" data-theme-part="hero-kicker"><i></i><span class="sgk-light-only">西格莉卡 · 达妮娅</span><span class="sgk-dark-only">西格莉卡 · 达妮娅</span></span>
           <h1 class="sgk-light-only" data-theme-part="hero-title-light">晴光<em>与泡影</em></h1>
-          <h1 class="sgk-dark-only" data-theme-part="hero-title-dark">昭日<em>遇见暗潮</em></h1>
+          <h1 class="sgk-dark-only" data-theme-part="hero-title-dark">夜色<em>相依</em></h1>
           <p class="sgk-light-only">${escape(config.subtitle || "把期待写成晴光，让灵感泛起涟漪。")}</p>
           <p class="sgk-dark-only">温暖仍在，只是回应更轻。</p>
           <div class="sgk-dumpling-pair"><i class="sgk-dumpling-sigrika" aria-label="西西团子"></i><i class="sgk-dumpling-denia" aria-label="娅娅团子"></i></div><div class="sgk-duo-orbit" data-theme-part="hero-motion"><i></i><i></i><i></i><span></span></div>
@@ -19,7 +19,7 @@ registerTheme({
       },
       identity: {
         tag: "div", className: "sgk-identity",
-        html: `<span class="sgk-identity-emblem" data-theme-part="identity-emblem"><i></i><i></i></span><div data-theme-part="identity-copy"><b class="sgk-light-only">${escape(config.title || "晴光与泡影")}</b><b class="sgk-dark-only">昭日遇见暗潮</b><small>西格莉卡 · 达妮娅</small></div><i data-theme-part="identity-status"></i>`
+        html: `<span class="sgk-identity-emblem" data-theme-part="identity-emblem"><i></i><i></i></span><div data-theme-part="identity-copy"><b class="sgk-light-only">${escape(config.title || "晴光与泡影")}</b><b class="sgk-dark-only">夜色相依</b><small>西格莉卡 · 达妮娅</small></div><i data-theme-part="identity-status"></i>`
       },
       taskLeft: {
         tag: "aside", className: "sgk-task-card sgk-task-card-left",

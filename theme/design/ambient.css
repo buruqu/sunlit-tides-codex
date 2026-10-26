@@ -1,9 +1,11 @@
 /* Glass bubbles keep the engine's timing and motion; only their material changes. */
 html.sgk-theme [data-fusion-bubbles] {
   pointer-events:none!important;
-  mask-image:linear-gradient(90deg,#000 0px,#000 var(--fusion-reading-left,0px),transparent var(--fusion-reading-left,0px),transparent var(--fusion-reading-right,100%),#000 var(--fusion-reading-right,100%),#000 100%);
-  -webkit-mask-image:linear-gradient(90deg,#000 0px,#000 var(--fusion-reading-left,0px),transparent var(--fusion-reading-left,0px),transparent var(--fusion-reading-right,100%),#000 var(--fusion-reading-right,100%),#000 100%);
+  /* Whole particles are positioned in the side corridors by the layout pass. */
+  mask-image:none;
+  -webkit-mask-image:none;
 }
+html.sgk-theme [data-fusion-bubbles]>i[hidden] { display:none!important; }
 html.sgk-theme [data-fusion-bubbles]>i {
   pointer-events:none!important;
   width:calc(var(--bubble-size) * 1.5);height:calc(var(--bubble-size) * 1.5);

@@ -7,6 +7,17 @@ Assert-SunlitNoReparse $installRoot
 $marker = Get-SunlitMarker $installRoot
 if ($null -eq $marker) { throw '现有目录没有本程序所有权记录，已保留。' }
 if (-not $PSCmdlet.ShouldProcess($installRoot, '恢复默认、退出主题宿主并移除自己的启动项、快捷方式和未修改安装文件')) { return }
+$executable = Join-Path $installRoot 'SunlitTidesCodex.exe'
+# These two installer-owned shortcuts have their own exact ownership check;
+# remove them before verifying that ordinary links no longer need the host.
+foreach ($shortcut in @(Get-SunlitShortcuts)) {
+    if ((Test-Path -LiteralPath $shortcut -PathType Leaf) -and (Test-SunlitShortcut $shortcut $executable)) { Remove-Item -LiteralPath $shortcut }
+}
+$entryReport = Sync-SunlitEntrypoints $installRoot 'Restore'
+if (-not $entryReport.SafeToRemoveHost) {
+    $entryReport | ConvertTo-Json -Depth 8 | Write-Output
+    throw '部分普通入口需要核对，已保留主题宿主及备份，避免留下失效入口。'
+}
 Stop-SunlitOwnedHelper $installRoot $marker
 $executable = Join-Path $installRoot 'SunlitTidesCodex.exe'
 $runPath = 'HKCU:\Software\Microsoft\Windows\CurrentVersion\Run'

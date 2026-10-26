@@ -34,6 +34,9 @@ internal sealed class ThemeHost : IAsyncDisposable
     internal bool StartupEnabled => _settings.StartupEnabled;
     internal bool AutomaticStartupEnabled { get { var settings = _settings; return settings.Enabled && settings.StartupEnabled; } }
     internal Health Current => _health with { UpdatedAt = DateTimeOffset.Now };
+    internal IntPtr PreviewWindow => _package is { } package
+        ? StartupWatcher.Find(package).FirstOrDefault(instance => instance.Window != IntPtr.Zero)?.Window ?? IntPtr.Zero
+        : IntPtr.Zero;
 
     internal ThemeHost(StateStore store)
     {
@@ -52,7 +55,7 @@ internal sealed class ThemeHost : IAsyncDisposable
         catch (Exception e) when (e is IOException or JsonException or UnauthorizedAccessException) { }
     }
 
-    internal void Start(bool launch, bool enable)
+    internal void Start(bool launch, bool enable, bool launchWhenDisabled = false)
     {
         _startup.Start();
         _loop = Task.Run(async () =>
@@ -61,7 +64,7 @@ internal sealed class ThemeHost : IAsyncDisposable
             {
                 LoadTheme();
                 if (enable) await SetEnabledAsync(true, launch, _stop.Token);
-                else if (launch && _settings.Enabled) await LaunchAsync(_stop.Token);
+                else if (LaunchPolicy.ShouldLaunch(launch, _settings.Enabled, launchWhenDisabled)) await LaunchAsync(_stop.Token);
                 while (!_stop.IsCancellationRequested)
                 {
                     try { await ReconcileAsync(_stop.Token); }
@@ -89,8 +92,8 @@ internal sealed class ThemeHost : IAsyncDisposable
         var folder = Path.Combine(AppContext.BaseDirectory, "theme");
         using var manifest = JsonDocument.Parse(File.ReadAllText(Path.Combine(folder, "manifest.json")));
         if (manifest.RootElement.GetProperty("id").GetString() != "sunlit-tides.codex"
-            || manifest.RootElement.GetProperty("version").GetString() != "1.1.2"
-            || manifest.RootElement.GetProperty("config").GetProperty("designVersion").GetString() != "1.1.2") throw new InvalidDataException("manifest-invalid");
+            || manifest.RootElement.GetProperty("version").GetString() != "1.2.6"
+            || manifest.RootElement.GetProperty("config").GetProperty("designVersion").GetString() != "1.2.6") throw new InvalidDataException("manifest-invalid");
         string Expression(string file)
         {
             var path = Path.Combine(folder, file);
@@ -197,10 +200,14 @@ internal sealed class ThemeHost : IAsyncDisposable
             }
             else
             {
-                var port = CodexPackage.FindFreePort();
-                _ = _package.Launch(LaunchPolicy.AddDebugArguments(_settings.Enabled, alreadyRunning: false) ? port : null);
-                _settings = _settings with { LastPort = port };
-                _store.Save(_settings);
+                int? port = LaunchPolicy.AddDebugArguments(_settings.Enabled, alreadyRunning: false)
+                    ? CodexPackage.FindFreePort() : null;
+                _ = _package.Launch(port);
+                if (port is not null)
+                {
+                    _settings = _settings with { LastPort = port };
+                    _store.Save(_settings);
+                }
                 Update("waiting-for-codex", port);
             }
         }

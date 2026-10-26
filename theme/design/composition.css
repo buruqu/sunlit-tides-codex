@@ -9,7 +9,7 @@ html.sgk-theme.electron-dark {
 }
 /* Night only: keep the full main canvas covered beneath floating docks while
    shifting the pair toward the usable reading area. Orchard layers stay intact. */
-html.sgk-theme.tessalume-theme-active.tessalume-is-task[data-sgk-scene="night"][data-tessalume-visual-placement] main[data-tessalume-surface="main"]::before {
+html.sgk-theme.tessalume-theme-active.tessalume-is-task:is([data-sgk-scene="night"],[data-sgk-scene="night-tears"],[data-sgk-scene="night-original"])[data-tessalume-visual-placement] main[data-tessalume-surface="main"]::before {
   background-size:var(--sgk-night-image-size,cover)!important;
   background-position:var(--sgk-night-image-position,100% 0%)!important;
 }

@@ -83,6 +83,7 @@ function mountFusion(context) {
   let disposed = false;
   let frame = 0;
   let fullLayout = true;
+  let lastMainSurface;
   let tailDirty = false;
   let scrollGeometry = null;
   let saveTimer = 0;
@@ -197,13 +198,14 @@ function mountFusion(context) {
   bubbles.dataset.fusionBubbles = "true";
   bubbles.setAttribute("aria-hidden", "true");
   doc.body.append(bubbles);
-  let bubbleSignature = "";
+  let bubbleSignature = "", bubbleSeeds = [];
   function syncBubbles() {
     const { bubbleCount, bubbleSpeed } = state.common;
     const signature = bubbleCount + ":" + bubbleSpeed;
     if (signature !== bubbleSignature) {
       bubbleSignature = signature;
       bubbles.replaceChildren();
+      bubbleSeeds = [];
       const fragment = doc.createDocumentFragment();
       const random = (index, salt) => {
         let value = Math.imul(index + 1, 0x45d9f3b) ^ Math.imul(salt, 0x27d4eb2d);
@@ -220,9 +222,34 @@ function mountFusion(context) {
         bubble.style.setProperty("--bubble-duration", duration + "s");
         bubble.style.setProperty("--bubble-delay", (-random(i, 4) * duration) + "s");
         bubble.style.setProperty("--bubble-drift", ((random(i, 5) - .5) * 90) + "px");
+        bubbleSeeds.push({ node: bubble, size: 12 + seed * 30, x: .02 + random(i, 3) * .93, drift: (random(i, 5) - .5) * 90 });
         fragment.append(bubble);
       }
       bubbles.append(fragment);
+    }
+  }
+  function placeBubbles(width, readingLeft, readingRight) {
+    const wind = state.common.sceneEffects && html.dataset.sunlitSceneFamily === "wind";
+    for (const { node, size, x, drift: requestedDrift } of bubbleSeeds) {
+      // Preserve the original screen-wide density: particles seeded inside the
+      // reading lane stay absent. Visible particles keep their entire silhouette
+      // and drift path in a side corridor, instead of being cut by a lane mask.
+      const seededX = x * width;
+      const corridor = seededX < readingLeft ? [8, readingLeft - 8] : seededX > readingRight ? [readingRight + 8, width - 8] : null;
+      if (!corridor) { node.hidden = true; continue; }
+      // Includes every authored particle's scale/rotation and its soft rim.
+      // This uses stored seeds and existing layout measurements, no frame reads.
+      const particleWidth = size * 1.75, rim = size * .4 + 4;
+      const room = corridor[1] - corridor[0] - particleWidth - rim * 2;
+      const drift = Math.max(-Math.max(0, room), Math.min(Math.max(0, room), requestedDrift));
+      const minOffset = wind ? Math.min(-30, drift + 80) : Math.min(0, drift);
+      const maxOffset = wind ? Math.max(-30, drift + 80) : Math.max(0, drift);
+      const minX = corridor[0] + rim - minOffset, maxX = corridor[1] - particleWidth - rim - maxOffset;
+      node.hidden = maxX < minX;
+      if (!node.hidden) {
+        node.style.setProperty("--bubble-x", Math.max(minX, Math.min(maxX, seededX)) + "px");
+        node.style.setProperty("--bubble-drift", drift + "px");
+      }
     }
   }
   function applySettings() {
@@ -416,6 +443,14 @@ function mountFusion(context) {
     const current = state.modes[currentMode];
     // Codex keeps inactive chats mounted; only the visible workspace can own geometry.
     const { workspace, main, paper, composer, panels } = resolveFusionLayout(doc, win);
+    // Codex keeps inactive chats mounted. Announce ownership only when the
+    // visible surface changes, so artwork follows the active chat without
+    // reading layout in its animation loop.
+    const currentMainSurface = main || null;
+    if (lastMainSurface !== currentMainSurface) {
+      lastMainSurface = currentMainSurface;
+      win.dispatchEvent(new win.CustomEvent('sunlit-tides:main-surface-change', { detail: { main: currentMainSurface } }));
+    }
     const mainRect = rectOf(main) || makeRect(0, 44, win.innerWidth, win.innerHeight - 44);
     const area = rectOf(workspace) || mainRect;
     let paperRect = rectOf(paper);
@@ -599,6 +634,7 @@ function mountFusion(context) {
     bubbles.style.setProperty("--fusion-bubble-travel", (safeArea.height + 90) + "px");
     bubbles.style.setProperty("--fusion-reading-left", clamp(protectedLane.left - safeArea.left, 0, safeArea.width) + "px");
     bubbles.style.setProperty("--fusion-reading-right", clamp(protectedLane.right - safeArea.left, 0, safeArea.width) + "px");
+    placeBubbles(safeArea.width, clamp(protectedLane.left - safeArea.left, 0, safeArea.width), clamp(protectedLane.right - safeArea.left, 0, safeArea.width));
     bubbles.dataset.paused = String(!workspace || !state.common.bubbles || state.common.focusMode ||
       state.common.reduceMotion || media.matches || doc.hidden ||
       html.dataset.tessalumeMotion === "reduced" || html.dataset.tessalumeMotion === "off");
@@ -634,7 +670,7 @@ function mountFusion(context) {
     if (meaningful) schedule();
   });
   mutation.observe(html, { childList: true, subtree: true, attributes: true,
-    attributeFilter: ["class", "style", "hidden", "aria-hidden", "inert", "data-theme", "data-tessalume-motion", "data-tessalume-page-kind"] });
+    attributeFilter: ["class", "style", "hidden", "aria-hidden", "inert", "data-theme", "data-tessalume-motion", "data-tessalume-page-kind", "data-sunlit-scene-family"] });
   listen(win, "resize", schedule, { passive: true });
   listen(doc, "scroll", scroll, { passive: true, capture: true });
   listen(doc, "visibilitychange", schedule);

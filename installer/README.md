@@ -3,15 +3,17 @@
 
 发行目录约定：`app/SunlitTidesCodex.exe`、`app/theme/manifest.json`、`app/theme/payload.js`、`app/theme/remove.js`、`app/media/startup.mp4`，以及当前 `installer/` 目录。主题素材和许可由发行包提供。无需安装 Tessalume、Node 或 .NET；自包含宿主仅使用 Windows 自带功能。
 
-安装：在 Windows PowerShell 运行 `powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\installer\Install.ps1`。默认安装到 `%LOCALAPPDATA%\SunlitTidesCodex`，创建当前用户登录启动项和桌面、开始菜单主题快捷方式，首次安装随后启用主题；升级沿用主题开关。可用 `-SourceDirectory` 指定包含 EXE 与 theme 目录的发行目录；`-NoLaunch` 只安装，暂不运行。`-WhatIf` 只检查和预览。支持从 1.0.0 / 1.1.0 / 1.1.1 升级到 1.1.2，也可重新安装 1.1.2。升级先验证旧版本全部受管文件未被修改，再暂存并验证新包；请求旧宿主恢复默认并退出后，保留 `data/` 和退出前的 `settings.json`，完整旧目录留在 `%LOCALAPPDATA%\SunlitTidesCodex.backup.<版本>.<时间>.<随机值>`。失败会尝试恢复原目录，失败暂存保留供检查。额外文件留在完整备份中；若与新版路径冲突、存在连接点或受管文件已变更则停止，不能自动覆盖。`-NoLaunch` 保持退出前设置；首次安装后通过 `--launch` 启用主题；升级后通过 `--startup` 恢复宿主并尊重原先的主题启用或关闭选择。备份不自动清理，卸载也不会删除旧版本备份。
+安装：在 Windows PowerShell 运行 `powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\installer\Install.ps1`。默认安装到 `%LOCALAPPDATA%\SunlitTidesCodex`，创建当前用户登录启动项和桌面、开始菜单主题快捷方式，首次安装随后启用主题；升级沿用主题开关。可用 `-SourceDirectory` 指定包含 EXE 与 theme 目录的发行目录；`-NoLaunch` 只安装，暂不运行。`-WhatIf` 只检查和预览。支持从 1.0.0 / 1.1.0 / 1.1.1 / 1.1.2 / 1.1.3 / 1.1.4 / 1.2.0 / 1.2.1 / 1.2.2 / 1.2.3 / 1.2.4 / 1.2.5 升级到 1.2.6，也可重新安装 1.2.6。升级先验证旧版本全部受管文件未被修改，再暂存并验证新包；请求旧宿主恢复默认并退出后，保留 `data/` 和退出前的 `settings.json`，完整旧目录留在 `%LOCALAPPDATA%\SunlitTidesCodex.backup.<版本>.<时间>.<随机值>`。失败会尝试恢复原目录，失败暂存保留供检查。额外文件留在完整备份中；若与新版路径冲突、存在连接点或受管文件已变更则停止，不能自动覆盖。`-NoLaunch` 保持退出前设置；首次安装后通过 `--launch` 启用主题；升级后通过 `--watch` 在后台恢复宿主，不激活或启动 Codex并尊重原先的主题启用或关闭选择。备份不自动清理，卸载也不会删除旧版本备份。
 
-登录 Windows 时，已启用的宿主自动以仅限回环地址的主题连接参数启动 Codex。主题快捷方式也会重新启用并打开 Codex。若 Codex 已运行且未带调试参数，宿主只激活现有窗口、提示完成任务后自行退出再从主题入口打开，不会关闭或重启 Codex。原生开始菜单项、旧任务栏固定项、协议和直接 EXE 冷启动不会被拦截，因此这些路径在 Codex 完全退出后重新启动，可能没有主题。Codex 更新后仍按当前商店包 manifest 重新发现入口。
+登录 Windows 时，已启用的宿主自动以仅限回环地址的主题连接参数启动 Codex。1.2.6 在核心安装成功后，把当前用户桌面、开始菜单、任务栏目录中按真实目标识别的普通快捷方式接入 `--open`，保留名称、稳定图标及原始文件备份；不会仅凭 ChatGPT 文件名替换其他应用。`--open` 沿用保存的主题开关，专用主题入口 `--launch` 仍显式启用。若部分入口迁移失败，报告错误并保留已成功的新宿主，不回退到不支持新入口参数的旧程序。
+
+MSIX 注册的原生固定项需重新固定已接入的普通快捷方式；协议、直接 EXE 和更新程序自行重启没有被拦截。若当前 Codex 已运行且未带主题连接，宿主只激活现有窗口，不能给它补启动参数，不会关闭或重启 Codex。后续冷启动按当前商店包 manifest 重新发现入口。可用 `Repair-Entrypoints.cmd` 修复可识别的快捷方式，`Restore-Entrypoints.cmd` 恢复仍保持受管内容的原入口；用户改过的文件会保留。
 
 托盘提供启用、恢复默认、打开 Codex、查看状态、恢复默认并退出。恢复默认持久保存为关闭主题，先移除本宿主注册的后续文档脚本，再移除当前页面主题。之后登录只启动处于关闭状态的托盘，不会为了主题启动 Codex。退出同样恢复并保存关闭状态；恢复失败时保留托盘继续重试，不会伪报恢复成功。主题快捷方式或“启用”可再次开启。
 
-恢复脚本：`powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\installer\Restore.ps1`。卸载脚本：`powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\installer\Uninstall.ps1`。卸载先请求恢复并退出自己的宿主，成功后仅移除匹配的启动项、快捷方式、原始安装文件和自己的状态日志；修改过或额外添加的文件保留。不会终止 Codex，不会修改 Codex 的安装包、用户配置或 Tessalume 文件。当前 Codex 的 CDP 端口随该 Codex 进程退出而关闭，恢复主题本身不会关闭这个端口。
+恢复脚本：`powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\installer\Restore.ps1`。卸载脚本：`powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\installer\Uninstall.ps1`。卸载先恢复受管普通入口；存在无法安全恢复的入口时保留宿主供核对，避免失效链接。随后恢复默认并退出自己的宿主，仅移除匹配的启动项、主题快捷方式、原始安装文件和状态日志；入口备份、修改过或额外添加的文件保留。不会终止 Codex，不会修改官方安装包。当前 Codex 的 CDP 端口随该进程退出而关闭。
 
-宿主命令：`--launch`、`--startup`、`--enable`、`--restore`、`--status`、`--quit`、`--self-test`。控制命令通过当前用户专属命名管道发送；没有宿主时，恢复与退出命令执行一次恢复后返回。`--self-test` 仅执行离线输入验证、状态序列化、启动策略和恢复顺序测试，不连接 Codex，不读写实际用户状态。命令错误返回非零退出码。`data/status.json` 提供结构化状态；日志只记录固定类别，最多保留当前和一个滚动日志，每份约 128 KiB，不记录对话、网络响应、认证资料或页面标题。
+宿主命令：`--open`、`--launch`、`--startup`、`--watch`、`--enable`、`--restore`、`--status`、`--quit`、`--preview-startup`、`--self-test`。控制命令通过当前用户专属命名管道发送；没有宿主时，恢复与退出命令执行一次恢复后返回。`--self-test` 仅执行离线输入验证、状态序列化、启动策略和恢复顺序测试，不连接 Codex，不读写实际用户状态。命令错误返回非零退出码。`data/status.json` 提供结构化状态；日志只记录固定类别，最多保留当前和一个滚动日志，每份约 128 KiB，不记录对话、网络响应、认证资料或页面标题。
 
 构建示例（在项目根目录）：
 

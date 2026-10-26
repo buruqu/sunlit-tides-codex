@@ -1,8 +1,8 @@
 /* Only the artwork surface is replaced. The independent reading veil remains. */
-html.sgk-theme.tessalume-theme-active.tessalume-is-task[data-sgk-scene="orchard"][data-sunlit-layered-active="true"] main[data-tessalume-surface="main"]::before {
+html.sgk-theme.tessalume-theme-active.tessalume-is-task:is([data-sgk-scene="orchard"],[data-sgk-scene="night"],[data-sgk-scene="night-tears"])[data-sunlit-layered-active="true"] main[data-tessalume-surface="main"]::before {
   animation:none!important;will-change:auto!important;
 }
-html.sgk-theme.tessalume-theme-active.tessalume-is-task[data-sgk-scene="orchard"][data-sunlit-layered-active="true"][data-sunlit-layered-ready="true"] main[data-tessalume-surface="main"]::before {visibility:hidden!important;}
+html.sgk-theme.tessalume-theme-active.tessalume-is-task:is([data-sgk-scene="orchard"],[data-sgk-scene="night"],[data-sgk-scene="night-tears"])[data-sunlit-layered-active="true"][data-sunlit-layered-ready="true"] main[data-tessalume-surface="main"]::before {visibility:hidden!important;}
 main[data-tessalume-surface="main"]>.sunlit-layered-scene {
   position:absolute;inset:0;width:100%;height:100%;display:block;z-index:-2;
   pointer-events:none!important;user-select:none;contain:strict;

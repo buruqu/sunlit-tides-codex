@@ -33,7 +33,7 @@ const fixture = `<!doctype html><html lang="zh-CN" data-theme="light" class="nat
 .native-menu{position:absolute;left:0;bottom:calc(100% + 6px);width:min(300px,100%);height:280px;overflow:auto;z-index:50;border:1px solid #aaa;border-radius:12px;background:#fff;box-shadow:0 10px 30px #0003}.native-menu.portal-menu{position:fixed;left:calc(50% - 140px);top:280px;bottom:auto;width:280px}.native-menu button{display:block;width:100%;height:44px;padding:8px 14px;background:transparent;border:0;text-align:left}.native-menu button:hover{background:#eee}
 html[data-theme=dark],html[data-theme=dark] body{color:#f0e8f5;background:#151322}html[data-theme=dark] .fixture-toolbar{background:#211c2e;border-color:#494052}html[data-theme=dark] .native-menu{background:#272133;color:#eee;border-color:#786780}html[data-theme=dark] .native-menu button:hover{background:#40344c}
 @media(max-width:800px){.app-shell-left-panel{display:none}.home-layout{padding:18px}.fixture-toolbar{gap:5px;font-size:11px}.fixture-toolbar small{display:none}.native-menu.portal-menu{top:160px}}
-</style></head><body data-native-setting="keep"><header class="fixture-toolbar"><b>晴光与泡影</b><span>Codex Windows 独立主题</span><small>合成界面 · 不含真实对话</small></header><div class="shell"><aside class="app-shell-left-panel" aria-label="导航"><div class="sidebar-brand">Codex</div><button class="sidebar-row">＋ 新建聊天</button><div class="sidebar-heading">置顶</div><button class="sidebar-row" data-app-action-sidebar-thread-row aria-current="page">把灵感写进今天</button><div class="sidebar-heading">项目</div><button class="sidebar-row" data-app-action-sidebar-project-row>晴光工作室</button><button class="sidebar-row" data-app-action-sidebar-thread-row>独立主题效果预览</button></aside><div class="workspace" data-app-shell-main-content-layout><main class="main-surface" data-app-shell-main-surface="default"><section id="home-view" role="main"><div class="home-layout"><div class="home-hero-region"><div class="home-banner"><div><div class="home-native-title"><span><svg data-testid="home-icon" aria-hidden="true" width="34" height="34"><path d="M4 17L17 4 30 17V30H20V20H14V30H4Z" fill="none" stroke="currentColor"/></svg></span></div></div></div></div><div class="home-composer-carrier z-20 pb-4"><form class="composer-surface-chrome" data-composer-surface-variant="home"><textarea data-codex-composer="true" aria-label="新聊天输入" placeholder="今天，想一起做些什么？"></textarea><div class="composer-tools"><button type="button" id="project-trigger" aria-haspopup="menu" aria-expanded="false">选择项目 ▾</button><button type="button">默认模式</button><button type="button" class="send" aria-label="发送示例">↑</button></div><div class="native-menu" id="project-menu" role="menu" hidden>${['晴光工作室','个人工具箱','阅读清单','旅行笔记','主题预览','离线测试'].map(name => '<button type="button" role="menuitem">' + name + '</button>').join('')}</div></form></div></div></section><section id="chat-view" hidden><header class="chat-header" data-testid="app-shell-header-context-menu-surface"><span data-app-shell-titlebar-content="true">把灵感写进今天</span></header><div class="thread-scroll-container"><div class="thread-content-max-width"><article class="message" data-content-search-unit-key="fixture:user"><div class="user-message" data-user-message-bubble="true">一起把今天的灵感整理成清晰的小计划。</div></article><article class="message" data-content-search-unit-key="fixture:msg_answer"><div class="_MarkdownRoot_fixture assistant-text"><h2>让灵感落到具体的事情上</h2><p>这是一份合成的阅读示例，只用于验证独立主题。场景留在文字身后，输入与操作保持自然。</p><p>亮色是果园午后，暗色是昭日遇见暗潮。跟随 Codex 的外观切换，不需要额外选择场景。</p><pre><code>const today = { focus: '先完成最重要的一件事', rhythm: '观察 → 整理 → 验证' };</code></pre>${Array.from({ length: 30 }, (_, i) => '<p>合成阅读段落 ' + (i + 1) + '：保持正文清晰，给人物与场景留一点空间。</p>').join('')}<button type="button" id="final-action" onclick="this.dataset.clicked='true'">最后一条附件操作</button></div></article></div></div><div class="chat-composer-carrier" data-pip-obstacle="thread-footer"><form class="composer-surface-chrome" data-composer-surface-variant="default"><textarea data-codex-composer="true" aria-label="聊天输入" placeholder="继续记录你的想法…"></textarea><div class="composer-tools"><button type="button">＋ 添加附件</button><button type="button">默认模式</button><button type="button" class="send">↑</button></div></form></div><div id="shell-overflow" aria-hidden="true"></div></section></main></div></div><section id="retained-native" role="main" hidden><div id="native-empty-wrapper"><div class="home-banners"></div></div></section><div id="unrelated-empty-node" data-native-empty="keep"></div><script>
+</style></head><body data-native-setting="keep"><header class="fixture-toolbar"><b>晴光与泡影</b><span>Codex Windows 独立主题</span><small>合成界面 · 不含真实对话</small></header><div class="shell"><aside class="app-shell-left-panel" aria-label="导航"><div class="sidebar-brand">Codex</div><button class="sidebar-row">＋ 新建聊天</button><div class="sidebar-heading">置顶</div><button class="sidebar-row" data-app-action-sidebar-thread-row aria-current="page">把灵感写进今天</button><div class="sidebar-heading">项目</div><button class="sidebar-row" data-app-action-sidebar-project-row>晴光工作室</button><button class="sidebar-row" data-app-action-sidebar-thread-row>独立主题效果预览</button></aside><div class="workspace" data-app-shell-main-content-layout><main class="main-surface" data-app-shell-main-surface="default"><section id="home-view" role="main"><div class="home-layout"><div class="home-hero-region"><div class="home-banner"><div><div class="home-native-title"><span><svg data-testid="home-icon" aria-hidden="true" width="34" height="34"><path d="M4 17L17 4 30 17V30H20V20H14V30H4Z" fill="none" stroke="currentColor"/></svg></span></div></div></div></div><div class="home-composer-carrier z-20 pb-4"><form class="composer-surface-chrome" data-composer-surface-variant="home"><textarea data-codex-composer="true" aria-label="新聊天输入" placeholder="今天，想一起做些什么？"></textarea><div class="composer-tools"><button type="button" id="project-trigger" aria-haspopup="menu" aria-expanded="false">选择项目 ▾</button><button type="button">默认模式</button><button type="button" class="send" aria-label="发送示例">↑</button></div><div class="native-menu" id="project-menu" role="menu" hidden>${['晴光工作室','个人工具箱','阅读清单','旅行笔记','主题预览','离线测试'].map(name => '<button type="button" role="menuitem">' + name + '</button>').join('')}</div></form></div></div></section><section id="chat-view" hidden><header class="chat-header" data-testid="app-shell-header-context-menu-surface"><span data-app-shell-titlebar-content="true">把灵感写进今天</span></header><div class="thread-scroll-container"><div class="thread-content-max-width"><article class="message" data-content-search-unit-key="fixture:user"><div class="user-message" data-user-message-bubble="true">一起把今天的灵感整理成清晰的小计划。</div></article><article class="message" data-content-search-unit-key="fixture:msg_answer"><div class="_MarkdownRoot_fixture assistant-text"><h2>让灵感落到具体的事情上</h2><p>这是一份合成的阅读示例，只用于验证独立主题。场景留在文字身后，输入与操作保持自然。</p><p>亮色是果园午后，暗色是夜色相依。跟随 Codex 的外观切换，也可在调色板中选择背景。</p><pre><code>const today = { focus: '先完成最重要的一件事', rhythm: '观察 → 整理 → 验证' };</code></pre>${Array.from({ length: 30 }, (_, i) => '<p>合成阅读段落 ' + (i + 1) + '：保持正文清晰，给人物与场景留一点空间。</p>').join('')}<button type="button" id="final-action" onclick="this.dataset.clicked='true'">最后一条附件操作</button></div></article></div></div><div class="chat-composer-carrier" data-pip-obstacle="thread-footer"><form class="composer-surface-chrome" data-composer-surface-variant="default"><textarea data-codex-composer="true" aria-label="聊天输入" placeholder="继续记录你的想法…"></textarea><div class="composer-tools"><button type="button">＋ 添加附件</button><button type="button">默认模式</button><button type="button" class="send">↑</button></div></form></div><div id="shell-overflow" aria-hidden="true"></div></section></main></div></div><section id="retained-native" role="main" hidden><div id="native-empty-wrapper"><div class="home-banners"></div></div></section><div id="unrelated-empty-node" data-native-empty="keep"></div><script>
 window.fixture={setMode(mode){document.documentElement.dataset.theme=mode},setView(view){document.getElementById('home-view').hidden=view!=='home';document.getElementById('chat-view').hidden=view!=='chat';window.dispatchEvent(new Event('resize'))}};
 const menu=document.getElementById('project-menu'),trigger=document.getElementById('project-trigger');
 trigger.onclick=()=>{menu.hidden=!menu.hidden;trigger.setAttribute('aria-expanded',String(!menu.hidden));if(!menu.hidden)menu.firstElementChild.focus()};
@@ -68,12 +68,12 @@ async function main() {
     const evaluateFile = route => page.evaluate(async route => (0, eval)(await (await fetch(route)).text()), route);
     const apply = async () => { const result = await evaluateFile('/payload.js'); await page.waitForFunction(() => !!window.__SIGRIKA_DENIA_FUSION__ && !!window.__SUNLIT_GALLERY__); await page.waitForTimeout(350); return result; };
     const state = () => page.evaluate(() => ({ scene: __SUNLIT_GALLERY__.getState(), fusion: __SIGRIKA_DENIA_FUSION__.getSettings(), runtime: { id: __TESSALUME_RUNTIME__.themeId, fingerprint: __TESSALUME_RUNTIME__.fingerprint } }));
-    await check('actual distributable mounts once and fixed orchard/night scenes follow Codex mode', async () => {
+    await check('actual distributable mounts once and primary defaults follow Codex mode with no permanent strip', async () => {
       evidence.apply = await apply(); assert.equal(evidence.apply.installed, true);
       for (const [mode, scene] of [['light', 'orchard'], ['dark', 'night'], ['light', 'orchard']]) {
         await page.evaluate(mode => fixture.setMode(mode), mode);
         await page.waitForFunction(scene => document.documentElement.dataset.sgkScene === scene, scene);
-        const actual = await state(); assert.equal(actual.scene.scene, scene); assert.equal(actual.scene.count, 2); assert.equal(actual.scene.fixed, true);
+        const actual = await state(); assert.equal(actual.scene.scene, scene); assert.equal(actual.scene.count, manifest.config.gallery.scenes.length); assert.equal(actual.scene.fixed, false);
         assert.equal(actual.runtime.id, manifest.id); assert.equal(actual.runtime.fingerprint, manifest.fingerprint);
         assert.equal(await page.locator('[data-sgk-gallery],.sgk-gallery-strip,.sgk-gallery-dialog').count(), 0);
       }
@@ -86,12 +86,20 @@ async function main() {
       await page.evaluate(() => fixture.setView('chat'));
       for (const [mode, asset] of [['light', 'duo-orchard'], ['dark', 'duo-night']]) {
         await page.evaluate(mode => fixture.setMode(mode), mode); await page.waitForTimeout(600);
-        const painted = await page.evaluate(asset => {
+        const file = manifest.assets[asset], mime = file.endsWith('.svg') ? 'image/svg+xml' : file.endsWith('.jpg') ? 'image/jpeg' : 'image/png';
+        const expectedData = 'data:' + mime + ';base64,' + fs.readFileSync(path.join(root, 'theme', file)).toString('base64');
+        const painted = await page.evaluate(async ({asset, expectedData}) => {
           const main = document.querySelector('main'), probe = document.createElement('div'); probe.style.backgroundImage = 'var(--tessalume-asset-' + asset + ')'; document.body.append(probe);
           const expected = getComputedStyle(probe).backgroundImage, actual = getComputedStyle(main, '::before').backgroundImage; probe.remove();
-          return { mode: document.documentElement.dataset.theme, asset, matches: expected === actual, imagePresent: actual !== 'none', scene: document.documentElement.dataset.sgkScene };
-        }, asset);
-        assert.equal(painted.matches, true); assert.equal(painted.imagePresent, true); evidence.paint.push(painted);
+          const url = actual.match(/^url\("(.*)"\)$/)?.[1], blob = await (await fetch(url)).blob();
+          const bytes = await new Promise(resolve => { const reader = new FileReader(); reader.onload = () => resolve(reader.result); reader.readAsDataURL(blob); });
+          const image = new Image(); image.src = url; await image.decode();
+          return { mode: document.documentElement.dataset.theme, asset, matches: expected === actual, imagePresent: actual !== 'none', sourceMatches: bytes === expectedData,
+            dimensions: [image.naturalWidth, image.naturalHeight], scene: document.documentElement.dataset.sgkScene };
+        }, {asset, expectedData});
+        assert.equal(painted.matches, true); assert.equal(painted.imagePresent, true); assert.equal(painted.sourceMatches, true);
+        if (mode === 'dark') assert.deepEqual(painted.dimensions, [1272, 847]);
+        evidence.paint.push(painted);
         await page.screenshot({ path: path.join(output, 'preview-' + mode + '.png') });
       }
     });
@@ -154,7 +162,7 @@ async function main() {
       await page.screenshot({ path: path.join(output, 'preview-dark-xixi-panel.png') });
       await page.evaluate(() => { document.getElementById('xixi-test-panel').remove(); fixture.setMode('light'); });
     });
-    await check('night pair stays centered with original aspect and full coverage at 1280, 1600 and 1920 with or without a right dock', async () => {
+    await check('new night photograph keeps both faces and full main coverage at 1280, 1600 and 1920 with or without a right dock', async () => {
       evidence.nightFraming = [];
       await page.evaluate(() => { fixture.setView('chat'); fixture.setMode('dark'); });
       for (const width of [1280, 1600, 1920]) for (const dock of [false, true]) {
@@ -166,18 +174,24 @@ async function main() {
         await page.waitForTimeout(300);
         const framing = await page.evaluate(() => {
           const main = document.querySelector('main'), area = main.getBoundingClientRect(), css = getComputedStyle(main, '::before');
-          const canvasWidth = parseFloat(css.width), imageWidth = parseFloat(css.backgroundSize), imageHeight = imageWidth * 941 / 1672;
+          const canvasWidth = parseFloat(css.width), imageWidth = parseFloat(css.backgroundSize), imageHeight = imageWidth * 847 / 1272;
           const offset = parseFloat(css.backgroundPositionX);
           const panel = document.getElementById('framing-panel')?.getBoundingClientRect(), availableWidth = panel ? panel.left - area.left : area.width;
-          const oldWidth = Math.max(area.width, area.height * 1672 / 941), oldPairX = (area.width - oldWidth) * .7 + oldWidth * .66;
-          const pairX = offset + imageWidth * .66;
-          return { canvasWidth, imageWidth, imageHeight, offset, mainWidth: area.width, mainHeight: area.height, availableWidth, center: pairX / availableWidth, pairX, oldPairX };
+          const scale = imageWidth / 1272, pairX = offset + imageWidth * .55;
+          // Source-pixel bounds surround each face, including forehead and chin.
+          // The right character's hair already touches y=0 in the original.
+          const faces = [[480, 208, 650, 325], [755, 105, 938, 235]].map(([left, top, right, bottom]) =>
+            ({ left: offset + left * scale, top: top * scale, right: offset + right * scale, bottom: bottom * scale }));
+          return { canvasWidth, imageWidth, imageHeight, offset, positionY: css.backgroundPositionY,
+            mainWidth: area.width, mainHeight: area.height, availableWidth, center: pairX / availableWidth, faces };
         });
         assert.ok(Math.abs(framing.canvasWidth - (width - 240)) <= 1, JSON.stringify(framing));
         assert.ok(framing.imageWidth >= framing.canvasWidth && framing.imageHeight >= framing.mainHeight - 1, JSON.stringify(framing));
         assert.ok(framing.offset <= 0 && framing.offset + framing.imageWidth >= framing.canvasWidth - 1, JSON.stringify(framing));
-        assert.ok(framing.center >= .49 && framing.center <= (dock ? .66 : .57), JSON.stringify(framing));
-        assert.ok(framing.pairX < framing.oldPairX - 20, JSON.stringify(framing));
+        assert.ok(framing.center >= .49 && framing.center <= (dock ? .66 : .56), JSON.stringify(framing));
+        assert.equal(framing.positionY, '0%');
+        assert.ok(Math.abs(framing.imageWidth - Math.max(framing.mainWidth, framing.mainHeight * 1272 / 847)) <= 1, JSON.stringify(framing));
+        for (const face of framing.faces) assert.ok(face.left >= 0 && face.right <= framing.availableWidth && face.top >= 0 && face.bottom <= framing.mainHeight, JSON.stringify(framing));
         evidence.nightFraming.push({ width, dock, ...framing });
         await page.screenshot({ path: path.join(output, `preview-night-centered-${width}${dock ? '-panel' : ''}.png`) });
       }
@@ -210,6 +224,105 @@ async function main() {
         await probe.setViewportSize({ width: 1500, height: 950 }); await probe.waitForTimeout(100);
         assert.equal(await probe.evaluate(() => framingReads), light);
       } finally { await probe.close(); }
+    });
+    await check('gallery thumbnails switch actual art, persist modes independently, reset separately and return focus', async () => {
+      await page.evaluate(() => { fixture.setMode('light'); fixture.setView('home'); });
+      const preferences = await page.evaluate(() => __SIGRIKA_DENIA_FUSION__.getSettings());
+      await page.getByRole('button', { name: '调色板', exact: true }).click();
+      await page.getByText('背景', { exact: true }).click();
+      const opener = page.getByRole('button', { name: '选择背景', exact: true });
+      await opener.click();
+      const dialog = page.locator('dialog[data-sgk-gallery]');
+      await dialog.waitFor({ state: 'visible' });
+      const choices = manifest.config.gallery.scenes;
+      assert.equal(await dialog.locator('button[data-scene]').count(), choices.length);
+      for (const scene of choices) {
+        const choice = dialog.getByRole('button', { name: '选择背景：' + scene.label, exact: true });
+        await choice.scrollIntoViewIfNeeded();
+        await choice.locator('img').evaluate(img => img.decode());
+        assert.ok(await choice.locator('img').evaluate(img => img.naturalWidth > 0));
+      }
+      await page.screenshot({ path: path.join(output, 'gallery-light.png') });
+      const legacy = choices.find(scene => !['orchard', 'night', 'night-tears', 'night-original'].includes(scene.id));
+      assert.ok(legacy);
+      await dialog.getByRole('button', { name: '选择背景：' + legacy.label, exact: true }).click();
+      assert.equal((await state()).scene.scene, legacy.id);
+      assert.equal(await dialog.locator(`[data-scene="${legacy.id}"]`).getAttribute('aria-pressed'), 'true');
+      await page.keyboard.press('Escape');
+      assert.equal(await dialog.isVisible(), false);
+      assert.equal(await opener.evaluate(node => node.getRootNode().activeElement === node), true);
+      await page.evaluate(() => fixture.setMode('dark'));
+      await page.waitForFunction(() => __SUNLIT_GALLERY__.getState().mode === 'dark');
+      assert.equal((await state()).scene.scene, 'night');
+      await opener.click();
+      await page.screenshot({ path: path.join(output, 'gallery-dark.png') });
+      await dialog.getByRole('button', { name: '选择背景：昭日遇见暗潮', exact: true }).click();
+      const expected = { light: legacy.id, dark: 'night-original' };
+      assert.deepEqual((await state()).scene.selected, expected);
+      await page.keyboard.press('Escape');
+      await page.getByRole('button', { name: '调色板', exact: true }).click();
+      // Full payload removal/reapplication proves storage survives runtime replacement.
+      await evaluateFile('/remove.js'); await apply();
+      assert.deepEqual((await state()).scene.selected, expected);
+      assert.equal((await state()).scene.scene, 'night-original');
+      const settingsAfter = await page.evaluate(() => __SIGRIKA_DENIA_FUSION__.getSettings());
+      assert.deepEqual(settingsAfter, preferences);
+      await page.evaluate(() => { __SUNLIT_GALLERY__.resetCurrent(); fixture.setMode('light'); });
+      await page.waitForFunction(() => __SUNLIT_GALLERY__.getState().mode === 'light');
+      assert.equal((await state()).scene.scene, legacy.id);
+      assert.equal(await page.evaluate(() => __SUNLIT_GALLERY__.selectScene('missing-scene')), false);
+      assert.equal((await state()).scene.scene, legacy.id);
+      await page.evaluate(() => __SUNLIT_GALLERY__.resetCurrent());
+      assert.deepEqual((await state()).scene.selected, { light: 'orchard', dark: 'night' });
+      for (const width of [420, 720, 1600]) {
+        await page.setViewportSize({ width, height: 850 });
+        await page.evaluate(() => __SUNLIT_GALLERY__.open());
+        const fit = await dialog.evaluate(node => { const r = node.getBoundingClientRect(); return r.left >= 0 && r.right <= innerWidth && r.top >= 0 && r.bottom <= innerHeight && node.scrollWidth <= node.clientWidth; });
+        assert.equal(fit, true, `Gallery overflow at ${width}`);
+        await page.keyboard.press('Escape');
+        assert.equal(await dialog.isVisible(), false);
+      }
+      await page.setViewportSize({ width: 1600, height: 1000 });
+      evidence.gallery = { choices: choices.length, saved: expected, defaults: (await state()).scene.selected, viewportWidths: [420, 720, 1600] };
+    });
+    await check('each retained scene paints its configured art in both modes and leaves no obsolete orchard canvas', async () => {
+      await page.evaluate(() => fixture.setView('chat'));
+      for (const mode of ['light', 'dark']) {
+        await page.evaluate(mode => fixture.setMode(mode), mode);
+        await page.waitForFunction(mode => __SUNLIT_GALLERY__.getState().mode === mode, mode);
+        for (const scene of manifest.config.gallery.scenes) {
+          await page.evaluate(id => __SUNLIT_GALLERY__.selectScene(id), scene.id);
+          await page.waitForTimeout(100);
+          const paint = await page.evaluate(asset => {
+            const probe = document.createElement('div'); probe.style.backgroundImage = `var(--tessalume-asset-${asset})`; document.body.append(probe);
+            const expected = getComputedStyle(probe).backgroundImage; probe.remove();
+            const actual = getComputedStyle(document.querySelector('main'), '::before').backgroundImage;
+            return { matches: actual === expected && expected !== 'none', layered: __SUNLIT_LAYERED_SCENE__?.getState().active };
+          }, scene.asset);
+          assert.equal(paint.matches, true, `Incorrect art: ${mode}/${scene.id}`);
+          if (!['orchard', 'night', 'night-tears'].includes(scene.id)) assert.equal(paint.layered, false, `Primary motion canvas active for ${scene.id}`);
+        }
+        await page.evaluate(() => __SUNLIT_GALLERY__.resetCurrent());
+      }
+      await page.evaluate(() => { fixture.setMode('light'); fixture.setView('home'); });
+    });
+    await check('invalid stored scenes fall back per mode and open-gallery disposal leaves no modal or inert page', async () => {
+      const isolated = await browser.newContext(), probe = await isolated.newPage();
+      try {
+        await probe.goto(`http://127.0.0.1:${server.address().port}`);
+        for (const value of ['{invalid-json', JSON.stringify({ light: 'does-not-exist', dark: 'night-original' })]) {
+          await probe.evaluate(value => localStorage.setItem('sunlit-tides.gallery.v2:sunlit-tides.codex', value), value);
+          await probe.evaluate(payload => (0, eval)(payload), payload);
+          const actual = await probe.evaluate(() => __SUNLIT_GALLERY__.getState());
+          assert.equal(actual.selected.light, 'orchard');
+          assert.equal(actual.selected.dark, value === '{invalid-json' ? 'night' : 'night-original');
+          await probe.evaluate(() => __SUNLIT_GALLERY__.open());
+          await probe.evaluate(remove => (0, eval)(remove), remove);
+          assert.equal(await probe.locator('dialog[data-sgk-gallery]').count(), 0);
+          await probe.getByRole('button', { name: '选择项目 ▾', exact: true }).click();
+          await probe.getByRole('menuitem', { name: '个人工具箱', exact: true }).click();
+        }
+      } finally { await isolated.close(); }
     });
     await check('native upward project menus remain hit-accessible and preserve keyboard focus at desktop and narrow widths', async () => {
       evidence.menus = [];

@@ -7,12 +7,12 @@ namespace SunlitTidesCodex;
 
 internal static class HostCommands
 {
-    internal static bool IsIpc(string command) => command is "status" or "restore" or "enable" or "launch" or "quit" or "preview-startup";
+    internal static bool IsIpc(string command) => command is "status" or "restore" or "enable" or "launch" or "open" or "quit" or "preview-startup";
     internal static bool TryParseCli(string command, out string request)
     {
         request = "";
         if (command == "--self-test") return true;
-        if (command == "--startup") { request = "status"; return true; }
+        if (command is "--startup" or "--watch") { request = "status"; return true; }
         if (!command.StartsWith("--", StringComparison.Ordinal) || !IsIpc(command[2..])) return false;
         request = command[2..];
         return true;

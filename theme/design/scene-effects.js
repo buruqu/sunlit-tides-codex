@@ -7,6 +7,8 @@ function mountSunlitSceneEffects(context) {
   const scenes = {
     sunset: ["glow", "239 177 83", "255 218 162"],
     night: ["star", "166 174 247", "224 202 255"],
+    "night-tears": ["star", "166 174 247", "224 202 255"],
+    "night-original": ["star", "166 174 247", "224 202 255"],
     orchard: ["leaf", "156 180 82", "246 198 99"],
     heart: ["petal", "228 145 180", "255 195 214"],
     story: ["petal", "216 153 155", "255 220 196"],
@@ -24,6 +26,8 @@ function mountSunlitSceneEffects(context) {
   // The workbench's independent translate/scale and mirror remain intact.
   const cameras = {
     sunset: [24, .9, -.4], night: [28, -.7, .5],
+    "night-tears": [28, -.7, .5],
+    "night-original": [28, -.7, .5],
     orchard: [22, -.9, -.35], heart: [26, .55, -.55],
     story: [28, -.55, .6], evening: [26, .8, .4],
     train: [20, 1.05, -.2], breeze: [22, -.95, .3],
@@ -84,9 +88,10 @@ function mountSunlitSceneEffects(context) {
     // An authored workbench loop wins over the default scene camera. The
     // runtime updates this style together with its html placement attributes.
     const authored = doc.getElementById("tessalume-artwork-motion-style")?.textContent.includes(`tessalume-artwork-chat-${mode}-full`) || false;
-    const layered = scene === "orchard" && html.dataset.sunlitLayeredReady === "true";
+    const primary = scene === "orchard" || scene === "night" || scene === "night-tears";
+    const layered = primary && html.dataset.sunlitLayeredReady === "true";
     const living = layered || (scene === "orchard" && html.dataset.sunlitLivingReady === "true");
-    const owner = authored ? "workbench" : layered ? "layered-scene" : living ? "living-scene" : "scene";
+    const owner = authored ? "workbench" : layered ? "layered-scene" : living ? "living-scene" : primary ? "static" : "scene";
     setAttr(attrs[3], String(wallpaperEnabled));
     setAttr(attrs[4], !wallpaperEnabled || paused ? "paused" : "running");
     setAttr(attrs[5], owner);
@@ -107,7 +112,7 @@ function mountSunlitSceneEffects(context) {
     }
     host.hidden = !enabled || paused;
     state = { scene, mode, family, enabled, paused, edgeLayers: 2, wallpaperEnabled,
-      moving: !living && wallpaperEnabled && !paused, wallpaperPaused: living || !wallpaperEnabled || paused,
+      moving: !primary && !living && wallpaperEnabled && !paused, wallpaperPaused: primary || living || !wallpaperEnabled || paused,
       wallpaperOwner: owner, wallpaperDuration: duration };
   }
   const observer = new win.MutationObserver(refresh);
