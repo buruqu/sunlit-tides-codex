@@ -102,6 +102,26 @@ function createFusionPalette({ document, initialState, mode, title, companionsEn
   range(reading, sceneReading ? '背景柔光' : continuousReading ? '阅读面板不透明度' : '消息底板不透明度', 'mode', 'messageOpacity', sceneReading ? () => activeMode === 'dark' ? 64 : 60 : continuousReading ? 97 : 20, sceneReading ? 82 : 100, '%');
   if (continuousReading) reading.appendChild(element('p','note',sceneReading ? '调低可看见更多背景，调高让文字更突出；亮暗模式分别保存。' : '连续阅读面板保护正文、运行状态和命令文字。'));
   const characters = group('角色');
+  function decorationOpacity(label, key, resetLabel) {
+    const wrapper = element('label', 'control'), line = element('span', 'line'), output = element('span', 'value');
+    const input = element('input'); input.type = 'range'; input.min = '0'; input.max = '100'; input.step = '1'; input.setAttribute('aria-label', label);
+    line.append(element('span', '', label), output); wrapper.append(line, input); characters.append(wrapper);
+    const reset = element('button', '', resetLabel); reset.type = 'button';
+    const actions = element('div', 'actions'); actions.append(reset); characters.append(actions);
+    controls.push(() => {
+      const current = state.modes[activeMode], manual = current[key] !== null;
+      const veil = Math.min(.82, Math.max(activeMode === 'dark' ? .64 : .60, current.messageOpacity / 100));
+      const automatic = state.common.layout === 'panorama' ? Math.round(current.backgroundStrength * (1 - veil)) : 100;
+      const value = manual ? current[key] : automatic;
+      input.value = String(value); input.setAttribute('aria-valuetext', `${value}%${manual ? '' : '（跟随背景）'}`);
+      output.textContent = `${value}%${manual ? '' : ' · 跟随背景'}`; reset.disabled = !manual;
+    });
+    listen(input, 'input', () => change('mode', key, null, Number(input.value)));
+    listen(reset, 'click', () => change('mode', key, null, null));
+  }
+  decorationOpacity('立绘透明度', 'portraitOpacity', '立绘跟随背景');
+  decorationOpacity('表情包透明度', 'emoteOpacity', '表情包跟随背景');
+  characters.append(element('p', 'note', '0% 隐藏，100% 完全显示。拖动后独立控制，亮暗分别保存；点击跟随背景可恢复原来的融合效果。'));
   for (const [slot, label] of [['left', '左侧角色'], ['primary', '右侧主角色'], ['secondary', '右侧副角色']]) {
     const container = element('div', 'slot'); container.appendChild(element('h3', '', avatarsEnabled&&slot==='secondary'?'西西 / 娅娅对话头像':label)); characters.appendChild(container);
     check(container, '显示', 'mode', 'visible', slot);

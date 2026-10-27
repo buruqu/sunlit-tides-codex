@@ -216,7 +216,7 @@ async function main() {
         assert.equal(actual.rightPair.portraitHeight, 344);
         assert.equal(actual.rightPair.leftOfPortrait, true);
         assert.equal(actual.rightPair.portraitScale,'-1 1'); assert.equal(actual.rightPair.gifScale,'none');
-        assert.equal(actual.card.x,40); assert.equal(actual.sticker.x,actual.card.x+actual.card.width+14);
+        assert.equal(actual.card.x,64); assert.equal(actual.sticker.x,actual.card.x+actual.card.width+14);
         if(actual.rightPair.baselineWouldOverlapComposer)assert.ok(actual.rightPair.composerGap>=12);else assert.ok(actual.rightPair.baselineDifference<=8);
         assert.equal(actual.rightPair.safeRight, true);
         assert.equal(actual.emoteBackground, 'rgba(0, 0, 0, 0)');

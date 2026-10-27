@@ -39,6 +39,8 @@ body[data-dsh-sunlit][data-sunlit-mode=dark] [data-sunlit-sidebar-art]::after{ba
 body[data-dsh-sunlit] [data-sunlit-background]{position:absolute;inset:0;opacity:var(--sunlit-background-opacity,1);background-repeat:no-repeat;background-size:cover}
 body[data-dsh-sunlit] [data-sunlit-background]>canvas{position:absolute;inset:0;display:block;width:100%;height:100%;pointer-events:none}
 body[data-dsh-sunlit] [data-sunlit-decorations]{position:absolute;overflow:hidden;pointer-events:none}
+body[data-dsh-sunlit] [data-sunlit-manual-decorations]{position:absolute;overflow:hidden;pointer-events:none}
+body[data-dsh-sunlit] [data-sunlit-manual-category]{position:absolute;inset:0;pointer-events:none}
 body[data-dsh-sunlit] [data-sunlit-reading-wash]{position:absolute;inset:0;background:rgba(var(--sunlit-rgb),var(--sunlit-content-opacity,.6));pointer-events:none}
 /* This is only an extra reading tint over the same panorama, not another image.
    Its trailing 112px fades 96px into the main area, below vivid decorations. */
@@ -59,6 +61,7 @@ body[data-dsh-sunlit] [data-sunlit-bubbles]{position:absolute;inset:0;overflow:h
 /* Non-orchard scenes retain their original translucent rising bubbles. */
 body[data-dsh-sunlit] [data-sunlit-bubbles] i{position:absolute;left:var(--bubble-x);bottom:-90px;width:var(--bubble-size);height:var(--bubble-size);corner-shape:round;border-radius:50%;border:1px solid rgba(249,243,255,.48);background:radial-gradient(circle at 30% 25%,rgba(255,255,255,.7),transparent 19%),conic-gradient(from 200deg,rgba(190,219,242,.2),rgba(234,181,219,.28),rgba(191,172,232,.18),rgba(190,219,242,.2));box-shadow:inset 0 0 14px rgba(255,255,255,.2);animation:sunlit-rise var(--bubble-time) var(--bubble-delay) linear infinite}
 body[data-dsh-sunlit] [data-sunlit-bubbles] i::before,body[data-dsh-sunlit] [data-sunlit-bubbles] i::after{content:none}
+body[data-dsh-sunlit] [data-sunlit-bubbles] i[data-sunlit-edge-bubble]{bottom:8px;animation-name:sunlit-edge-rise}
 /* Green leaves retain the protected side corridors in both display modes. */
 body[data-dsh-sunlit] [data-sunlit-bubbles][data-sunlit-particles="leaf"] i{position:absolute;left:var(--bubble-x);
   width:var(--bubble-size);height:calc(var(--bubble-size) * .56);
@@ -104,8 +107,10 @@ body[data-dsh-sunlit] [data-sunlit-control] input[type=checkbox]{width:17px;heig
 body[data-dsh-sunlit] [data-sunlit-status]{min-height:16px;color:var(--sunlit-soft-ink);font-size:11px;margin:10px 0}
 body[data-dsh-sunlit] [data-sunlit-panel] footer{border-top:1px solid var(--sunlit-edge);padding-top:12px;display:flex;align-items:center;justify-content:space-between;gap:8px}
 body[data-dsh-sunlit] [data-sunlit-reset]{border:1px solid var(--sunlit-edge);background:transparent;border-radius:7px;padding:5px 9px;white-space:nowrap;font-size:11px}
+body[data-dsh-sunlit] [data-sunlit-follow]{border:1px solid var(--sunlit-edge);background:transparent;border-radius:7px;padding:4px 9px;margin-top:5px;font-size:11px}
 body[data-dsh-sunlit] :is([data-sunlit-panel],[data-sunlit-toggle]) :focus-visible,body[data-dsh-sunlit] [data-sunlit-toggle]:focus-visible{outline:2px solid var(--sunlit-accent);outline-offset:3px}
 @keyframes sunlit-rise{from{transform:translate(0,0);opacity:0}10%{opacity:.35}80%{opacity:.28}to{transform:translate(4px,-115vh);opacity:0}}
+@keyframes sunlit-edge-rise{from{transform:translate(0,0);opacity:0}10%{opacity:.35}80%{opacity:.28}to{transform:translate(4px,calc(106px - var(--sunlit-leaf-travel) + var(--bubble-size)));opacity:0}}
 @keyframes sunlit-leaf-fall {
   0% {transform:translate3d(0,0,0) rotate(-24deg) scaleX(.86)}
   24% {transform:translate3d(calc(var(--bubble-drift) * .85),calc(var(--sunlit-leaf-travel,1100px) * .24),0) rotate(18deg) scaleX(.68)}

@@ -17,6 +17,16 @@ if(!fixtureSource)throw Error('Real-shell fixture contract changed');
   await page.waitForFunction(()=>window.__DSH_SUNLIT_SCENE_RENDERER__?.getState().ready,null,{timeout:30000});
   const active=await page.evaluate(async()=>({id:loadedId,version:loadedModule.version,fingerprint:loadedModule.fingerprint,state:await __DSH_SUNLIT_SCENE_RENDERER__.getStateAsync(),roots:document.querySelectorAll('[data-sunlit-viewport]').length}));
   assert.equal(active.id,'@dsh-external/dsh-client-ui-skin-sunlit-tides');assert.equal(active.version,pkg.version);assert.equal(active.roots,1);assert.equal(active.state.renderThread,'worker');assert.equal(active.state.maxFps,120);
+  await page.locator('[data-sunlit-toggle]').click();
+  for(const [key,type] of [['companionOpacity','companion'],['emoteOpacity','emote']]) {
+   const slider=page.locator(`[data-sunlit-setting=${key}]`);await slider.focus();await slider.press('Home');
+   await page.waitForFunction(type=>document.querySelector(`[data-sunlit-${type}=left]`).hidden,type);
+   await slider.press('End');
+   assert.equal(await page.locator(`[data-sunlit-manual-category=${type}]`).evaluate(el=>getComputedStyle(el).opacity),'1');
+   await page.locator(`[data-sunlit-follow=${key}]`).click();
+   assert.equal(await page.locator(`[data-sunlit-${type}=left]`).evaluate(el=>!!el.closest('[data-sunlit-manual-decorations]')),false);
+  }
+  await page.keyboard.press('Escape');
   await page.evaluate(()=>{loadedModule.apply({effect(fn){effects.push(fn());}});effects[0]();});
   assert.equal(await page.locator('[data-sunlit-viewport]').count(),1);
   await page.evaluate(()=>effects[1]());

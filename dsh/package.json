@@ -1,6 +1,6 @@
 {
   "name": "@dsh-external/dsh-client-ui-skin-sunlit-tides",
-  "version": "0.1.5",
+  "version": "0.1.6",
   "description": "晴光与泡影：西格莉卡与达妮娅的 DSH 动态主题",
   "private": true,
   "type": "module",

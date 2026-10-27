@@ -93,9 +93,14 @@ html.sgk-theme.tessalume-theme-active[data-fusion-layout="panorama"] [data-fusio
 html.sgk-theme.tessalume-theme-active[data-fusion-layout="panorama"] {
   --sunlit-panorama-art-opacity:calc(var(--fusion-background-strength,1) * (1 - clamp(var(--sgk-reading-veil-min,.60),var(--fusion-message-opacity,.60),.82)));
 }
-html.sgk-theme.tessalume-theme-active[data-fusion-layout="panorama"] #tessalume-theme-root [data-fusion-card][data-fusion-hidden="false"],
-html.sgk-theme.tessalume-theme-active[data-fusion-layout="panorama"] .sunlit-ambient-host {
+html.sgk-theme.tessalume-theme-active[data-fusion-layout="panorama"] #tessalume-theme-root [data-fusion-card="secondary"][data-fusion-hidden="false"] {
   opacity:var(--sunlit-panorama-art-opacity)!important;
+}
+html.sgk-theme.tessalume-theme-active #tessalume-theme-root :is([data-fusion-card="left"],[data-fusion-card="primary"])[data-fusion-hidden="false"] {
+  opacity:var(--fusion-portrait-opacity,var(--sunlit-panorama-art-opacity,1))!important;
+}
+html.sgk-theme.tessalume-theme-active .sunlit-ambient-host {
+  opacity:var(--fusion-emote-opacity,var(--sunlit-panorama-art-opacity,1))!important;
 }
 html.sgk-theme.tessalume-theme-active[data-fusion-layout="panorama"] #tessalume-theme-root .sgk-task-card [data-theme-part="task-card-art"],
 html.sgk-theme.tessalume-theme-active[data-fusion-layout="panorama"] .sunlit-ambient-companion>img {

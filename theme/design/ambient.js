@@ -50,7 +50,8 @@ function mountSunlitAmbient(context) {
     const rect = box(node);
     if (!computed.has(node)) computed.set(node, win.getComputedStyle(node));
     const css = computed.get(node);
-    return rect.width > 2 && rect.height > 2 && css.display !== "none" && css.visibility !== "hidden" && Number(css.opacity) !== 0 &&
+    const transparentAnchor = !native && node.matches('[data-fusion-card][data-fusion-hidden="false"]');
+    return rect.width > 2 && rect.height > 2 && css.display !== "none" && css.visibility !== "hidden" && (Number(css.opacity) !== 0 || transparentAnchor) &&
       rect.right > 0 && rect.bottom > 0 && rect.left < win.innerWidth && rect.top < win.innerHeight;
   }
   const rect = (left, top, width, height) => ({ left, top, width, height, right: left + width, bottom: top + height });
@@ -131,9 +132,12 @@ function mountSunlitAmbient(context) {
         if (anchor) {
           const card = box(anchor), side = sides.left;
           if (panorama) {
-            // Same baseline, immediately right of Xixi. Never float above her.
+            // Follow Xixi horizontally; lift the GIF if it reaches the editor.
             for (const size of [96, 88, 80, 64, 52]) {
-              const candidate = rect(Math.round(card.right + 14), Math.round(card.bottom - size), size, size);
+              const x = Math.round(card.right + 14);
+              let y = Math.round(card.bottom - size);
+              if (overlap(rect(x, y, size, size), composerBox)) y = Math.round(composerBox.top - size - 12);
+              const candidate = rect(x, y, size, size);
               if (candidate.right <= bounds.right - 16 && candidate.bottom <= bounds.bottom - 8 && candidate.top >= bounds.top + 12 &&
                 !panels.some(panel => overlap(candidate, box(panel), 8))) { position = candidate; break; }
             }

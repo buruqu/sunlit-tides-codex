@@ -52,9 +52,42 @@ async function run() {
       await chooseScene('dark', scene);
       const bubble = await leaf.evaluate(el => { const s=getComputedStyle(el); return { animation:s.animationName,radius:s.borderRadius,width:s.width,height:s.height,veins:getComputedStyle(el,'::before').content,hostOpacity:getComputedStyle(el.parentElement).opacity }; });
       assert.equal(bubble.animation, 'sunlit-rise'); assert.equal(bubble.radius, '50%'); assert.equal(bubble.width,bubble.height); assert.equal(bubble.veins,'none'); assert.equal(bubble.hostOpacity,'1');
+      assert.ok(await page.locator('[data-sunlit-edge-bubble]:not([hidden])').count()>=1);
       await page.screenshot({ path: path.join(dir, `dsh-bubbles-${scene}.png`) });
     }
     checks.push('night, night-tears and other scenes restore original translucent rising bubbles');
+    await open();await setRange('bubbleCount',18);await page.keyboard.press('Escape');
+    const edgeTiming=await page.locator('[data-sunlit-edge-bubble]:not([hidden])').evaluateAll(els=>els.map(el=>getComputedStyle(el).animationDelay));
+    assert.equal(edgeTiming.length,3);assert.equal(new Set(edgeTiming).size,3);
+    await open();await setRange('bubbleCount',5);await page.keyboard.press('Escape');
+    for (const layout of ['panorama','separate']) {
+      await chooseLayout(layout);
+      for (const width of [760,1283]) {
+        await page.setViewportSize({width,height:900});
+        for (const mode of ['light','dark']) {
+          await chooseScene(mode,'night');
+          await page.waitForFunction(()=>[...document.querySelectorAll('[data-sunlit-edge-bubble]')].some(el=>!el.hidden));
+          const edges=await page.locator('[data-sunlit-edge-bubble]:not([hidden])').count();assert.ok(edges>=1&&edges<=3);
+          const reading=await page.evaluate(()=>window.__dshSunlitTidesClient.getLayoutState().readingWidth);
+          for (const phase of [.1,.5,.9]) {
+            const bounds=await page.locator('[data-sunlit-edge-bubble]:not([hidden])').evaluateAll((els,phase)=>els.map(el=>{
+              const animation=el.getAnimations()[0];animation.pause();animation.currentTime=Number(getComputedStyle(el).animationDuration.replace('s',''))*1000*phase;
+              const r=el.getBoundingClientRect(),p=el.parentElement.getBoundingClientRect(),c=document.querySelector('[data-composer-seat]').getBoundingClientRect();
+              return {left:r.left,right:r.right,top:r.top,bottom:r.bottom,plane:p.toJSON(),inputRight:c.right,diameter:r.width,animation:getComputedStyle(el).animationName};
+            }),phase);
+            for(const r of bounds){assert.equal(r.animation,'sunlit-edge-rise');assert.ok(r.diameter>=6&&r.diameter<=18);assert.ok(r.left>=r.inputRight-.1);assert.ok(r.right<=r.plane.right-2);assert.ok(r.top>=r.plane.top&&r.bottom<=r.plane.bottom);}
+          }
+          await open();await page.locator('[data-sunlit-setting=bubbles]').uncheck();await page.keyboard.press('Escape');
+          assert.equal(await page.locator('[data-sunlit-bubbles]').isVisible(),false);
+          assert.equal(await page.evaluate(()=>window.__dshSunlitTidesClient.getLayoutState().readingWidth),reading);
+          await open();await page.locator('[data-sunlit-setting=bubbles]').check();await page.keyboard.press('Escape');
+          await chooseScene(mode,'orchard');assert.equal(await page.locator('[data-sunlit-edge-bubble]').count(),0);
+          assert.equal(await page.locator('[data-sunlit-bubbles]').getAttribute('data-sunlit-particles'),'leaf');
+        }
+      }
+    }
+    checks.push('both layouts and themes reserve 1–3 full-contour right-edge bubbles within existing count, never in orchard or at the expense of reading width');
+    await page.setViewportSize({width:1800,height:1000});
     await chooseScene('dark', 'orchard');
     assert.equal(await leaf.evaluate(el => getComputedStyle(el).animationName), 'sunlit-leaf-fall');
     await page.screenshot({ path: path.join(dir, 'dsh-leaves-dark-orchard.png') });

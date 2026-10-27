@@ -215,6 +215,7 @@ function mountFusion(context) {
       };
       for (let i = 0; i < bubbleCount; i++) {
         const bubble = doc.createElement("i");
+        if (!leafScene() && i < 3) bubble.dataset.fusionEdgeBubble = 'true';
         // Deterministic seeds avoid continually changing the scene on slider edits.
         const seed = random(i, 1);
         const duration = (24 + random(i, 2) * 22) * 100 / bubbleSpeed;
@@ -237,24 +238,26 @@ function mountFusion(context) {
     const wind = !leafScene() && state.common.sceneEffects && html.dataset.sunlitSceneFamily === "wind";
     for (const [index, seed] of bubbleSeeds.entries()) {
       const { node, x } = seed;
-      const size = narrowLeaves ? 10 + index % 4 : seed.size;
-      const requestedDrift = narrowLeaves ? (index % 2 ? -4 : 4) : seed.drift;
+      const rightEdge = !leafScene() && node.dataset.fusionEdgeBubble === 'true';
+      const rightRoom = width - readingRight - 16;
+      const size = rightEdge ? Math.max(8, Math.min(20 + index * 5, rightRoom - 14)) : narrowLeaves ? 10 + index % 4 : seed.size;
+      const requestedDrift = rightEdge ? index % 2 ? -3 : 3 : narrowLeaves ? (index % 2 ? -4 : 4) : seed.drift;
       node.style.setProperty("--bubble-size", size + "px");
       if (narrowLeaves && index >= 6) { node.hidden = true; continue; }
       // Preserve the original screen-wide density: particles seeded inside the
       // reading lane stay absent. Visible particles keep their entire silhouette
       // and drift path in a side corridor, instead of being cut by a lane mask.
-      const seededX = narrowLeaves ? index % 2 ? width - 18 : 18 : x * width;
+      const seededX = rightEdge ? width - 22 - index * 13 : narrowLeaves ? index % 2 ? width - 18 : 18 : x * width;
       const edge = narrowLeaves ? 4 : 8;
-      const corridor = seededX < readingLeft ? [edge, readingLeft - edge] : seededX > readingRight ? [readingRight + edge, width - edge] : null;
+      const corridor = rightEdge ? [Math.max(readingRight + edge, width - 116), width - edge] : seededX < readingLeft ? [edge, readingLeft - edge] : seededX > readingRight ? [readingRight + edge, width - edge] : null;
       if (!corridor) { node.hidden = true; continue; }
       // Includes every authored particle's scale/rotation and its soft rim.
       // This uses stored seeds and existing layout measurements, no frame reads.
-      const particleWidth = size * (narrowLeaves ? 1.4 : 1.75), rim = size * (narrowLeaves ? .2 : .4) + (narrowLeaves ? 2 : 4);
+      const particleWidth = rightEdge ? size : size * (narrowLeaves ? 1.4 : 1.75), rim = rightEdge ? 3 : size * (narrowLeaves ? .2 : .4) + (narrowLeaves ? 2 : 4);
       const room = corridor[1] - corridor[0] - particleWidth - rim * 2;
       const drift = Math.max(-Math.max(0, room), Math.min(Math.max(0, room), requestedDrift));
-      const minOffset = wind ? Math.min(-30, drift + 80) : Math.min(0, drift);
-      const maxOffset = wind ? Math.max(-30, drift + 80) : Math.max(0, drift);
+      const minOffset = wind && !rightEdge ? Math.min(-30, drift + 80) : Math.min(0, drift);
+      const maxOffset = wind && !rightEdge ? Math.max(-30, drift + 80) : Math.max(0, drift);
       const minX = corridor[0] + rim - minOffset, maxX = corridor[1] - particleWidth - rim - maxOffset;
       node.hidden = maxX < minX;
       if (!node.hidden) {
@@ -286,6 +289,8 @@ function mountFusion(context) {
     style(html, "--fusion-chat-width", state.common.chatWidth + "px");
     style(html, "--fusion-message-opacity", String(current.messageOpacity / 100));
     style(html, "--fusion-background-strength", String(current.backgroundStrength / 100));
+    style(html, '--fusion-portrait-opacity', current.portraitOpacity === null ? 'var(--sunlit-panorama-art-opacity,1)' : String(current.portraitOpacity / 100));
+    style(html, '--fusion-emote-opacity', current.emoteOpacity === null ? 'var(--sunlit-panorama-art-opacity,1)' : String(current.emoteOpacity / 100));
     syncBubbles();
     schedule();
   }
@@ -570,7 +575,7 @@ function mountFusion(context) {
         const width = Math.round(desired.width * scale), height = Math.round(desired.height * scale);
         const leftSide = card.slot === 'left';
         // Keep the left pair together; the right portrait now follows its GIF.
-        const x = clamp((leftSide ? safeArea.left + 40 : safeArea.right - width - 16) + values.x,
+        const x = clamp((leftSide ? safeArea.left + 64 : safeArea.right - width - 16) + values.x,
           safeArea.left + (leftSide ? 8 : 118), safeArea.right - width - (leftSide ? 126 : 16));
         const y = clamp(safeArea.bottom - height - 32 + values.y, safeArea.top + 28, safeArea.bottom - height - 8);
         const candidate = makeRect(x, y, width, height);

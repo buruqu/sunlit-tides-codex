@@ -44,7 +44,7 @@ function Start-Process([string]$FilePath, [string]$ArgumentList, [string]$Window
 '@
     Add-Content -LiteralPath (Join-Path $fixture 'installer\Common.ps1') -Value $mock -Encoding UTF8
     foreach ($name in @('SunlitTidesCodex.exe', 'theme\payload.js', 'theme\remove.js', 'media\startup.mp4')) { Write-Fixture (Join-Path $app $name) ('new ' + $name) }
-    Write-Fixture (Join-Path $app 'theme\manifest.json') '{"id":"sunlit-tides.codex","version":"1.2.10"}'
+    Write-Fixture (Join-Path $app 'theme\manifest.json') '{"id":"sunlit-tides.codex","version":"1.2.11"}'
     $files = @()
     foreach ($name in @('SunlitTidesCodex.exe', 'theme\payload.js', 'theme\remove.js', 'theme\manifest.json')) {
         $path = Join-Path $install $name
@@ -71,7 +71,7 @@ try {
     Invoke-Fixture $fixture
     Assert-Fixture ((Get-Content -LiteralPath (Join-Path $fixture.install 'data\settings.json') -Raw -Encoding UTF8) -eq $fixture.settings) 'Settings changed during --quit upgrade.'
     Assert-Fixture (Test-Path -LiteralPath (Join-Path $fixture.install 'data\custom.json')) 'Custom data was not preserved.'
-    Assert-Fixture ((Get-SunlitMarker $fixture.install).version -eq '1.2.10') 'New marker version missing.'
+    Assert-Fixture ((Get-SunlitMarker $fixture.install).version -eq '1.2.11') 'New marker version missing.'
     Assert-Fixture (-not (Test-Path -LiteralPath (Join-Path $fixture.local 'launch.called'))) 'NoLaunch started a helper.'
     $backups = @(Get-ChildItem -LiteralPath $fixture.local -Directory -Filter 'SunlitTidesCodex.backup.*')
     Assert-Fixture ($backups.Count -eq 1) 'Complete old backup missing.'
@@ -80,16 +80,16 @@ try {
     Write-Output 'PASS upgrade preserves pre-quit settings, data, and complete old backup'
     Invoke-Fixture $fixture
     Assert-Fixture (@(Get-ChildItem -LiteralPath $fixture.local -Directory -Filter 'SunlitTidesCodex.backup.*').Count -eq 2) 'Reinstall did not retain both backups.'
-    Write-Output 'PASS 1.2.10 reinstall retains its own validated backup'
+    Write-Output 'PASS 1.2.11 reinstall retains its own validated backup'
 
-    foreach ($priorVersion in @('1.1.3','1.1.4','1.2.0','1.2.1','1.2.2','1.2.3','1.2.4','1.2.5','1.2.6','1.2.7','1.2.8','1.2.9')) {
+    foreach ($priorVersion in @('1.1.3','1.1.4','1.2.0','1.2.1','1.2.2','1.2.3','1.2.4','1.2.5','1.2.6','1.2.7','1.2.8','1.2.9','1.2.10')) {
     $fixture = New-Fixture ('upgrade-from-' + $priorVersion)
     $markerPath = Join-Path $fixture.install '.sunlit-tides-owned.json'
     $trialMarker = Get-Content -LiteralPath $markerPath -Raw -Encoding UTF8 | ConvertFrom-Json
     $trialMarker.version = $priorVersion
     Write-Fixture $markerPath ($trialMarker | ConvertTo-Json -Depth 6)
     Invoke-Fixture $fixture
-    Assert-Fixture ((Get-SunlitMarker $fixture.install).version -eq '1.2.10') 'Trial upgrade missing.'
+    Assert-Fixture ((Get-SunlitMarker $fixture.install).version -eq '1.2.11') 'Trial upgrade missing.'
     Assert-Fixture ((Get-Content -LiteralPath (Join-Path $fixture.install 'data\settings.json') -Raw -Encoding UTF8) -eq $fixture.settings) 'Trial settings changed.'
     Write-Output ('PASS ' + $priorVersion + ' upgrades with settings intact')
     }
@@ -97,7 +97,7 @@ try {
     $fixture = New-Fixture 'fresh'
     [IO.Directory]::Move($fixture.install, (Join-Path $fixture.root 'original-fixture'))
     Invoke-Fixture $fixture
-    Assert-Fixture ((Get-SunlitMarker $fixture.install).version -eq '1.2.10') 'Fresh install missing.'
+    Assert-Fixture ((Get-SunlitMarker $fixture.install).version -eq '1.2.11') 'Fresh install missing.'
     Assert-Fixture (-not (Test-Path -LiteralPath (Join-Path $fixture.local 'quit.called'))) 'Fresh install controlled an old helper.'
     Write-Output 'PASS fresh install does not invoke old helper'
 
@@ -175,5 +175,5 @@ function Stop-SunlitOwnedHelper([string]$Root, $Marker) {
     Assert-Fixture ((Get-Content -LiteralPath (Join-Path $stages[0].FullName 'data\settings.json') -Raw -Encoding UTF8) -eq $fixture.settings) 'Failed quit lost pre-quit settings.'
     Assert-Fixture (-not (Test-Path -LiteralPath (Join-Path $fixture.local 'integration.called'))) 'Failed quit changed integration.'
     Write-Output 'PASS failed old restore preserves original install and pre-quit recovery settings'
-    Write-Output ('All 27 isolated installer checks passed; retained fixture root: ' + $testRoot)
+    Write-Output ('All 28 isolated installer checks passed; retained fixture root: ' + $testRoot)
 } finally { $env:LOCALAPPDATA = $originalLocal }

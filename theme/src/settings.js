@@ -1,7 +1,7 @@
 const FusionSettings = (() => {
   const slotDefaults = () => ({ visible: true, size: 100, x: 0, y: 0 });
   const modeDefaults = (messageOpacity) => ({
-    backgroundStrength: 100, messagePanel: true, messageOpacity,
+    backgroundStrength: 100, messagePanel: true, messageOpacity, portraitOpacity: null, emoteOpacity: null,
     left: slotDefaults(), primary: slotDefaults(), secondary: slotDefaults()
   });
   const defaults = () => ({
@@ -35,6 +35,7 @@ const FusionSettings = (() => {
       target.backgroundStrength = number(source.backgroundStrength, 100, 0, 100);
       target.messagePanel = bool(source.messagePanel, true);
       target.messageOpacity = number(source.messageOpacity, target.messageOpacity, 20, 100);
+      for (const key of ['portraitOpacity', 'emoteOpacity']) target[key] = number(source[key], null, 0, 100);
       for (const slot of ['left', 'primary', 'secondary']) {
         const values = record(source[slot]) ? source[slot] : {};
         target[slot] = {
@@ -72,6 +73,9 @@ const FusionSettings = (() => {
     validateFields(value.common, Object.keys(defaults().common), 'common');
     for (const name of ['light', 'dark']) {
       const source = value.modes[name];
+      for (const key of ['portraitOpacity', 'emoteOpacity']) {
+        if (key in source && source[key] !== null && (typeof source[key] !== 'number' || !Number.isFinite(source[key]))) throw new Error(`modes.${name}.${key} 必须是有限数字或 null。`);
+      }
       validateFields(source, ['backgroundStrength', 'messagePanel', 'messageOpacity'], `modes.${name}`);
       for (const slot of ['left', 'primary', 'secondary']) {
         if (slot in source && !record(source[slot])) throw new Error(`modes.${name}.${slot} 必须是对象。`);

@@ -111,15 +111,15 @@ async function run() {
         });
         assert.ok(composition.left.x < 220 && composition.left.width >= 200 && composition.left.width <= 260);
         assert.ok(composition.left.height >= 300 && composition.left.height <= 390);
-        assert.equal(composition.left.x, 44, 'Xixi moves right by 28px from the former 16px anchor at full scale');
-        assert.equal(composition.gifs.find(gif => gif.side === 'left').x, 302, 'Xixi GIF follows the same 28px translation');
+        assert.equal(composition.left.x, 68, 'Xixi and GIF receive another 24px shift at full scale');
+        assert.equal(composition.gifs.find(gif => gif.side === 'left').x, 326, 'Xixi GIF follows the same 24px translation');
         assert.equal(await page.locator('[data-sunlit-companion=right]').evaluate(el => getComputedStyle(el).transform), 'matrix(-1, 0, 0, 1, 0, 0)');
         assert.equal(await page.locator('[data-sunlit-emote=right]').evaluate(el => getComputedStyle(el).transform), 'none', 'Only Yaya standee is mirrored; her GIF keeps its own direction');
         assert.equal(composition.readingWidth, 812, 'Background figures must not reserve foreground reading corridors');
         for (const gif of composition.gifs) {
           const character = composition[gif.side];
           assert.ok((gif.side === 'left' ? gif.x >= character.right : gif.right <= character.x) && gif.y > character.y && gif.bottom <= 823);
-          if (gif.side === 'right' && gif.x < composition.input.right && gif.right > composition.input.x) assert.ok(gif.bottom <= composition.input.y - 11.5, 'Yaya GIF must clear the native input deck');
+          if (gif.x < composition.input.right && gif.right > composition.input.x) assert.ok(gif.bottom <= composition.input.y - 11.5, 'Yaya GIF must clear the native input deck');
         }
         await page.screenshot({ path: path.join(project, `preview/${mode}.png`) });
         await page.locator('[data-sunlit-toggle]').click(); await page.locator('[data-sunlit-setting=motion]').uncheck(); await page.keyboard.press('Escape');
@@ -130,18 +130,20 @@ async function run() {
       await page.evaluate(() => document.body.removeAttribute('data-ds-dark-theme'));
       await page.locator('[data-sunlit-toggle]').click(); await page.locator('[data-sunlit-setting=motion]').check(); await page.keyboard.press('Escape');
     });
-    await check('swapped Yaya GIF clears native input at 1280 and 1440px in both themes', async () => {
+    await check('both GIFs clear native input at 760, 1280 and 1440px in both themes', async () => {
       for (const mode of ['light','dark']) {
         await page.evaluate(dark=>document.body.toggleAttribute('data-ds-dark-theme',dark),mode==='dark');
-        for (const width of [1280,1440]) {
+        for (const width of [760,1280,1440]) {
           await page.setViewportSize({width,height:900});
           await page.waitForFunction(value=>document.body.dataset.sunlitMode===value && document.querySelector('[data-sunlit-background]').getBoundingClientRect().width===innerWidth,mode);
           const positions=await page.evaluate(()=>{
             const box=el=>{const r=el.getBoundingClientRect();return {left:r.left,right:r.right,top:r.top,bottom:r.bottom};};
-            return {gif:box(document.querySelector('[data-sunlit-emote=right]')),input:box(document.querySelector('[data-composer-seat]')),visible:!document.querySelector('[data-sunlit-emote=right]').hidden};
+            return {gifs:[...document.querySelectorAll('[data-sunlit-emote]')].map(el=>({...box(el),visible:!el.hidden})),input:box(document.querySelector('[data-composer-seat]'))};
           });
-          assert.equal(positions.visible,true); assert.ok(positions.gif.left<positions.input.right && positions.gif.right>positions.input.left);
-          assert.ok(Math.abs(positions.input.top-positions.gif.bottom-12)<1);
+          for (const gif of positions.gifs) {
+            assert.equal(gif.visible,true);
+            if(gif.left<positions.input.right && gif.right>positions.input.left) assert.ok(Math.abs(positions.input.top-gif.bottom-12)<1);
+          }
           await page.screenshot({path:path.join(project,`test-results/gif-input-${mode}-${width}.png`)});
         }
       }

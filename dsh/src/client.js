@@ -23,7 +23,11 @@ function mountDshSunlitClient({ window, document, config = {}, assets = {}, cssT
     bubbles: true, bubbleCount: 18, bubbleSpeed: 100, companions: true, emotes: true, gradientText: true, layout: "panorama" };
   function normalize(value) {
     const v = value && typeof value === "object" && !Array.isArray(value) ? value : {};
-    const out = { ...defaults, scenes: { ...defaults.scenes } };
+    const out = { ...defaults, scenes: { ...defaults.scenes }, companionOpacity: { light: null, dark: null }, emoteOpacity: { light: null, dark: null } };
+    for (const key of ["companionOpacity", "emoteOpacity"]) for (const mode of ["light", "dark"]) {
+      const alpha = v[key]?.[mode];
+      if (typeof alpha === "number" && Number.isFinite(alpha)) out[key][mode] = Math.round(Math.max(0, Math.min(100, alpha)));
+    }
     if (v.layout === "panorama" || v.layout === "separate") out.layout = v.layout;
     for (const mode of ["light", "dark"]) if (sceneById.has(v.scenes?.[mode])) out.scenes[mode] = v.scenes[mode];
     for (const key of ["motion", "lighting", "blink", "bubbles", "companions", "emotes", "gradientText"]) {
@@ -77,6 +81,10 @@ function mountDshSunlitClient({ window, document, config = {}, assets = {}, cssT
   const sidebarVeil = node("div", { "data-sunlit-sidebar-veil": "" });
   viewport.append(sidebarArt, sceneArea);
   const decorations = node("div", { "data-sunlit-decorations": "" });
+  const manualDecorations = node("div", { "data-sunlit-manual-decorations": "" });
+  const manualCompanions = node("div", { "data-sunlit-manual-category": "companion" });
+  const manualEmotes = node("div", { "data-sunlit-manual-category": "emote" });
+  manualDecorations.append(manualCompanions, manualEmotes);
   const light = node("div", { "data-sunlit-light": "" });
   const bubbles = node("div", { "data-sunlit-bubbles": "" });
   let leafSignature = "";
@@ -100,7 +108,7 @@ function mountDshSunlitClient({ window, document, config = {}, assets = {}, cssT
   // Panorama art, portraits and GIFs share one opacity group and one wash.
   // Separate layout keeps its original vivid margin decorations above the wash.
   artwork.append(background, light);
-  sceneArea.append(artwork, wash, sidebarVeil, decorations);
+  sceneArea.append(artwork, wash, sidebarVeil, decorations, manualDecorations);
   const toggle = appendOwned(node("button", { type: "button", "data-sunlit-toggle": "", "aria-expanded": "false", "aria-controls": "dsh-sunlit-palette", title: "晴光与泡影 · 本机外观设置" }, "✦ 晴光"));
   const panel = appendOwned(node("section", { id: "dsh-sunlit-palette", "data-sunlit-panel": "", role: "dialog", "aria-label": "晴光与泡影 · 本机调色板", hidden: "" }));
   const header = node("header");
@@ -146,6 +154,17 @@ function mountDshSunlitClient({ window, document, config = {}, assets = {}, cssT
     inputs.set(key, { input, output, suffix }); row.append(top, input); controls.append(row);
   }
   slider("背景强度", "backgroundOpacity", 0, 100, "%");
+  for (const [key, label, follow] of [["companionOpacity", "立绘透明度", "立绘跟随背景"], ["emoteOpacity", "表情包透明度", "表情包跟随背景"]]) {
+    const row = node("div", { "data-sunlit-control": key });
+    const top = node("span"), output = node("output");
+    const input = node("input", { type: "range", min: "0", max: "100", step: "1", "aria-label": label, "data-sunlit-setting": key });
+    const restore = node("button", { type: "button", "data-sunlit-follow": key }, follow);
+    top.append(node("span", {}, label), output);
+    row.append(top, input, node("small", {}, "当前 DSH 明暗模式分别保存；0 隐藏，100 完全显示。"), restore);
+    controls.append(row); inputs.set(key, { input, output, perMode: true });
+    listen(input, "input", () => { settings[key][mode()] = Number(input.value); saveAndApply(); });
+    listen(restore, "click", () => { settings[key][mode()] = null; saveAndApply(); });
+  }
   slider("阅读底色", "contentOpacity", 0, 100, "%");
   slider("阅读宽度", "readingWidth", 480, 1440, " px");
   slider("粒子数量", "bubbleCount", 5, 40, "");
@@ -262,6 +281,7 @@ function mountDshSunlitClient({ window, document, config = {}, assets = {}, cssT
     // Panorama decorations belong to the full illustrated plane, including the
     // sidebar. Separate mode retains its original center-only side corridors.
     placeBox(decorations, panorama ? 0 : left - sceneLeft, panorama ? 0 : top - sceneTop, panorama ? right - sceneLeft : width, panorama ? sceneBottom - sceneTop : height);
+    placeBox(manualDecorations, panorama ? 0 : left - sceneLeft, panorama ? 0 : top - sceneTop, panorama ? right - sceneLeft : width, panorama ? sceneBottom - sceneTop : height);
     sidebarArt.hidden = panorama || !sidebar || sidebar.width < 1;
     if (sidebar) placeBox(sidebarArt, sidebar.left, sidebar.top, sidebar.width, sidebar.height);
     sidebarVeil.hidden = !panorama || !sidebar || sidebar.width < 1;
@@ -292,25 +312,25 @@ function mountDshSunlitClient({ window, document, config = {}, assets = {}, cssT
       const artScale = panorama && sceneWidth >= 360 && sceneHeight >= 320 ? Math.min(1, sceneWidth / 1100, sceneHeight / 700) : 0;
       const w = panorama ? (side === "left" ? 240 : 206) * artScale : nominalWidth * scale;
       const h = panorama ? (side === "left" ? 360 : 344) * artScale : 230 * scale;
-      // Move Xixi and her GIF together by 28px at full scale. The opposite
+      // Move Xixi and her GIF together another 24px at full scale. The opposite
       // group keeps its outer bounds while the GIF and standee swap order.
-      const x = panorama ? side === "left" ? 44 * artScale : sceneWidth - w - 20 * artScale : side === "left" ? 16 : width - w - 16;
+      const x = panorama ? side === "left" ? 68 * artScale : sceneWidth - w - 20 * artScale : side === "left" ? 16 : width - w - 16;
       const y = panorama ? sceneHeight - h - (side === "left" ? 20 : 54) * artScale : height - h - 56;
       const originLeft = panorama ? sceneLeft : left, originTop = panorama ? sceneTop : top;
       const box = { left: originLeft + x, right: originLeft + x + w, top: originTop + y, bottom: originTop + y + h };
       const anchorFits = panorama ? !!artScale : !!scale && !obstacles.some(r => overlaps(box, r)) && !overlaps(box, protectedLane, 0);
-      const show = settings.companions && anchorFits && !!character.getAttribute("src");
+      const show = settings.companions && settings.companionOpacity[mode()] !== 0 && anchorFits && !!character.getAttribute("src");
       character.hidden = !show;
       if (show) { placeBox(character, x, y, w, h); placed.push({ side, ...box, width: w, height: h }); }
       emote.hidden = true;
-      if (anchorFits && settings.emotes && effectiveMotion()) {
+      if (anchorFits && settings.emotes && settings.emoteOpacity[mode()] !== 0 && effectiveMotion()) {
         if (panorama) {
           const size = 96 * artScale, ex = side === "left" ? x + w + 18 * artScale : x - size - 18 * artScale;
           let ey = sceneHeight - size - (side === "left" ? 38 : 76) * artScale;
           const input = rect(nodes.composer);
-          if (side === "right" && input && sceneLeft + ex < input.right && sceneLeft + ex + size > input.left) {
+          if (input && sceneLeft + ex < input.right && sceneLeft + ex + size > input.left) {
             // The swapped GIF may now sit underneath the native input deck.
-            // Raise only that GIF; keep both figures and the reading width fixed.
+            // Either GIF can meet the input deck as the window narrows.
             ey = Math.min(ey, input.top - sceneTop - size - 12);
           }
           if (ex >= 0 && ex + size <= sceneWidth - 8 && ey >= 24 && ey + size <= sceneHeight - 8) {
@@ -330,6 +350,22 @@ function mountDshSunlitClient({ window, document, config = {}, assets = {}, cssT
     // Panorama uses the illustrated sidebar's spare room, never sacrificing
     // reading width; separate mode keeps small leaves in its measured rails.
     for (const [index, bubble] of [...bubbles.children].entries()) {
+      // Reuse the last three slots from the user's count, rather than adding
+      // particles. A small edge rail stays outside the text without narrowing it.
+      const edgeIndex = index - (settings.bubbleCount - Math.min(3, Math.max(1, Math.floor(settings.bubbleCount / 6))));
+      if (!leafScene() && edgeIndex >= 0) {
+        const planeLeft = panorama ? sceneLeft : left, planeWidth = panorama ? right - sceneLeft : width;
+        const safeStart = Math.max(protectedLane.right - 8, rect(nodes.composer)?.right || 0) - planeLeft;
+        const room = planeWidth - Math.max(safeStart, planeWidth - 40) - 8 - edgeIndex * 2;
+        const size = Math.min(12 + edgeIndex * 3, room);
+        bubble.hidden = size < 6;
+        bubble.toggleAttribute("data-sunlit-edge-bubble", true);
+        bubble.style.setProperty("--bubble-size", size + "px");
+        bubble.style.setProperty("--bubble-x", (planeWidth - size - 8 - edgeIndex * 2) + "px");
+        bubble.style.setProperty("--bubble-delay", (-5 - edgeIndex * 8.3) + "s");
+        continue;
+      }
+      bubble.removeAttribute("data-sunlit-edge-bubble");
       const size = narrowLeaves ? 10 + index % 5 : 18 + index * 17 % (leafScene() ? 19 : 55), side = index % 2 ? "right" : "left";
       const planeLeft = panorama ? sceneLeft : left, planeWidth = panorama ? right - sceneLeft : width;
       const start = side === "left" ? 4 : protectedLane.right - planeLeft + 16;
@@ -351,8 +387,14 @@ function mountDshSunlitClient({ window, document, config = {}, assets = {}, cssT
     const current = mode(), editing = editorMode || current;
     for (const [name, button] of Object.entries(modeButtons)) button.setAttribute("aria-pressed", String(name === editing));
     for (const [id, button] of galleryButtons) button.setAttribute("aria-pressed", String(settings.scenes[editing] === id));
-    for (const [key, { input, output, suffix }] of inputs) {
-      if (input.type === "checkbox") input.checked = settings[key];
+    for (const [key, { input, output, suffix, perMode }] of inputs) {
+      if (perMode) {
+        const value = settings[key][current];
+        const auto = settings.layout === "panorama" ? settings.backgroundOpacity * (1 - Math.max(settings.contentOpacity / 100, settings.gradientText ? current === "dark" ? .68 : .6 : 0)) : 100;
+        input.value = String(value ?? Math.round(auto));
+        output.textContent = value === null ? "自动跟随背景" : `${value}%`;
+        input.setAttribute("aria-valuetext", value === null ? "自动跟随背景" : `${value}%，0 隐藏，100 完全显示`);
+      } else if (input.type === "checkbox") input.checked = settings[key];
       else if (input.tagName === "SELECT") input.value = settings[key];
       else { input.value = String(settings[key]); output.textContent = `${settings[key]}${suffix}`; }
     }
@@ -369,6 +411,14 @@ function mountDshSunlitClient({ window, document, config = {}, assets = {}, cssT
     attr(body, "data-sunlit-layout", settings.layout);
     const decorationParent = settings.layout === "panorama" ? artwork : sceneArea;
     if (decorations.parentElement !== decorationParent) decorationParent.append(decorations);
+    // Explicit alpha bypasses the shared wallpaper/wash chain. Only the
+    // selected category moves; leaves and auto categories retain their chain.
+    for (const [key, group, images] of [["companionOpacity", manualCompanions, [companionLeft, companionRight]], ["emoteOpacity", manualEmotes, [emoteLeft, emoteRight]]]) {
+      const value = settings[key][current], parent = value === null ? decorations : group;
+      for (const image of images) if (image.parentElement !== parent) parent.append(image);
+      group.style.opacity = String((value ?? 100) / 100);
+    }
+    sceneArea.append(manualDecorations);
     // Keep all variables on owned nodes; native body styles are never rewritten.
     viewport.style.setProperty("--sunlit-background-opacity", String(settings.backgroundOpacity / 100));
     const effectiveVeil = Math.max(settings.contentOpacity / 100, settings.gradientText ? current === "dark" ? .68 : .60 : 0);
