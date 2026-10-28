@@ -77,9 +77,13 @@ async function run() {
       window.nativeSnapshot = { body: document.body.getAttributeNames(), host: document.querySelector('#root').outerHTML, style: document.querySelector('#native-style').textContent };
       window.disposeSkin = mountDshSunlitClient(window.fixtureOptions);
     }, { config: manifest.config, assets, cssText });
+    const revealControl = async key => {
+      const group=page.locator(`[data-sunlit-control-group]:has([data-sunlit-setting="${key}"])`);
+      if(await group.count() && await group.getAttribute('open') === null) await group.locator('summary').click();
+    };
     const chooseLayout = async layout => {
       await page.locator('[data-sunlit-toggle]').click();
-      await page.locator('[data-sunlit-setting=layout]').selectOption(layout);
+      await revealControl('layout'); await page.locator('[data-sunlit-setting=layout]').selectOption(layout);
       await page.keyboard.press('Escape');
       await page.waitForFunction(value => window.__dshSunlitTidesClient.getLayoutState().layout === value, layout);
     };
@@ -93,7 +97,7 @@ async function run() {
     await check('light and dark panorama use one canvas with identical moving and static geometry', async () => {
       for (const mode of ['light', 'dark']) {
         await page.evaluate(dark => document.body.toggleAttribute('data-ds-dark-theme', dark), mode === 'dark');
-        await page.locator('[data-sunlit-toggle]').click(); await page.locator('[data-sunlit-setting=motion]').check(); await page.keyboard.press('Escape');
+        await page.locator('[data-sunlit-toggle]').click(); await revealControl('motion'); await page.locator('[data-sunlit-setting=motion]').check(); await page.keyboard.press('Escape');
         await page.waitForFunction(() => window.__DSH_SUNLIT_SCENE_RENDERER__?.getState().ready, {}, { timeout: 30000 });
         const moving = await page.locator('[data-sunlit-background]').boundingBox();
         assert.deepEqual(moving, { x: 0, y: 40, width: 1283, height: 783 });
@@ -122,13 +126,13 @@ async function run() {
           if (gif.x < composition.input.right && gif.right > composition.input.x) assert.ok(gif.bottom <= composition.input.y - 11.5, 'Yaya GIF must clear the native input deck');
         }
         await page.screenshot({ path: path.join(project, `preview/${mode}.png`) });
-        await page.locator('[data-sunlit-toggle]').click(); await page.locator('[data-sunlit-setting=motion]').uncheck(); await page.keyboard.press('Escape');
+        await page.locator('[data-sunlit-toggle]').click(); await revealControl('motion'); await page.locator('[data-sunlit-setting=motion]').uncheck(); await page.keyboard.press('Escape');
         assert.equal(await page.locator('[data-sunlit-background] canvas').count(), 0);
         assert.deepEqual(await page.locator('[data-sunlit-background]').boundingBox(), moving);
         assert.ok(await page.locator('[data-sunlit-background]').evaluate(el => el.style.backgroundImage.startsWith('url(')));
       }
       await page.evaluate(() => document.body.removeAttribute('data-ds-dark-theme'));
-      await page.locator('[data-sunlit-toggle]').click(); await page.locator('[data-sunlit-setting=motion]').check(); await page.keyboard.press('Escape');
+      await page.locator('[data-sunlit-toggle]').click(); await revealControl('motion'); await page.locator('[data-sunlit-setting=motion]').check(); await page.keyboard.press('Escape');
     });
     await check('both GIFs clear native input at 760, 1280 and 1440px in both themes', async () => {
       for (const mode of ['light','dark']) {
@@ -147,18 +151,18 @@ async function run() {
           await page.screenshot({path:path.join(project,`test-results/gif-input-${mode}-${width}.png`)});
         }
       }
-      await page.locator('[data-sunlit-toggle]').click(); await page.locator('[data-sunlit-setting=readingWidth]').fill('480'); await page.locator('[data-sunlit-setting=readingWidth]').dispatchEvent('input'); await page.keyboard.press('Escape');
+      await page.locator('[data-sunlit-toggle]').click(); await revealControl('readingWidth'); await page.locator('[data-sunlit-setting=readingWidth]').fill('480'); await page.locator('[data-sunlit-setting=readingWidth]').dispatchEvent('input'); await page.keyboard.press('Escape');
       await page.waitForFunction(()=>window.__dshSunlitTidesClient.getLayoutState().readingWidth===480);
       const base=await page.evaluate(()=>({gif:document.querySelector('[data-sunlit-emote=right]').getBoundingClientRect().toJSON(),input:document.querySelector('[data-composer-seat]').getBoundingClientRect().toJSON()}));
       assert.ok(base.gif.left>=base.input.right); assert.equal(base.gif.bottom,824,'Without horizontal overlap, keep the original bottom anchor');
-      await page.locator('[data-sunlit-toggle]').click(); await page.locator('[data-sunlit-setting=readingWidth]').fill('812'); await page.locator('[data-sunlit-setting=readingWidth]').dispatchEvent('input'); await page.keyboard.press('Escape');
+      await page.locator('[data-sunlit-toggle]').click(); await revealControl('readingWidth'); await page.locator('[data-sunlit-setting=readingWidth]').fill('812'); await page.locator('[data-sunlit-setting=readingWidth]').dispatchEvent('input'); await page.keyboard.press('Escape');
       await page.evaluate(()=>document.body.removeAttribute('data-ds-dark-theme')); await page.setViewportSize({width:1283,height:823});
       await page.waitForFunction(()=>document.body.dataset.sunlitMode==='light' && document.querySelector('[data-sunlit-background]').getBoundingClientRect().width===1283);
     });
     await check('panorama figures and GIFs share wallpaper opacity once and remain behind native controls', async () => {
       for (const value of [38, 0, 100]) {
         await page.locator('[data-sunlit-toggle]').click();
-        await page.locator('[data-sunlit-setting=backgroundOpacity]').fill(String(value)); await page.locator('[data-sunlit-setting=backgroundOpacity]').dispatchEvent('input'); await page.keyboard.press('Escape');
+        await revealControl('backgroundOpacity'); await page.locator('[data-sunlit-setting=backgroundOpacity]').fill(String(value)); await page.locator('[data-sunlit-setting=backgroundOpacity]').dispatchEvent('input'); await page.keyboard.press('Escape');
         const state = await page.evaluate(() => {
           const opacity = el => { let alpha = 1; for (let node=el; node && !node.hasAttribute('data-sunlit-main-scene'); node=node.parentElement) alpha*=Number(getComputedStyle(node).opacity); return alpha; };
           const artwork = document.querySelector('[data-sunlit-artwork]'), wash = document.querySelector('[data-sunlit-reading-wash]');
@@ -346,37 +350,37 @@ async function run() {
     });
     await check('portrait and GIF switches retain independent meanings', async () => {
       const countVisible = kind => page.locator(`[data-sunlit-${kind}]`).evaluateAll(elements => elements.filter(el => !el.hidden).length);
-      await page.locator('[data-sunlit-toggle]').click(); await page.locator('[data-sunlit-setting=companions]').uncheck(); await page.keyboard.press('Escape');
+      await page.locator('[data-sunlit-toggle]').click(); await revealControl('companions'); await page.locator('[data-sunlit-setting=companions]').uncheck(); await page.keyboard.press('Escape');
       await page.waitForFunction(() => [...document.querySelectorAll('[data-sunlit-emote]')].filter(el => !el.hidden).length === 2);
       assert.equal(await countVisible('companion'), 0); assert.equal(await countVisible('emote'), 2);
-      await page.locator('[data-sunlit-toggle]').click(); await page.locator('[data-sunlit-setting=emotes]').uncheck(); await page.keyboard.press('Escape');
+      await page.locator('[data-sunlit-toggle]').click(); await revealControl('emotes'); await page.locator('[data-sunlit-setting=emotes]').uncheck(); await page.keyboard.press('Escape');
       assert.equal(await countVisible('companion'), 0); assert.equal(await countVisible('emote'), 0);
-      await page.locator('[data-sunlit-toggle]').click(); await page.locator('[data-sunlit-setting=companions]').check(); await page.keyboard.press('Escape');
+      await page.locator('[data-sunlit-toggle]').click(); await revealControl('companions'); await page.locator('[data-sunlit-setting=companions]').check(); await page.keyboard.press('Escape');
       await page.waitForFunction(() => [...document.querySelectorAll('[data-sunlit-companion]')].filter(el => !el.hidden).length === 2);
       assert.equal(await countVisible('companion'), 2); assert.equal(await countVisible('emote'), 0);
-      await page.locator('[data-sunlit-toggle]').click(); await page.locator('[data-sunlit-setting=emotes]').check(); await page.keyboard.press('Escape');
+      await page.locator('[data-sunlit-toggle]').click(); await revealControl('emotes'); await page.locator('[data-sunlit-setting=emotes]').check(); await page.keyboard.press('Escape');
       await page.waitForFunction(() => [...document.querySelectorAll('[data-sunlit-emote]')].filter(el => !el.hidden).length === 2);
       assert.equal(await countVisible('companion'), 2); assert.equal(await countVisible('emote'), 2);
     });
     await check('switches update real renderer and stop GIFs', async () => {
       await page.locator('[data-sunlit-toggle]').click();
-      await page.locator('[data-sunlit-setting=lighting]').uncheck();
-      await page.locator('[data-sunlit-setting=blink]').uncheck();
+      await revealControl('lighting'); await page.locator('[data-sunlit-setting=lighting]').uncheck();
+      await revealControl('blink'); await page.locator('[data-sunlit-setting=blink]').uncheck();
       let state = await page.evaluate(() => window.__DSH_SUNLIT_SCENE_RENDERER__.getStateAsync());
       assert.equal(state.lightingEnabled, false); assert.equal(state.blinkEnabled, false);
-      await page.locator('[data-sunlit-setting=motion]').uncheck();
+      await revealControl('motion'); await page.locator('[data-sunlit-setting=motion]').uncheck();
       assert.equal(await page.locator('[data-sunlit-background] canvas').count(), 0);
       assert.equal(await page.locator('[data-sunlit-emote][src]').count(), 0);
       assert.ok(await page.locator('[data-sunlit-background]').evaluate(el => el.style.backgroundImage.startsWith('url(')));
-      await page.locator('[data-sunlit-setting=companions]').uncheck();
-      await page.locator('[data-sunlit-setting=bubbles]').uncheck();
+      await revealControl('companions'); await page.locator('[data-sunlit-setting=companions]').uncheck();
+      await revealControl('bubbles'); await page.locator('[data-sunlit-setting=bubbles]').uncheck();
       assert.equal(await page.locator('[data-sunlit-companion=left]').isVisible(), false);
       assert.equal(await page.locator('[data-sunlit-bubbles]').isVisible(), false);
     });
     await check('reading settings preserve native scroll and account preferences', async () => {
-      await page.locator('[data-sunlit-setting=readingWidth]').fill('1040');
+      await revealControl('readingWidth'); await page.locator('[data-sunlit-setting=readingWidth]').fill('1040');
       await page.locator('[data-sunlit-setting=readingWidth]').dispatchEvent('input');
-      await page.locator('[data-sunlit-setting=backgroundOpacity]').fill('38');
+      await revealControl('backgroundOpacity'); await page.locator('[data-sunlit-setting=backgroundOpacity]').fill('38');
       await page.locator('[data-sunlit-setting=backgroundOpacity]').dispatchEvent('input');
       assert.equal(await page.evaluate(() => getComputedStyle(document.querySelector('[data-sunlit-background]')).opacity), '0.38');
       await page.keyboard.press('Escape');

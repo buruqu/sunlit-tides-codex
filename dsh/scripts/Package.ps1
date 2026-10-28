@@ -1,5 +1,5 @@
 ﻿[CmdletBinding()]
-param([string]$OutputDirectory)
+param([string]$OutputDirectory,[string]$NativeCarrierDirectory,[string]$Dotnet='dotnet')
 $ErrorActionPreference='Stop'
 $root=Split-Path -Parent $PSScriptRoot
 if(!$OutputDirectory){
@@ -9,6 +9,29 @@ if(!$OutputDirectory){
 $OutputDirectory=[IO.Path]::GetFullPath($OutputDirectory)
 if(!(Test-Path -LiteralPath $OutputDirectory -PathType Container)){throw 'Output directory must already exist'}
 $pkg=Get-Content -LiteralPath (Join-Path $root 'package.json') -Raw -Encoding UTF8|ConvertFrom-Json
+# Native mode exits before the Codex host startup path; no startup video is shipped.
+# Build from this checkout unless the caller provides its already verified publish.
+if(!$NativeCarrierDirectory){
+ $NativeCarrierDirectory=Join-Path $root ('release/panel-native-'+[guid]::NewGuid().ToString('N'))
+ $nativeProject=Join-Path $root '../host/SunlitTidesCodex.csproj'
+ if(!(Test-Path -LiteralPath $nativeProject)){ $nativeProject=Join-Path $root 'native-source/host/SunlitTidesCodex.csproj' }
+ & $Dotnet publish $nativeProject -c Release -r win-x64 --self-contained true -o $NativeCarrierDirectory -p:PublishSingleFile=true -p:IncludeNativeLibrariesForSelfExtract=true
+ if($LASTEXITCODE -ne 0){throw 'Native panel carrier publish failed'}
+}
+$nativeRoot=Join-Path $root 'native'
+New-Item -ItemType Directory -Path $nativeRoot -Force|Out-Null
+$nativeFiles=@('SunlitTidesCodex.exe')
+foreach($name in @('Microsoft.Web.WebView2.Core.dll','Microsoft.Web.WebView2.WinForms.dll','Microsoft.Web.WebView2.Wpf.dll','WebView2Loader.dll')){
+ if(Test-Path -LiteralPath (Join-Path $NativeCarrierDirectory $name) -PathType Leaf){$nativeFiles+=$name}
+}
+foreach($name in $nativeFiles){
+ $source=Join-Path $NativeCarrierDirectory $name
+ if(!(Test-Path -LiteralPath $source -PathType Leaf)){throw "Native carrier missing: $name"}
+ if((Get-Item -LiteralPath $source).Attributes -band [IO.FileAttributes]::ReparsePoint){throw 'Native carrier cannot be a reparse point'}
+ Copy-Item -LiteralPath $source -Destination (Join-Path $nativeRoot $name) -Force
+}
+$extra=Get-ChildItem -LiteralPath $nativeRoot -Force|Where-Object Name -NotIn $nativeFiles
+if($extra){throw 'Unexpected files in native carrier folder; use a clean reviewed native folder'}
 $stage=Join-Path $root ('release/stage-'+[guid]::NewGuid().ToString('N'))
 New-Item -ItemType Directory -Path $stage -Force|Out-Null
 $files=@('package.json','installer')+@($pkg.files)
@@ -25,10 +48,24 @@ $archive=[IO.Compression.ZipFile]::Open($temporary,[IO.Compression.ZipArchiveMod
 try{
  foreach($entry in Get-ChildItem -LiteralPath $root -File -Recurse -Force){
   $relative=$entry.FullName.Substring($root.Length+1).Replace('\','/')
-  if($relative -match '(^|/)(node_modules|test-results|release|\.git)(/|$)'){continue}
+  if($relative -match '(^|/)(node_modules|test-results|release|native|bin|obj|\.git)(/|$)'){continue}
   if($entry.Attributes -band [IO.FileAttributes]::ReparsePoint){throw 'Unexpected reparse file'}
   if($relative -match '(^|/)(\.env|credentials|backups?)(/|\.|$)|\.(db|sqlite|pem|pfx|key)$'){throw "Unexpected source file: $relative"}
   [IO.Compression.ZipFileExtensions]::CreateEntryFromFile($archive,$entry.FullName,$relative,[IO.Compression.CompressionLevel]::Optimal)|Out-Null
+ }
+ # An independent source archive also contains the native carrier sources.
+ $parentRoot=Split-Path -Parent $root
+ $hostSource=Join-Path $parentRoot 'host'
+ if(Test-Path -LiteralPath (Join-Path $hostSource 'SunlitTidesCodex.csproj')){
+  foreach($entry in Get-ChildItem -LiteralPath $hostSource -File -Recurse){
+   $relative=$entry.FullName.Substring($hostSource.Length+1).Replace('\','/')
+   if($relative -match '(^|/)(bin|obj)(/|$)'){continue}
+   if($relative -notmatch '\.(cs|csproj|manifest|js)$'){continue}
+   [IO.Compression.ZipFileExtensions]::CreateEntryFromFile($archive,$entry.FullName,('native-source/host/'+$relative),[IO.Compression.CompressionLevel]::Optimal)|Out-Null
+  }
+  foreach($relative in @('shared/panel-carrier.html','assets/branding/sunlit-tides.ico')){
+   [IO.Compression.ZipFileExtensions]::CreateEntryFromFile($archive,(Join-Path $parentRoot $relative),('native-source/'+$relative),[IO.Compression.CompressionLevel]::Optimal)|Out-Null
+  }
  }
 }finally{$archive.Dispose()}
 Move-Item -LiteralPath $temporary -Destination $sourceZip -Force

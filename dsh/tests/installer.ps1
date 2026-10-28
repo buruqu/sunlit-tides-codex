@@ -15,9 +15,11 @@ function global:Get-CimInstance {
 function New-Fixture([string]$Name) {
     $root=Join-Path $testRoot $Name
     $fixtureHome=Join-Path $root 'home'; $profile=Join-Path $fixtureHome 'profiles/desktop';$source=Join-Path $root 'source';$cliDir=Join-Path $root 'app/resources/runtime/cli/bin'
-    foreach($p in @($profile,(Join-Path $source 'lib'),$cliDir)){New-Item -ItemType Directory -Path $p -Force|Out-Null}
-    [IO.File]::WriteAllText((Join-Path $source 'package.json'), '{"name":"@dsh-external/dsh-client-ui-skin-sunlit-tides","version":"0.1.0","description":"晴光与泡影：西格莉卡与达妮娅的 DSH 动态主题","dsh":{"bundle":{"patch":"./cordis.patch.yml"}},"files":["lib","cordis.patch.yml"],"scripts":{"build":"node example.js"}}', [Text.UTF8Encoding]::new($false))
+    foreach($p in @($profile,(Join-Path $source 'lib'),(Join-Path $source 'native'),$cliDir)){New-Item -ItemType Directory -Path $p -Force|Out-Null}
+    [IO.File]::WriteAllText((Join-Path $source 'package.json'), '{"name":"@dsh-external/dsh-client-ui-skin-sunlit-tides","version":"0.3.0","description":"晴光与泡影：西格莉卡与达妮娅的 DSH 动态主题","dsh":{"bundle":{"patch":"./cordis.patch.yml"}},"files":["lib","cordis.patch.yml","native"],"scripts":{"build":"node example.js"}}', [Text.UTF8Encoding]::new($false))
     Write-Utf8 (Join-Path $source 'lib/index.js') 'export const marker = "test";'
+    # An inert file exercises package copying only; it is never executed.
+    Write-Utf8 (Join-Path $source 'native/SunlitTidesCodex.exe') 'INERT NATIVE CARRIER FIXTURE - NOT EXECUTABLE'
     Write-Utf8 (Join-Path $source 'cordis.patch.yml') "- insert:`n    - id: ui-skin-sunlit-tides`n      name: '@dsh-external/dsh-client-ui-skin-sunlit-tides'`n"
     [IO.File]::WriteAllText((Join-Path $profile 'package.json'), '{"name":"fixture","description":"原始配置晴","private":true,"dependencies":{"keep":"1.0.0"},"dsh":{"profile":{"bundles":["base","denia"]}}}', [Text.UTF8Encoding]::new($false))
     Write-Utf8 (Join-Path $profile 'pnpm-lock.yaml') 'original-lock'
@@ -54,14 +56,30 @@ foreach($p in @($install,$restore)) {
     Assert ($errors.Count -eq 0) "syntax $p"
     $bytes=[IO.File]::ReadAllBytes($p);Assert ($bytes[0]-eq 239 -and $bytes[1]-eq 187 -and $bytes[2]-eq 191) "UTF8 BOM $p"
 }
+$missing=New-Fixture 'missing-native';$missingBefore=Snapshot $missing.Profile
+Remove-Item -LiteralPath (Join-Path $missing.Source 'native/SunlitTidesCodex.exe')
+$missingError=$null
+try{& $install -DshHome $missing.Home -CliPath $missing.Cli -SourcePath $missing.Source}catch{$missingError=$_.Exception.Message}
+Assert ($missingError -match '缺少受管原生面板程序') 'missing native carrier rejected by package contract'
+Assert ((Snapshot $missing.Profile)-eq $missingBefore) 'missing native carrier leaves profile untouched'
+Assert (!(Test-Path -LiteralPath (Join-Path $missing.Home '.sunlit-tides-install-backups'))) 'missing native carrier creates no backup or install mutation'
+Write-Output 'PASS negative: missing native carrier is refused before any profile or backup mutation.'
 $f=New-Fixture 'success';$before=Snapshot $f.Profile
 $ps51=Join-Path $env:WINDIR 'System32/WindowsPowerShell/v1.0/powershell.exe'
 if (!(Test-Path -LiteralPath $ps51 -PathType Leaf)) { throw '缺少 Windows PowerShell 5.1，无法完成必需的 -File 默认路径测例。' }
 $fixtureInstaller=Join-Path $f.Source 'installer'
 New-Item -ItemType Directory -Path $fixtureInstaller|Out-Null
-Copy-Item -LiteralPath $install -Destination (Join-Path $fixtureInstaller 'Install.ps1')
+# The fresh PS5.1 process cannot inherit this test's process-probe function.
+# Inject that one fixture seam into disposable copies, retaining direct -File
+# invocation and default SourcePath binding. Never query or stop the real DSH.
+$probeAnchor='$ErrorActionPreference = ''Stop'''
+$fixtureText=[IO.File]::ReadAllText($install)
+Assert ($fixtureText.Contains($probeAnchor)) 'fixture process-probe injection anchor exists'
+$fixtureProbe="function global:Get-CimInstance { return @() }`r`n"
+$fixtureText=$fixtureText.Replace($probeAnchor,$fixtureProbe+$probeAnchor)
+Write-Utf8 (Join-Path $fixtureInstaller 'Install.ps1') $fixtureText
 $legacyInstaller=Join-Path $fixtureInstaller 'Install.Legacy.ps1'
-$legacyText=[IO.File]::ReadAllText($install).Replace(' -Raw -Encoding UTF8',' -Raw')
+$legacyText=$fixtureText.Replace(' -Raw -Encoding UTF8',' -Raw')
 Write-Utf8 $legacyInstaller $legacyText
 # Reproduce the reported 5.1 bug with the identical non-BOM Chinese package fixture.
 $negativeOutput=& $ps51 -NoProfile -ExecutionPolicy Bypass -File $legacyInstaller -DshHome $f.Home -CliPath $f.Cli -WhatIf 2>&1
@@ -84,6 +102,7 @@ $b1=Latest-Backup $f.Home
 Assert ((Get-Content -LiteralPath (Join-Path $f.Profile 'cordis.patch.yml') -Raw)-match 'id: ui-skin-denia\s+disabled: true') 'Denia disabled'
 $installed=Snapshot $f.Profile
 $plugin=Join-Path $f.Home 'plugins/dsh-client-ui-skin-sunlit-tides'
+Assert ((Get-FileHash -LiteralPath (Join-Path $plugin 'native/SunlitTidesCodex.exe')).Hash -eq (Get-FileHash -LiteralPath (Join-Path $f.Source 'native/SunlitTidesCodex.exe')).Hash) 'native carrier copied exactly without execution'
 Write-Utf8 (Join-Path $plugin 'custom-old.txt') 'preserve old directory'
 & $install -DshHome $f.Home -CliPath $f.Cli -SourcePath $f.Source
 $b2=Latest-Backup $f.Home
@@ -108,4 +127,4 @@ $bad=New-Fixture 'unmanaged';New-Item -ItemType Directory -Path (Join-Path $bad.
 $rejected=$false;try{& $install -DshHome $bad.Home -CliPath $bad.Cli -SourcePath $bad.Source}catch{$rejected=$true}
 Assert $rejected 'unmanaged target refused'
 Remove-Item Function:\Get-CimInstance
-Write-Output "PASS: syntax/BOM, Windows PowerShell 5.1 -File/default SourcePath/WhatIf, WhatIf, running guard, installation, exact restore, absence, owned upgrade, later-change refusal, failure recovery, unmanaged refusal. Isolated evidence: $testRoot"
+Write-Output "PASS: syntax/BOM, missing-native refusal, Windows PowerShell 5.1 -File/default SourcePath/WhatIf with fixture-only process probe, WhatIf, simulated running guard, installation/native copy, exact restore, absence, owned upgrade, later-change refusal, failure recovery, unmanaged refusal. No real application was installed, queried, stopped, or restarted. Isolated evidence: $testRoot"

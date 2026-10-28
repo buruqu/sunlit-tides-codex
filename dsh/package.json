@@ -1,15 +1,53 @@
 {
   "name": "@dsh-external/dsh-client-ui-skin-sunlit-tides",
-  "version": "0.2.1",
+  "version": "0.3.0",
   "description": "晴光与泡影：西格莉卡与达妮娅的 DSH 动态主题",
   "private": true,
   "type": "module",
   "main": "lib/index.js",
-  "exports": {".": "./lib/index.js", "./client": "./lib/client.js", "./skin.json": "./skin.json", "./package.json": "./package.json"},
-  "dsh": {"bundle": {"patch": "./cordis.patch.yml"}, "client": {"inject": [], "platform": "web", "version": "0.2.1-rc.2"}},
-  "scripts": {"build": "node scripts/build.cjs", "test:scene": "node tests/scene.cjs", "test:client": "node tests/client.cjs", "test:typography": "node tests/typography.cjs", "test:package": "node tests/package.cjs"},
+  "exports": {
+    ".": "./lib/index.js",
+    "./client": "./lib/client.js",
+    "./skin.json": "./skin.json",
+    "./package.json": "./package.json"
+  },
+  "dsh": {
+    "bundle": {
+      "patch": "./cordis.patch.yml"
+    },
+    "client": {
+      "inject": [
+        "connection"
+      ],
+      "platform": "web",
+      "version": "0.2.1-rc.2"
+    }
+  },
+  "scripts": {
+    "build": "node scripts/build.cjs",
+    "test:scene": "node tests/scene.cjs",
+    "test:client": "node tests/client.cjs",
+    "test:typography": "node tests/typography.cjs",
+    "test:package": "node tests/package.cjs"
+  },
   "license": "SEE LICENSE IN NOTICE.md",
-  "peerDependencies": {"@deepseek-ai/cordis": "^4.0.1"},
-  "devDependencies": {"playwright": "1.62.1"},
-  "files": ["lib", "preview", "cordis.patch.yml", "skin.json", "LICENSE", "NOTICE.md", "ASSETS.md", "licenses", "README.md", "DIY.md"]
+  "peerDependencies": {
+    "@deepseek-ai/cordis": "^4.0.1"
+  },
+  "devDependencies": {
+    "playwright": "1.62.1"
+  },
+  "files": [
+    "lib",
+    "preview",
+    "cordis.patch.yml",
+    "skin.json",
+    "LICENSE",
+    "NOTICE.md",
+    "ASSETS.md",
+    "licenses",
+    "README.md",
+    "DIY.md",
+    "native"
+  ]
 }

@@ -2,7 +2,7 @@
   "schemaVersion": 2,
   "id": "sunlit-tides.codex",
   "name": "晴光与泡影 · Codex 独立主题",
-  "version": "2.0.1",
+  "version": "2.1.0",
   "author": "Sunlit Tides contributors; upstream credits in NOTICE.md",
   "description": "果园午后 / 夜色相依，随 Codex 明暗模式切换的独立 Windows 主题。",
   "engineVersion": 2,
@@ -85,7 +85,7 @@
     "night-motion-blink": "assets/night-motion-blink.png"
   },
   "config": {
-    "designVersion": "2.0.1",
+    "designVersion": "2.1.0",
     "title": "晴光与泡影",
     "subtitle": "把期待写成晴光，让灵感泛起涟漪。",
     "memory": "晴光落在身旁，泡影轻轻回响。",

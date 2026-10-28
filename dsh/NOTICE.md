@@ -8,6 +8,7 @@
 - 鸣潮及角色形象的原作权利归 Kuro Games（库洛游戏）；本项目是个人同人主题。
 - 用户提供的插画、团子头像和 GIF 保留原来源；部分媒体的公开再分发条件尚未确认。当前交付用于本机个人试用，不将媒体重新标为原创或 MIT。
 - AI 生成、局部处理、原图图层和遮罩记录见 ASSETS.md。此文沿用上游素材记录，历史文件布局与当前 DSH 目录的对应关系见该文开头。
-- 不捆绑字体，使用系统字体回退。DSH 包不包含 .NET、Windows 托盘宿主或 Dragon 视频；保留的相关许可是上游历史记录。
+- 不捆绑字体，使用系统字体回退。0.3.0 起随包提供受管 Windows 面板辅助程序及其自包含 .NET / Windows Desktop 运行时，仅以面板管道模式运行，不启动 Codex 托盘、主题连接或 Dragon 视频。相关许可保留于 `licenses/DOTNET-*` 和 `licenses/WINDOWS-DESKTOP-LICENSE.txt`。
+- 面板采用 Microsoft.Web.WebView2 SDK 1.0.3650.58，许可与声明见 `licenses/WEBVIEW2-SDK-LICENSE.txt`、`licenses/WEBVIEW2-SDK-NOTICE.txt`。使用已安装的 WebView2 Runtime，不捆绑或自动下载该运行时。
 
-插件只处理外观，设置保存在当前 WebUI 的独立 localStorage 键中，不读取或上传聊天、模型密钥、账号信息。没有外部分析服务、自动更新或运行时代码下载。
+插件只处理外观，预设参数保存在当前 WebUI 的独立 localStorage 键，素材工程保存在 IndexedDB。浮动面板通过 DSH 官方已认证 RPC 与本机管道交换主题控件和用户选择的素材，不读取或上传聊天、模型密钥、账号信息。没有外部分析服务、自动更新或运行时代码下载。

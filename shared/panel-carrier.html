@@ -1,0 +1,72 @@
+<!doctype html><html><head><meta charset="utf-8"><meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'nonce-sunlit-carrier'; style-src 'unsafe-inline'; img-src data: blob:; frame-src about:; connect-src 'none'; form-action 'none'; base-uri 'none'"><style>html,body,iframe{margin:0;width:100%;height:100%;border:0;overflow:hidden}body{background:#252330}</style></head><body><iframe id="surface" sandbox="allow-same-origin"></iframe><script nonce="sunlit-carrier">
+(() => {
+ 'use strict';
+ const frame=document.getElementById('surface'); let state=null,doc=null,pointerBusy=false,composing=false,pending=null;const acknowledgements=new Map();
+ const send=m=>window.chrome.webview.postMessage(m);
+ const nodeId=e=>e?.closest?.('[data-panel-node]')?.getAttribute('data-panel-node');
+ const emit=(event,e,extra={})=>{const id=nodeId(e); if(state&&id)send({type:'event',session:state.session,revision:state.revision,nodeId:id,event,...extra});};
+ const sanitize=html=>{
+   const template=document.createElement('template'); template.innerHTML=html;
+   template.content.querySelectorAll('script,iframe,frame,object,embed,link,meta,base,form,video,audio,source').forEach(e=>e.remove());
+   template.content.querySelectorAll('*').forEach(e=>{
+     for(const a of [...e.attributes])if(/^on/i.test(a.name)||['srcdoc','href','action','formaction','target','srcset','xlink:href'].includes(a.name))e.removeAttribute(a.name);
+     if(e.hasAttribute('src')&&!/^data:image\/(?:png|jpeg|webp|gif);base64,/i.test(e.getAttribute('src')))e.removeAttribute('src');
+   }); return template.content;
+ };
+ const files=async(e)=>{
+   for(const f of [...e.files||[]].slice(0,1)){
+     const json=/\.json$/i.test(f.name)||f.type==='application/json';
+     if(f.size>(json?85:12)*1024*1024||!(json||/^image\/(png|jpeg|webp|gif)$/.test(f.type))){emit('file',e,{error:'file-limit-or-type'});continue;}
+     const transfer=crypto.randomUUID();emit('file-start',e,{transfer,file:{name:f.name.slice(0,200),type:f.type,size:f.size}});
+     let index=0;for(let offset=0;offset<f.size;offset+=192*1024){
+       const blob=f.slice(offset,offset+192*1024);
+       const data=await new Promise((resolve,reject)=>{const r=new FileReader();r.onload=()=>resolve(String(r.result).split(',')[1]);r.onerror=reject;r.readAsDataURL(blob)});
+       const current=index++;
+       await new Promise((resolve,reject)=>{const key=transfer+':'+current;const timeout=setTimeout(()=>{acknowledgements.delete(key);reject(new Error('file-transfer-timeout'));},15000);acknowledgements.set(key,()=>{clearTimeout(timeout);resolve()});emit('file-chunk',e,{transfer,index:current,data});});
+     }
+     emit('file-end',e,{transfer,chunks:index});
+   }
+ };
+ function render(m){
+   if(pointerBusy||composing){pending=m;return;}
+   state=m; if(!doc){frame.srcdoc='<!doctype html><html><head></head><body></body></html>';frame.onload=()=>{doc=frame.contentDocument;bind();render(state)};return;}
+   const focus=doc.activeElement, id=nodeId(focus), selection=focus&&'selectionStart'in focus?[focus.selectionStart,focus.selectionEnd]:null;
+   const scroll=[...doc.querySelectorAll('[data-panel-node]')].map(e=>[nodeId(e),e.scrollTop,e.scrollLeft]);
+   doc.head.replaceChildren();const style=doc.createElement('style');style.textContent=m.css||'';doc.head.append(style);
+   doc.documentElement.dataset.theme=m.theme||'dark';doc.documentElement.className=m.theme==='light'?'light':'dark';
+   doc.body.replaceChildren(sanitize(m.html||''));doc.body.style.margin='0';
+   for(const e of doc.querySelectorAll('[data-panel-scroll-top],[data-panel-scroll-left]')){
+     const top=Number(e.getAttribute('data-panel-scroll-top')),left=Number(e.getAttribute('data-panel-scroll-left'));
+     if(Number.isFinite(top))e.scrollTop=Math.max(0,top);if(Number.isFinite(left))e.scrollLeft=Math.max(0,left);
+   }
+   for(const position of Array.isArray(m.scroll)?m.scroll:[]){const e=[...doc.querySelectorAll('[data-panel-node]')].find(x=>nodeId(x)===position.nodeId);if(e){if(Number.isFinite(position.top))e.scrollTop=position.top;if(Number.isFinite(position.left))e.scrollLeft=position.left;}}
+   for(const [n,t,l]of scroll){const e=[...doc.querySelectorAll('[data-panel-node]')].find(x=>nodeId(x)===n);if(e){e.scrollTop=t;e.scrollLeft=l;}}
+   if(id){const e=[...doc.querySelectorAll('[data-panel-node]')].find(x=>nodeId(x)===id);if(e){e.focus({preventScroll:true});if(selection)try{e.setSelectionRange(...selection)}catch{}}}
+   send({type:'rendered',session:m.session,revision:m.revision});
+ }
+ function bind(){
+   doc.addEventListener('keydown',e=>{if(e.key==='Escape'&&!e.isComposing){const target=e.target.closest?.('[data-panel-node]')||doc.querySelector('[data-panel-node]');if(target){e.preventDefault();emit('key',target,{key:'Escape'});}}});
+   const flush=()=>{if(!pointerBusy&&!composing&&pending){const next=pending;pending=null;render(next)}};
+   doc.addEventListener('pointerdown',e=>{if(e.target.closest('input,select,textarea'))pointerBusy=true;},true);
+   doc.addEventListener('pointerup',()=>{pointerBusy=false;setTimeout(flush,0)},true);
+   doc.addEventListener('pointercancel',()=>{pointerBusy=false;flush()},true);
+   doc.addEventListener('compositionstart',()=>composing=true,true);
+   doc.addEventListener('compositionend',()=>{composing=false;setTimeout(flush,0)},true);
+   doc.defaultView.addEventListener('blur',()=>{pointerBusy=false;composing=false;flush()});
+   doc.addEventListener('pointerdown',e=>{if(e.button===0&&e.target.closest('[data-panel-drag]')&&!e.target.closest('button,input,select,textarea,a')){e.preventDefault();send({type:'drag'});}});
+   doc.addEventListener('click',e=>{const n=e.target.closest('[data-panel-node]');if(!n)return;if(n.matches('input[type=file]'))return;if(n.matches('a'))e.preventDefault();emit('click',n);});
+   doc.addEventListener('input',e=>{if(e.target.type!=='file')emit('input',e.target,{value:String(e.target.value||'').slice(0,1048576),checked:!!e.target.checked})});
+   doc.addEventListener('change',e=>{if(e.target.type==='file')files(e.target).catch(()=>emit('file',e.target,{error:'file-read'}));else emit('change',e.target,{value:String(e.target.value||'').slice(0,1048576),checked:!!e.target.checked})});
+   doc.addEventListener('toggle',e=>emit('toggle',e.target,{open:!!e.target.open}),true);
+   doc.addEventListener('scroll',e=>emit('scroll',e.target,{scrollTop:e.target.scrollTop||0,scrollLeft:e.target.scrollLeft||0}),true);
+ }
+ window.chrome.webview.addEventListener('message',({data:m})=>{
+   if(!m||typeof m!=='object')return;
+   if(m.type==='file-ack'&&state&&m.session===state.session){const key=m.transfer+':'+m.index;const ack=acknowledgements.get(key);if(ack){acknowledgements.delete(key);ack()}return;}
+   if(m.type==='open'||m.type==='update')render(m);
+   else if(m.type==='pick-file'&&state&&m.session===state.session){
+     const input=doc.createElement('input');input.type='file';input.setAttribute('data-panel-node',String(m.nodeId));input.accept=typeof m.accept==='string'?m.accept.slice(0,300):'image/png,image/jpeg,image/webp,image/gif,application/json';input.onchange=()=>files(input).finally(()=>input.remove());doc.body.append(input);input.click();
+   }
+ }); send({type:'ready'});
+})();
+</script></body></html>

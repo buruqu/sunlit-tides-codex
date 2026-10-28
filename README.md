@@ -2,26 +2,29 @@
 
 为 Windows **Codex Desktop** 与 **DeepSeek Harness（DSH）**打造的可视化外观工作室。以西格莉卡 × 达妮娅的动态场景为起点，也可以导入自己的图片、安排布局、调整字体与粒子，制作亮暗独立的主题方案。
 
-本项目是独立社区作品，与 OpenAI、DeepSeek、库洛游戏无官方隶属关系。当前联合版本为 **Codex 2.0.1 / DSH 0.2.1**，发布标签为 `v2.0.1`。
+本项目是独立社区作品，与 OpenAI、DeepSeek、库洛游戏无官方隶属关系。本次联合版本为 **Codex 2.1.0 / DSH 0.3.0**，发行标签为 `v2.1.0`。
+
+本版的调色板和编辑面板可通过标题栏拖出、拖回应用；导入素材按用途自动放置，界面统一使用“开启编辑”。包含此前 2.0.2 的专用入口图标，见[发布说明](docs/RELEASE-2.1.0.md)。
 
 ## 下载
 
 | 平台 | 安装包 | 说明 |
 | --- | --- | --- |
-| Codex Desktop | [Windows x64 · 2.0.1](https://github.com/buruqu/sunlit-tides-studio/releases/download/v2.0.1/SunlitTidesCodex-2.0.1-win-x64.zip) | 自包含托盘宿主，无需单独安装 Node.js、.NET 或 Tessalume |
-| DeepSeek Harness | [DSH 插件 · 0.2.1](https://github.com/buruqu/sunlit-tides-studio/releases/download/v2.0.1/SunlitTides-DSH-0.2.1.zip) | 使用 DSH 自带 CLI 安装，不含 GPT / Dragon 启动动画 |
+| Codex Desktop | [Windows x64 · 2.1.0](https://github.com/buruqu/sunlit-tides-studio/releases/download/v2.1.0/SunlitTidesCodex-2.1.0-win-x64.zip) | 自包含托盘宿主，无需单独安装 Node.js、.NET 或 Tessalume |
+| DeepSeek Harness | [DSH 插件 · 0.3.0](https://github.com/buruqu/sunlit-tides-studio/releases/download/v2.1.0/SunlitTides-DSH-0.3.0.zip) | 使用 DSH 自带 CLI 安装，不含 GPT / Dragon 启动动画 |
 
-[联合发行页](https://github.com/buruqu/sunlit-tides-studio/releases/tag/v2.0.1) · [整个仓库源码](https://github.com/buruqu/sunlit-tides-studio/archive/refs/tags/v2.0.1.zip) · [DSH 独立源码](https://github.com/buruqu/sunlit-tides-studio/releases/download/v2.0.1/SunlitTides-DSH-source-0.2.1.zip) · [发布说明](docs/RELEASE-2.0.1.md)
+[联合发行页](https://github.com/buruqu/sunlit-tides-studio/releases/tag/v2.1.0) · [整个仓库源码](https://github.com/buruqu/sunlit-tides-studio/archive/refs/tags/v2.1.0.zip) · [DSH 独立源码](https://github.com/buruqu/sunlit-tides-studio/releases/download/v2.1.0/SunlitTides-DSH-source-0.3.0.zip) · [发布说明](docs/RELEASE-2.1.0.md)
 
-## 双端可视化 DIY
+## 双端可视化编辑
 
-- **素材调色板**：内置背景、侧栏、双侧立绘、表情与场景特效统一管理；导入 PNG、JPEG、WebP、GIF，分为背景、侧栏背景、立绘、表情、普通图片、特效粒子纹理六类用途。新增素材先预览，确认后加入方案。
+- **素材用途**：导入 PNG、JPEG、WebP、GIF 后选择主背景、侧栏背景、聊天区背景、输入框背景、顶部功能栏背景、左右立绘或表情，即可自动定位；相同用途更新已有位置，换图保留已有调整。自由装饰和特效可继续叠加。
+- **可拖出的面板**：按住标题栏拖到应用边缘，面板由桌面载体承接；拖回应用内松手停靠。原页面保留草稿、素材和撤销历史。需要 Windows WebView2 Runtime；缺失或连接失败时保留应用内编辑，不自动安装运行时。
 - **画布编辑**：拖拽移动、缩放、按实际像素保持比例，调整透明度、翻转、旋转、模糊、层级与完整显示 / 铺满；方向键微调、撤销 / 重做、居中及移回画布，编辑时可收起属性面板。
 - **动态调色板与功能区**：调整原预设的背景、角色与动效参数；侧栏、聊天区、输入框可直接移动和缩放，保留原生交互及输入草稿。
 - **字体与特效**：设置本机字体、字号、行高、纯色与渐变；添加落叶、泡泡或自己的图片 / GIF 粒子，调整数量、大小、方向、速度与摇摆。
 - **本地工程**：亮暗方案独立保存；画布草稿支持保存或取消，可恢复默认、恢复上次保存、清理未使用素材，并导出 / 导入分享工程。Codex 与 DSH 可交换素材方案，各自保留宿主功能区布局。
 
-Codex 从 **调色板 → 素材与 DIY** 进入；DSH 从 **晴光 → 素材与 DIY** 进入。完整操作、快捷键及容量限制见 [DIY 使用说明](docs/DIY.md)。
+Codex 从 **调色板 → 开启编辑** 进入；DSH 从 **晴光 → 开启编辑** 进入。完整操作、快捷键及容量限制见[编辑使用说明](docs/DIY.md)。
 
 ## 预设场景
 
@@ -54,7 +57,7 @@ Codex 从 **调色板 → 素材与 DIY** 进入；DSH 从 **晴光 → 素材�
 
 ## 源码与验证
 
-构建需要 Windows、Node.js 22+；Codex 宿主另需 .NET 8 SDK。使用安装包不需要构建环境。
+构建需要 Windows、Node.js 22+；两端原生浮动面板需要 .NET 8 SDK 和可恢复 WebView2 SDK 的 NuGet 连接。使用安装包不需要构建环境。
 
 ```powershell
 npm install
@@ -67,7 +70,7 @@ node tests/diy-integration.cjs
 powershell -NoProfile -ExecutionPolicy Bypass -File scripts/Package.ps1
 ```
 
-浏览器检查需要 Playwright 和可用浏览器，可通过 `PLAYWRIGHT_EXECUTABLE_PATH` 指定浏览器。DSH 构建命令见 [DSH README](dsh/README.md#构建与验证)。`theme/` 为 Codex 主题，`host/` 为 Windows 宿主，`dsh/` 为 DSH 插件，`shared/` 为共用 DIY 编辑器。构建产物、安装状态和日志不作为源码提交。验证范围见 [发布说明](docs/RELEASE-2.0.1.md) 与 [验证记录](docs/VALIDATION.md)；合成浏览器测试不等于原生窗口验收。
+浏览器检查需要 Playwright 和可用浏览器，可通过 `PLAYWRIGHT_EXECUTABLE_PATH` 指定浏览器。DSH 构建命令见 [DSH README](dsh/README.md#构建与验证)。`theme/` 为 Codex 主题，`host/` 为 Windows 宿主，`dsh/` 为 DSH 插件，`shared/` 为共用编辑器。构建产物、安装状态和日志不作为源码提交。验证范围见 [发布说明](docs/RELEASE-2.1.0.md) 与 [本版验证记录](docs/VALIDATION-2.1.0.md)；合成浏览器测试不等于原生窗口验收。
 
 ## 来源与许可
 

@@ -19,6 +19,7 @@ if(!fixtureSource)throw Error('Real-shell fixture contract changed');
   assert.equal(active.id,'@dsh-external/dsh-client-ui-skin-sunlit-tides');assert.equal(active.version,pkg.version);assert.equal(active.roots,1);assert.equal(active.state.renderThread,'worker');assert.equal(active.state.maxFps,120);
   await page.locator('[data-sunlit-toggle]').click();
   for(const [key,type] of [['companionOpacity','companion'],['emoteOpacity','emote']]) {
+   const group=page.locator(`[data-sunlit-control-group]:has([data-sunlit-setting="${key}"])`);if(await group.getAttribute('open')===null)await group.locator('summary').click();
    const slider=page.locator(`[data-sunlit-setting=${key}]`);await slider.focus();await slider.press('Home');
    await page.waitForFunction(type=>document.querySelector(`[data-sunlit-${type}=left]`).hidden,type);
    await slider.press('End');

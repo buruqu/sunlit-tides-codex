@@ -42,13 +42,17 @@ function createFusionPalette({ document, initialState, mode, title, companionsEn
   panel.hidden = true;
   const heading = element('h2', '', title || '功能融合 0.1.0');
   const subtitle = element('p', 'subtitle');
-  panel.append(heading, subtitle);
+  const header=element('header','palette-header');
+  const close=element('button','palette-close','×');close.type='button';close.setAttribute('aria-label','关闭调色板');
+  header.append(heading,close);panel.append(header,subtitle);
   function setExpanded(value) {
+    if(value)win?.__SUNLIT_DIY__?.collapse?.();
     expanded = value;
     panel.hidden = !value;
     toggle.setAttribute('aria-expanded', String(value));
   }
   listen(toggle, 'click', () => setExpanded(!expanded));
+  listen(close,'click',()=>setExpanded(false));
   for (const event of ['keydown', 'keyup', 'keypress']) {
     listen(shadow, event, (e) => {
       e.stopPropagation();
@@ -68,14 +72,6 @@ function createFusionPalette({ document, initialState, mode, title, companionsEn
     panel.appendChild(section);
     return section;
   }
-  const diy = group('素材与 DIY', true);
-  const diyActions = element('div', 'actions');
-  for (const [label, method] of [['素材调色板','open'],['开启 DIY 编辑','startEditing']]) {
-    const button = element('button', '', label); button.type = 'button';
-    listen(button, 'click', () => { setExpanded(false); win?.__SUNLIT_CODEX_DIY__?.[method]?.(); });
-    diyActions.append(button);
-  }
-  diy.append(diyActions, element('p','note','素材名称、拖动位置与数值同步。背景、侧栏、立绘、表情和特效均可编辑。'));
   function target(scope) { return scope === 'common' ? state.common : state.modes[activeMode]; }
   function get(scope, key, slot) { return slot ? target(scope)[slot][key] : target(scope)[key]; }
   function change(scope, key, slot, value) {
@@ -214,6 +210,8 @@ function createFusionPalette({ document, initialState, mode, title, companionsEn
   action('导入 JSON', () => file.click());
   action('导出备份', onExport);
   action('恢复默认', onReset);
+  action('开启编辑',()=>{setExpanded(false);win?.__SUNLIT_CODEX_DIY__?.startEditing?.();});
+  actions.lastElementChild.classList.add('edit-primary');
   listen(file, 'change', async () => {
     const selected = file.files?.[0];
     if (!selected) return;
@@ -226,6 +224,10 @@ function createFusionPalette({ document, initialState, mode, title, companionsEn
   });
   panel.append(actions, file, status);
   if(version)panel.appendChild(element('p','note','晴光与泡影 · '+version));
+  const scroll=element('div','palette-scroll');
+  for(const child of [...panel.children])if(child!==header&&child!==actions)scroll.append(child);
+  panel.append(scroll,actions);
+  style.textContent+=`.panel{padding:0;display:flex;flex-direction:column;overflow:hidden;background:#f8fafd}.palette-header{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:14px 16px;border-bottom:1px solid #8997b42b;flex:none}.palette-header h2{margin:0}.palette-close{color:inherit;background:transparent;border:0;font-size:22px;line-height:1;padding:0 4px}.palette-scroll{padding:12px 16px;overflow:auto;min-height:0;overscroll-behavior:contain}.panel>.actions{padding:12px 16px;border-top:1px solid #8997b42b;margin:0;flex:none;display:grid;grid-template-columns:1fr 1fr}.actions .edit-primary{background:#6f86bf;color:#fff;border-color:#6f86bf}:host([data-mode=dark]) .panel{background:#202737}:host([data-mode=dark]) .actions .edit-primary{background:#ad99d1;color:#211a2d}`;
   shadow.append(toggle, panel);
   function sync() {
     host.dataset.mode = activeMode;
@@ -253,9 +255,11 @@ function createFusionPalette({ document, initialState, mode, title, companionsEn
   sync();
   setBounds();
   document.body.appendChild(host);
+  const panelDrag=win?.mountSunlitPanel?.({window:win,document,panel,handle:header,styleText:()=>style.textContent,theme:()=>activeMode,key:'theme'});
   return { host, update, setStatus, setBounds, destroy() {
     if (destroyed) return;
     destroyed = true;
+    panelDrag?.dispose();
     cleanups.splice(0).reverse().forEach((cleanup) => cleanup());
     host.remove();
   } };

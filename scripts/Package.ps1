@@ -25,6 +25,8 @@ try {
     Copy-Item -LiteralPath 'dist/theme/payload.js','dist/theme/remove.js','dist/theme/manifest.json' -Destination (Join-Path $appRoot 'theme') -Force
     New-Item -ItemType Directory -Path (Join-Path $appRoot 'media') -Force | Out-Null
     Copy-Item -LiteralPath 'media/startup.mp4','media/MEDIA_NOTICE.md' -Destination (Join-Path $appRoot 'media') -Force
+    New-Item -ItemType Directory -Path (Join-Path $appRoot 'branding') -Force | Out-Null
+    Copy-Item -LiteralPath 'assets/branding/sunlit-tides.ico' -Destination (Join-Path $appRoot 'branding') -Force
     $installerRoot = Join-Path $packageRoot 'installer'
     New-Item -ItemType Directory -Path $installerRoot -Force | Out-Null
     foreach ($name in @('Common.ps1','Install.ps1','Restore.ps1','Uninstall.ps1','Entrypoints.ps1','Manage-Entrypoints.ps1','README.md')) {
@@ -32,6 +34,9 @@ try {
     }
     Copy-Item -LiteralPath 'README.md','LICENSE','NOTICE.md' -Destination $packageRoot -Force
     Copy-Item -LiteralPath 'licenses','docs' -Destination $packageRoot -Recurse -Force
+    $brandingDocs = Join-Path $packageRoot 'assets/branding'
+    New-Item -ItemType Directory -Path $brandingDocs -Force | Out-Null
+    Copy-Item -LiteralPath 'assets/branding/README.md' -Destination $brandingDocs -Force
     foreach ($action in @('Install','Restore','Uninstall')) {
         $command = "@echo off`r`npowershell.exe -NoLogo -NoProfile -ExecutionPolicy Bypass -File `"%~dp0installer\$action.ps1`"`r`nif errorlevel 1 pause`r`n"
         [IO.File]::WriteAllText((Join-Path $packageRoot "$action.cmd"), $command, [Text.Encoding]::ASCII)

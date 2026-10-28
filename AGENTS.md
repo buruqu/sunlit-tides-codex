@@ -7,6 +7,8 @@
 | 布局更新不能覆盖另一任务已验收的动画参数；跨任务整合先冻结候选并核对差异 | 本任务 `work/motion-integration-source/source-hashes.json` 及交付记录 |
 | 合成浏览器检查不能表述为原生窗口像素验收 | 交付分别报告浏览器截图、安装文件校验、host状态及人工确认 |
 | DIY 中内置 ID 必须绑定素材类型，不能通过导入隐藏真实输入区；装饰背景保持在正文之下 | `tests/diy-core.cjs` 的保留 ID 负例、`tests/diy-integration.cjs` 的实际输入与布局检查 |
+| 浮动面板只转发原页面控件，草稿和素材仍由原页面持有；拖回、连接失败和卸载不能丢失草稿或残留桥接全局 | `tests/panel-controller.cjs`、`tests/theme-browser.cjs` 及 `--panel-self-test` 隔离原生验收 |
+| 固定用途背景替换不重复创建，跟随布局时不能替换真实输入节点；手动几何关闭跟随 | 两端 `tests/diy-integration.cjs` 的区域背景移动、缩放、保存与刷新，以及 `tests/diy-core.cjs` |
 
 果园落叶、夜景泡泡规则适用于原预设。用户主动 DIY 可自由添加或更换特效。开发候选只核对已验证构建与 ZIP，不因本机仍使用旧版而自行安装；按更新指令执行后再核对安装哈希与原生窗口。
 

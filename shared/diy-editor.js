@@ -4,21 +4,23 @@
   const SCHEMA = 'sunlit-tides-project', VERSION = 1;
   const MAX_ASSET = 12 * 1024 * 1024, MAX_TOTAL = 60 * 1024 * 1024, MAX_JSON = 85 * 1024 * 1024;
   const KINDS = ['background', 'sidebar', 'portrait', 'emote', 'image', 'effect', 'region'];
-  const BUILTINS = Object.freeze({background:'background',sidebar:'sidebar','portrait-left':'portrait','portrait-right':'portrait','emote-left':'emote','emote-right':'emote','effect-default':'effect','sidebar-region':'region','chat-region':'region','composer-region':'region'});
+  const BUILTINS = Object.freeze({background:'background',sidebar:'sidebar','chat-background':'background','composer-background':'background','toolbar-background':'background','portrait-left':'portrait','portrait-right':'portrait','emote-left':'emote','emote-right':'emote','effect-default':'effect','sidebar-region':'region','chat-region':'region','composer-region':'region'});
+  const USES = [['image','自由图片'],['background','主背景'],['sidebar','侧栏背景'],['chat-background','聊天区背景'],['composer-background','输入框背景'],['toolbar-background','顶部功能栏背景'],['portrait-left','左立绘'],['portrait-right','右立绘'],['emote-left','左表情'],['emote-right','右表情'],['effect','特效粒子纹理']];
   const MIME = ['image/png', 'image/jpeg', 'image/webp', 'image/gif'];
   // Strings are immutable: share image strings between history entries instead of
   // repeatedly JSON-encoding/decoding many MiB of base64 on each keystroke.
   const copy = value => Array.isArray(value) ? value.map(copy) : value && typeof value === 'object' ? Object.fromEntries(Object.entries(value).map(([key,item])=>[key,copy(item)])) : value;
   const number = (value, min, max, fallback) => Number.isFinite(+value) ? Math.max(min, Math.min(max, +value)) : fallback;
   const uid = () => 'diy-' + Date.now().toString(36) + '-' + Math.random().toString(36).slice(2, 10);
-  const baseCSS = `:host{all:initial;font:13px/1.5 system-ui,"Microsoft YaHei",sans-serif;color:#f5f0fa;position:fixed;inset:0;pointer-events:none;z-index:2147483600}*{box-sizing:border-box}[hidden]{display:none!important}button,input,select{font:inherit}button{cursor:pointer}button:disabled{cursor:default;opacity:.45}button,input,select{border:1px solid #74647e;border-radius:7px;padding:7px;background:#322a40;color:inherit}input,select{width:100%;min-width:0}button:hover{background:#51405d}button:focus-visible,input:focus-visible,select:focus-visible{outline:2px solid #dbc1fa;outline-offset:2px}.panel{z-index:1000;pointer-events:auto;position:absolute;right:16px;top:56px;width:min(390px,calc(100vw - 24px));max-height:calc(100vh - 72px);overflow:auto;border:1px solid #a78cb3;border-radius:16px;background:#241d30f5;box-shadow:0 12px 60px #0007;padding:15px}.bar,.actions{display:flex;gap:7px;flex-wrap:wrap;align-items:center}.bar h2{font-size:17px;margin:0;flex:1}.subtitle{color:#c4b4cf;font-size:12px}.actions{margin:10px 0}.actions button{flex:1;white-space:nowrap}.primary{background:#6e4f83}.list{display:grid;gap:5px;max-height:180px;overflow:auto;margin:10px 0}.layer{display:flex;gap:6px;align-items:center;border:1px solid #64536f;border-radius:8px;padding:4px}.layer[data-selected=true]{border-color:#ead0ff;background:#584365}.layer .pick{flex:1;text-align:left;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;border:0;background:transparent}.layer .toggle{padding:4px 7px}.grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:10px 0}label{display:grid;gap:3px;color:#e1d7e8;font-size:12px}.wide{grid-column:1/-1}.check{display:flex;align-items:center;gap:6px}.check input{width:auto}.notice{white-space:pre-wrap;font-size:12px;min-height:20px;color:#d4c3e1}.notice[data-error=true]{color:#ffb5b5}.pending{padding:9px;border:1px solid #e7c18d;border-radius:9px;background:#59422c}.boxes{z-index:0;position:absolute;inset:0;pointer-events:none}.box{position:absolute;pointer-events:auto;border:1px dashed #e8c1ff;cursor:move;touch-action:none;transform-origin:center;background:#b975ff09}.box[data-selected=true]{border:2px solid #ffe0a4}.box-label{position:absolute;top:0;left:0;max-width:100%;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;background:#30213fe8;color:#fff;padding:2px 6px;font-size:11px;pointer-events:none}.resize{position:absolute;right:-6px;bottom:-6px;width:14px;height:14px;border:2px solid white;border-radius:3px;background:#8860a1;cursor:nwse-resize}.assets{display:flex;gap:6px;overflow:auto;padding:4px 0}.asset{min-width:82px;max-width:100px;font-size:11px;overflow:hidden;text-overflow:ellipsis}.asset img{display:block;width:55px;height:42px;object-fit:contain;margin:auto}.section{border-top:1px solid #5b4965;margin-top:13px;padding-top:8px}summary{cursor:pointer;font-weight:600}small{font-size:11px;color:#c4b4cf}hr{border:0;border-top:1px solid #5b4965}.editing-indicator{z-index:1001;pointer-events:auto;position:absolute;top:8px;left:50%;transform:translateX(-50%);background:#30213ff5;border:1px solid #d5b6e5;border-radius:10px;padding:7px 12px;display:flex;gap:10px;align-items:center}.editing-indicator button{padding:4px 9px}@media(max-width:650px){.panel{right:6px;top:48px;max-height:calc(100vh - 54px);width:min(350px,calc(100vw - 12px))}.editing-indicator{left:6px;transform:none;font-size:11px}.editing-indicator span{display:none}}`;
+  const baseCSS = `:host{all:initial;font:13px/1.5 system-ui,"Microsoft YaHei",sans-serif;color:#f5f0fa;position:fixed;inset:0;pointer-events:none;z-index:2147483600}*{box-sizing:border-box}[hidden]{display:none!important}button,input,select{font:inherit}button{cursor:pointer}button:disabled{cursor:default;opacity:.45}button,input,select{border:1px solid #74647e;border-radius:7px;padding:7px;background:#322a40;color:inherit}input,select{width:100%;min-width:0}button:hover{background:#51405d}button:focus-visible,input:focus-visible,select:focus-visible{outline:2px solid #dbc1fa;outline-offset:2px}.panel{z-index:1000;pointer-events:auto;position:absolute;right:16px;top:56px;width:min(390px,calc(100vw - 24px));max-height:calc(100vh - 72px);overflow:auto;border:1px solid #a78cb3;border-radius:16px;background:#241d30f5;box-shadow:0 12px 60px #0007;padding:15px}.bar,.actions{display:flex;gap:7px;flex-wrap:wrap;align-items:center}.bar h2{font-size:17px;margin:0;flex:1}.subtitle{color:#c4b4cf;font-size:12px}.actions{margin:10px 0}.actions button{flex:1;white-space:nowrap}.primary{background:#6e4f83}.list{display:grid;gap:5px;max-height:180px;overflow:auto;margin:10px 0}.layer{display:flex;gap:6px;align-items:center;border:1px solid #64536f;border-radius:8px;padding:4px}.layer[data-selected=true]{border-color:#ead0ff;background:#584365}.layer .pick{flex:1;text-align:left;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;border:0;background:transparent}.layer .toggle{padding:4px 7px}.grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:10px 0}label{display:grid;gap:3px;color:#e1d7e8;font-size:12px}.wide{grid-column:1/-1}.check{display:flex;align-items:center;gap:6px}.check input{width:auto}.notice{white-space:pre-wrap;font-size:12px;min-height:20px;color:#d4c3e1}.notice[data-error=true]{color:#ffb5b5}.pending{padding:9px;border:1px solid #e7c18d;border-radius:9px;background:#59422c}.boxes{z-index:0;position:absolute;inset:0;pointer-events:none}.box{position:absolute;pointer-events:auto;border:1px dashed #e8c1ff;cursor:move;touch-action:none;transform-origin:center;background:#b975ff09}.box[data-selected=true]{border:2px solid #ffe0a4}.box-label{position:absolute;top:0;left:0;max-width:100%;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;background:#30213fe8;color:#fff;padding:2px 6px;font-size:11px;pointer-events:none}.resize{position:absolute;right:-6px;bottom:-6px;width:14px;height:14px;border:2px solid white;border-radius:3px;background:#8860a1;cursor:nwse-resize}.assets{display:flex;gap:6px;overflow:auto;padding:4px 0}.asset{min-width:82px;max-width:100px;font-size:11px;overflow:hidden;text-overflow:ellipsis}.asset img{display:block;width:55px;height:42px;object-fit:contain;margin:auto}.section{border-top:1px solid #5b4965;margin-top:13px;padding-top:8px}summary{cursor:pointer;font-weight:600}small{font-size:11px;color:#c4b4cf}hr{border:0;border-top:1px solid #5b4965}.editing-indicator{z-index:1001;pointer-events:auto;position:absolute;top:8px;left:50%;transform:translateX(-50%);background:#30213ff5;border:1px solid #d5b6e5;border-radius:10px;padding:7px 12px;display:flex;gap:10px;align-items:center}.editing-indicator button{padding:4px 9px}@media(max-width:650px){.panel{right:6px;top:48px;max-height:calc(100vh - 54px);width:min(350px,calc(100vw - 12px))}.editing-indicator{left:6px;transform:none;font-size:11px}.editing-indicator span{display:none}}.panel{display:flex;flex-direction:column;overflow:hidden;padding:0}.panel>.bar{padding:12px 14px 6px;flex-shrink:0}.panel>.subtitle,.panel>.notice{padding:0 14px}.editor-tabs{display:flex;gap:5px;padding:8px 14px;border-bottom:1px solid #5b4965}.editor-tabs button{flex:1;min-width:40px}.editor-tabs button[aria-pressed=true]{background:#6e4f83;border-color:#dbc1fa}.panel-body{overflow:auto;padding:0 14px 10px;min-height:0}.panel-footer{flex-shrink:0;flex-wrap:nowrap;padding:10px 12px;margin:0;border-top:1px solid #5b4965;background:#241d30}.panel-footer button{min-width:40px;padding:7px 8px;white-space:nowrap}`;
 
   function mountSunlitDiy(options) {
     const win = options.window || global, doc = options.document || win.document, adapter = options.adapter;
-    if (!adapter || !adapter.getMode || !adapter.getBuiltins || !adapter.apply) throw new Error('DIY adapter 接口不完整');
+    if (!adapter || !adapter.getMode || !adapter.getBuiltins || !adapter.apply) throw new Error('编辑器 adapter 接口不完整');
     const platform = options.platform === 'dsh' ? 'dsh' : 'codex';
     const previousAPI = win.__SUNLIT_DIY__;
     if (previousAPI && previousAPI.dispose) previousAPI.dispose();
+    let panelTransport = null, activeTab='素材';
     let disposed = false, opened = false, editing = false, loading = true, saving = false, loadSerial = 0, operationEpoch = 0, db = null;
     let mode = adapter.getMode() === 'dark' ? 'dark' : 'light';
     let saved = empty(), draft = empty(), previous = null, selected = null, pending = null, assets = [], stagedModes = null;
@@ -34,17 +36,17 @@
     const shadow = host.attachShadow({ mode: 'open' });
     const style = doc.createElement('style'); style.textContent = options.cssText || baseCSS; shadow.append(style);
     const boxes = element('div', { className: 'boxes', tabIndex:-1 });
-    const panel = element('section', { className: 'panel', role: 'dialog', 'aria-label': 'DIY 素材与布局编辑器', hidden: true });
+    const panel = element('section', { className: 'panel', role: 'dialog', 'aria-label': '素材与布局编辑器', hidden: true });
     const indicator = element('div', { className: 'editing-indicator', hidden: true });
-    indicator.append(element('b', {}, '画布 DIY'), element('span', {}, '拖动图层或右下角缩放；Esc 取消本次编辑'));
+    indicator.append(element('b', {}, '画布编辑'), element('span', {}, '拖动图层或右下角缩放；Esc 取消本次编辑'));
     indicator.append(button('显示面板', () => { opened = true; renderVisibility(); }));
     shadow.append(boxes, indicator, panel); (doc.body || doc.documentElement).append(host);
-    const heading = element('div', { className: 'bar' }); heading.append(element('h2', {}, '素材与布局'));
-    heading.append(button('关闭', close, { 'aria-label': '关闭 DIY 面板' })); panel.append(heading);
+    const heading = element('div', { className: 'bar', 'data-sunlit-panel-handle':'' }); heading.append(element('h2', {}, '素材与布局'));
+    heading.append(button('关闭', close, { 'aria-label': '关闭编辑面板' })); panel.append(heading);
     const subtitle = element('div', { className: 'subtitle' }); panel.append(subtitle);
     const status = element('div', { className: 'notice', role: 'status', 'aria-live': 'polite' }); panel.append(status);
     const topActions = element('div', { className: 'actions' });
-    const editButton = button('进入 DIY', startEditing, { className: 'primary' });
+    const editButton = button('开启编辑', startEditing, { className: 'primary' });
     const saveButton = button('保存并退出', saveAndExit, { className: 'primary', hidden: true });
     const cancelButton = button('取消编辑', cancelEditing, { hidden: true });
     const collapseButton = button('收起面板',()=>{opened=false;renderVisibility();focusCanvas();},{hidden:true});
@@ -54,20 +56,20 @@
     historyActions.append(undoButton, redoButton, button('恢复默认', reset), button('恢复上次保存', restorePrevious)); panel.append(historyActions);
     const layerList = element('div', { className: 'list', 'aria-label': '图层列表' }); panel.append(layerList);
     const pendingNotice = element('div', { className: 'pending', hidden: true });
-    pendingNotice.append(element('b', {}, '新增预览 · 可先调整参数'));
+    pendingNotice.append(element('b', {}, '素材预览 · 可先调整参数'));
     const pendingActions = element('div', { className: 'actions' });
     pendingActions.append(button('调整预览',()=>{if(pending){selected=pending.id;renderProperties();renderBoxes();}}),button('确认添加', confirmPending), button('取消新增', cancelPending)); pendingNotice.append(pendingActions); panel.append(pendingNotice);
     const properties = element('div', { 'aria-label': '素材参数' }); panel.append(properties);
     const addSection = element('details', { className: 'section', open: true }); addSection.append(element('summary', {}, '新增素材 / 特效'));
     const addGrid = element('div', { className: 'grid' });
     const newName = input('text', '新素材名称'); newName.placeholder = '先为素材命名';
-    const newKind = select('素材类型', [['image','图片'],['background','背景'],['sidebar','侧栏背景'],['portrait','立绘'],['emote','表情'],['effect','特效粒子纹理']]);
-    addGrid.append(label('素材名称', newName), label('素材类型', newKind)); addSection.append(addGrid);
+    const newKind = select('素材用途', USES);
+    addGrid.append(label('素材名称', newName), label('素材用途', newKind)); addSection.append(addGrid);
     const importImage = input('file', '导入素材文件'); importImage.accept = MIME.join(','); importImage.hidden = true;
     listen(importImage, 'change', () => { const file = importImage.files && importImage.files[0]; if (file) run(() => addFile(file)); importImage.value = ''; });
     const addActions = element('div', { className: 'actions' });
     addActions.append(button('导入图片 / GIF', () => importImage.click()), button('落叶预设', () => addEffect('leaf')), button('泡泡预设', () => addEffect('bubble')));
-    addSection.append(addActions, importImage, element('small', {}, 'PNG / JPEG / WebP / GIF；单素材 ≤12 MiB，素材库合计 ≤60 MiB。不会导入脚本、SVG 或远程 URL。'));
+    addSection.append(element('small',{},'应用范围：当前平台、当前明暗方案。固定用途替换对应位置；自由图片可重复添加。'), addActions, importImage, element('small', {}, 'PNG / JPEG / WebP / GIF；单素材 ≤12 MiB，素材库合计 ≤60 MiB。不会导入脚本、SVG 或远程 URL。'));
     const library = element('div', { className: 'assets', 'aria-label': '素材库' }); addSection.append(library);
     addSection.append(button('清理未使用素材',cleanUnusedAssets),element('small',{},'仅清理完全无引用的素材；两平台亮暗方案、恢复槽、活动草稿和撤销历史均受保护。'));panel.append(addSection);
     const typographySection = element('details', { className: 'section' }); typographySection.append(element('summary', {}, '字体与文字颜色'));
@@ -85,6 +87,12 @@
     const importProject = input('file', '导入工程文件'); importProject.accept = 'application/json,.json'; importProject.hidden = true;
     listen(importProject, 'change', () => { const file = importProject.files && importProject.files[0]; if (file) run(() => importFile(file)); importProject.value = ''; });
     transfer.append(button('导出分享工程', exportProject), button('导入工程', () => importProject.click()), importProject); panel.append(transfer);
+
+    const tabs=element('nav',{className:'editor-tabs','aria-label':'编辑分类'}),body=element('div',{className:'panel-body'});
+    ['素材','布局','字体','特效'].forEach(name=>{const node=button(name,()=>{activeTab=name;renderTabs();if(name==='字体')typographySection.open=true;if(name==='布局'){const layer=allLayers().find(item=>item.kind==='region');if(layer){selected=layer.id;renderProperties();renderList();}}if(name==='特效'){newKind.value='effect';const layer=allLayers().find(item=>item.kind==='effect');if(layer){selected=layer.id;renderProperties();renderList();}}},{'aria-pressed':String(name===activeTab)});tabs.append(node);});
+    body.append(historyActions,layerList,pendingNotice,properties,addSection,typographySection,transfer);
+    topActions.classList.add('panel-footer');panel.replaceChildren(heading,subtitle,status,tabs,body,topActions);
+    function renderTabs(){for(const node of tabs.children)node.setAttribute('aria-pressed',String(node.textContent===activeTab));layerList.hidden=activeTab==='字体';properties.hidden=activeTab==='字体';addSection.hidden=!['素材','特效'].includes(activeTab);typographySection.hidden=activeTab!=='字体';if(activeTab==='字体')typographySection.open=true;}
 
     function empty() { return { layers: [], typography: null, foreignLayouts: {} }; }
     function element(tag, attrs, text) {
@@ -123,7 +131,7 @@
     function viewLayer(value) {
       const layer=copy(value);
       if(layer.lockAspect&&layer.kind!=='region'&&Number.isFinite(layer.aspectRatio))linkedSize(layer,'width',layer.width);
-      if(layer.kind==='region'&&typeof adapter.constrainLayer==='function'){
+      if((layer.kind==='region'||layer.followRegion)&&typeof adapter.constrainLayer==='function'){
         try{const result=adapter.constrainLayer(copy(layer));if(result&&typeof result==='object')Object.entries({x:[-100,200],y:[-100,200],width:[0.1,200],height:[0.1,200]}).forEach(([key,[min,max]])=>{if(typeof result[key]==='number'&&Number.isFinite(result[key]))layer[key]=number(result[key],min,max,layer[key]);});}catch(error){notice('布局约束失败：'+error.message,true);}
       }
       return layer;
@@ -142,12 +150,12 @@
       else Object.assign(layer,viewLayer(layer));
       return layer;
     }
-    function effectiveLayers() { const builtins = new Map(baseLayers().map(layer=>[layer.id,layer]));return draft.layers.concat(pending ? [pending] : []).map(layer=>{const result=viewLayer(layer);if(result.sourceRef&&builtins.has(result.id))result.source=builtins.get(result.id).source;return result;}); }
-    function syncGeometryInputs() { const layer=activeLayer();if(!layer)return;['x','y','width','height'].forEach(key=>{if(fieldNodes[key])fieldNodes[key].value=String(Math.round(layer[key]*10000)/10000);});if(fieldNodes.lockAspect)fieldNodes.lockAspect.checked=!!layer.lockAspect;if(fieldNodes.aspectHint)fieldNodes.aspectHint.hidden=aspectFeasible(layer); }
+    function effectiveLayers() { const builtins = new Map(baseLayers().map(layer=>[layer.id,layer]));return draft.layers.filter(layer=>!pending||(layer.id!==pending.id&&layer.id!==pending._originId)).concat(pending ? [pending] : []).map(layer=>{const result=viewLayer(layer);if(result.sourceRef&&builtins.has(result.id))result.source=builtins.get(result.id).source;return result;}); }
+    function syncGeometryInputs() { const layer=activeLayer();if(!layer)return;['x','y','width','height'].forEach(key=>{if(fieldNodes[key])fieldNodes[key].value=String(Math.round(layer[key]*10000)/10000);});if(fieldNodes.lockAspect)fieldNodes.lockAspect.checked=!!layer.lockAspect;if(fieldNodes.followRegion)fieldNodes.followRegion.checked=!!layer.followRegion;if(fieldNodes.aspectHint)fieldNodes.aspectHint.hidden=aspectFeasible(layer); }
     function constrainGeometry(layer) {const result=viewLayer(layer);Object.entries({x:[-100,200],y:[-100,200],width:[.1,200],height:[.1,200]}).forEach(([key,[min,max]])=>layer[key]=number(result[key],min,max,layer[key]));}
     function focusCanvas() {if(editing)boxes.focus({preventScroll:true});}
     function quickPosition(action) {
-      const current=activeLayer();if(!current)return;checkpoint();const layer=mutableLayer();
+      const current=activeLayer();if(!current)return;checkpoint();const layer=mutableLayer();layer.followRegion=false;
       if(action==='horizontal')layer.x=(100-layer.width)/2;
       else if(action==='vertical')layer.y=(100-layer.height)/2;
       else{
@@ -280,7 +288,7 @@
     }
     const ready = init();
     function renderVisibility() { panel.hidden = !opened; indicator.hidden = !editing; editButton.hidden = editing; saveButton.hidden = !editing; cancelButton.hidden = !editing;collapseButton.hidden=!editing; }
-    function render() { if (disposed) return; renderVisibility(); subtitle.textContent = (mode === 'dark' ? '暗色方案' : '亮色方案') + ' · ' + platform.toUpperCase() + (editing ? ' · 草稿预览' : ' · 参数即时保存'); renderList(); renderProperties(); renderTypography(); renderLibrary(); renderBoxes(); updateHistory(); syncPins(); }
+    function render() { if (disposed) return; renderVisibility();renderTabs(); subtitle.textContent = (mode === 'dark' ? '暗色方案' : '亮色方案') + ' · ' + platform.toUpperCase() + (editing ? ' · 草稿预览' : ' · 参数即时保存'); renderList(); renderProperties(); renderTypography(); renderLibrary(); renderBoxes(); updateHistory(); syncPins(); }
     function renderList() {
       layerList.replaceChildren();
       allLayers().forEach(layer => {
@@ -298,6 +306,7 @@
       const title = element('b',{},(pending && layer.id === pending.id ? '预览：' : '参数：') + layer.name); properties.append(title);
       if(layer.builtin&&layer.id==='background')properties.append(element('div',{className:'subtitle'},'完整显示使用原始图片；切回铺满恢复场景动态。'));
       const grid = element('div',{className:'grid'}); properties.append(grid);
+      if(layer.kind!=='region'){const usage=select('当前素材用途',USES);usage.value=layer.builtin&&BUILTINS[layer.id]&&layer.kind!=='effect'?layer.id:layer.kind==='effect'?'effect':'image';listen(usage,'change',()=>run(()=>changeUse(usage.value)));properties.insertBefore(label('素材用途',usage),grid);}
       function field(key, text, type, min, max, step, values) {
         const node = values ? select(text, values) : input(type,text);
         if (type === 'checkbox') node.checked = !!layer[key]; else node.value = layer[key] == null ? '' : String(layer[key]);
@@ -306,6 +315,7 @@
         listen(node, type === 'checkbox' || values ? 'change' : 'input', () => {
           if(type==='number'&&(!node.value||!Number.isFinite(+node.value)))return;
           checkpoint(); const target = mutableLayer(); if (!target) return;
+          if(['x','y','width','height'].includes(key))target.followRegion=false;
           if (key === 'name') target.name = node.value.slice(0,80);
           else if(key==='lockAspect'){target.lockAspect=node.checked;if(target.lockAspect)target.aspectRatio=pixelRatio(target);}
           else if (type === 'checkbox') target[key] = node.checked;
@@ -316,10 +326,11 @@
           constrainGeometry(target);
           title.textContent = (pending && target.id === pending.id ? '预览：' : '参数：') + target.name;
           changed({previewOnly:!!pending && target.id === pending.id});
-          if(['x','y','width','height','lockAspect'].includes(key))syncGeometryInputs();
+          if(['x','y','width','height','lockAspect','followRegion'].includes(key))syncGeometryInputs();
         });
         grid.append(label(text,node,type === 'checkbox' ? 'check' : key === 'name' ? 'wide' : ''));
       }
+      if(['background','sidebar','chat-background','composer-background','toolbar-background'].includes(layer.id))field('followRegion','跟随区域尺寸','checkbox');
       field('name','素材名称','text'); field('x','横向位置 %','number',-100,200,0.1); field('y','纵向位置 %','number',-100,200,0.1);
       field('width','宽度 %','number',0.1,200,0.1); field('height','高度 %','number',0.1,200,0.1);
       if(layer.kind!=='region'){field('lockAspect','保持比例','checkbox');const hint=element('div',{className:'subtitle wide',hidden:aspectFeasible(layer)},aspectWarningText);fieldNodes.aspectHint=hint;grid.append(hint);}
@@ -356,12 +367,12 @@
     }
     function renderLibrary() {
       library.replaceChildren(); assets.forEach(asset => { const node=button(asset.name,() => {
-        return beginPending(makeLayer(newKind.value,newName.value.trim() || asset.name,asset));
+        return beginPending(makeUseLayer(newKind.value,newName.value.trim() || asset.name,asset));
       },{className:'asset',title:asset.name}); const img=element('img',{src:asset.source,alt:''}); node.prepend(img);library.append(node); });
     }
     function renderBoxes() {
       boxes.replaceChildren(); if (!editing || disposed) return;
-      allLayers().concat(pending?[viewLayer(pending)]:[]).filter(layer=>layer.enabled&&!layer.locked).forEach(layer=> {
+      allLayers().filter(layer=>!pending||(layer.id!==pending.id&&layer.id!==pending._originId)).concat(pending?[viewLayer(pending)]:[]).filter(layer=>layer.enabled&&!layer.locked).forEach(layer=> {
         const box=element('div',{className:'box','data-layer-id':layer.id,'data-selected':String(selected===layer.id),'aria-label':'拖动 '+layer.name});
         box.style.cssText=`left:${layer.x}%;top:${layer.y}%;width:${layer.width}%;height:${layer.height}%;transform:rotate(${layer.rotation}deg);z-index:${layer.id===selected?500:Math.round(layer.z)+150}`;
         box.append(element('span',{className:'box-label'},layer.name)); const handle=element('span',{className:'resize','aria-label':'缩放 '+layer.name}); box.append(handle);
@@ -378,7 +389,7 @@
     });
     listen(boxes,'pointermove',event => {
       if(!gesture||event.pointerId!==gesture.pointerId)return; event.preventDefault();
-      selected=gesture.id;const layer=mutableLayer(),dx=(event.clientX-gesture.startX)/win.innerWidth*100,dy=(event.clientY-gesture.startY)/win.innerHeight*100;
+      selected=gesture.id;const layer=mutableLayer();layer.followRegion=false;const dx=(event.clientX-gesture.startX)/win.innerWidth*100,dy=(event.clientY-gesture.startY)/win.innerHeight*100;
       if(gesture.resize){
         if(layer.lockAspect){const key=Math.abs(dx/gesture.layer.width)>=Math.abs(dy/gesture.layer.height)?'width':'height';linkedSize(layer,key,gesture.layer[key]+(key==='width'?dx:dy));}
         else{layer.width=number(gesture.layer.width+dx,0.1,200,1);layer.height=number(gesture.layer.height+dy,0.1,200,1);}
@@ -399,14 +410,35 @@
       if((event.ctrlKey||event.metaKey)&&!event.altKey){const key=event.key.toLowerCase();if(key==='z'||key==='y'){event.preventDefault();key==='y'||event.shiftKey?doRedo():doUndo();focusCanvas();}return;}
       if(event.altKey)return;
       const direction={ArrowLeft:[-1,0],ArrowRight:[1,0],ArrowUp:[0,-1],ArrowDown:[0,1]}[event.key],current=activeLayer();
-      if(direction&&current&&!current.locked){event.preventDefault();checkpoint();const layer=mutableLayer(),step=event.shiftKey?10:1;layer.x=number(layer.x+direction[0]*step/(win.innerWidth||1)*100,-100,200,layer.x);layer.y=number(layer.y+direction[1]*step/(win.innerHeight||1)*100,-100,200,layer.y);constrainGeometry(layer);changed({previewOnly:!!pending&&selected===pending.id});syncGeometryInputs();focusCanvas();}
+      if(direction&&current&&!current.locked){event.preventDefault();checkpoint();const layer=mutableLayer();layer.followRegion=false;const step=event.shiftKey?10:1;layer.x=number(layer.x+direction[0]*step/(win.innerWidth||1)*100,-100,200,layer.x);layer.y=number(layer.y+direction[1]*step/(win.innerHeight||1)*100,-100,200,layer.y);constrainGeometry(layer);changed({previewOnly:!!pending&&selected===pending.id});syncGeometryInputs();focusCanvas();}
     });
     function makeLayer(kind,name,asset) { const effect=kind==='effect'; const width=asset?Math.min(40,asset.width/win.innerWidth*100):100; return normalizeLayer({id:uid(),name:name||'未命名素材',kind,builtin:false,source:asset?asset.source:'',assetId:asset?asset.id:undefined,enabled:true,locked:false,x:effect||kind==='background'?0:30,y:effect||kind==='background'?0:20,width:effect||kind==='background'?100:width,height:effect||kind==='background'?100:asset?width*win.innerWidth*asset.height/asset.width/win.innerHeight:40,aspectRatio:asset?asset.width/asset.height:undefined,rotation:0,flipX:false,opacity:100,z:allLayers().length+1,fit:'contain',blur:0,effect:{preset:asset?'custom':'bubble',count:30,size:22,speed:1,direction:'up',sway:30}},false); }
-    async function beginPending(layer) { if(pending)throw new Error('请先确认或取消当前新增预览。');const epoch=operationEpoch;try{if(layer.assetId)await pinAsset(layer.assetId);if(disposed||epoch!==operationEpoch)return;if(pending)throw new Error('请先确认或取消当前新增预览。');checkpoint();pending=layer;selected=layer.id;apply();render();notice('正在预览新增素材；确认前不会进入图层列表或保存。');}finally{if(layer.assetId)reservations.delete(layer.assetId);syncPins();} }
-    async function addFile(file) { if(pending)throw new Error('请先确认或取消当前新增预览。');const epoch=operationEpoch,kind=newKind.value,name=newName.value.trim()||file.name.replace(/\.[^.]+$/,'');const asset=await ingestAsset(file);if(disposed||epoch!==operationEpoch){if(asset)reservations.delete(asset.id);syncPins();return;}await beginPending(makeLayer(kind,name,asset)); }
+    function makeUseLayer(use,name,asset,sourceLayer) {
+      const fixed=BUILTINS[use]&&use!=='effect-default';
+      if(!fixed){const layer=makeLayer(use==='effect'?'effect':'image',name,asset);if(sourceLayer){Object.assign(layer,copy(sourceLayer),{id:uid(),builtin:false,kind:use==='effect'?'effect':'image'});delete layer.sourceRef;}return layer;}
+      const descriptor=allLayers().find(layer=>layer.id===use);
+      if(!descriptor)throw new Error('当前宿主暂不支持这个素材用途。');
+      const layer=copy(descriptor);
+      if(['background','sidebar','chat-background','composer-background','toolbar-background'].includes(use)&&!draft.layers.some(item=>item.id===use))layer.followRegion=true;
+      layer.name=name||descriptor.name;layer.enabled=true;
+      if(asset){layer.source=asset.source;layer.assetId=asset.id;delete layer.sourceRef;}
+      else if(sourceLayer){layer.source=sourceLayer.source;layer.assetId=sourceLayer.assetId;delete layer.sourceRef;}
+      return normalizeLayer(layer,false);
+    }
+    async function changeUse(use) {
+      const current=activeLayer();if(!current||current.kind==='region')return;
+      const currentUse=current.builtin&&current.kind!=='effect'?current.id:current.kind==='effect'?'effect':'image';if(use===currentUse)return;
+      if(pending&&selected!==pending.id)throw new Error('请先确认或取消当前素材预览。');
+      const asset=assets.find(item=>item.id===current.assetId);
+      const next=makeUseLayer(use,current.name,asset,current);next._originId=pending?(pending._originId||null):current.id;
+      if(pending){checkpoint();pending=next;selected=next.id;apply();render();}
+      else await beginPending(next);
+    }
+    async function beginPending(layer) { if(pending)throw new Error('请先确认或取消当前新增预览。');const epoch=operationEpoch;try{if(layer.assetId)await pinAsset(layer.assetId);if(disposed||epoch!==operationEpoch)return;if(pending)throw new Error('请先确认或取消当前新增预览。');checkpoint();pending=layer;selected=layer.id;apply();render();notice('正在预览素材用途；可调整位置和尺寸，确认后替换对应位置。');}finally{if(layer.assetId)reservations.delete(layer.assetId);syncPins();} }
+    async function addFile(file) { if(pending)throw new Error('请先确认或取消当前新增预览。');const epoch=operationEpoch,kind=newKind.value,name=newName.value.trim()||file.name.replace(/\.[^.]+$/,'');const asset=await ingestAsset(file);if(disposed||epoch!==operationEpoch){if(asset)reservations.delete(asset.id);syncPins();return;}await beginPending(makeUseLayer(kind,name,asset)); }
     function addEffect(preset) { const layer=makeLayer('effect',newName.value.trim()||(preset==='leaf'?'落叶':'泡泡'));layer.effect.preset=preset;layer.effect.direction=preset==='leaf'?'down':'up';return beginPending(layer); }
     async function replaceFile(file,id) { const epoch=operationEpoch,asset=await ingestAsset(file);try{if(disposed||epoch!==operationEpoch)return;const current=activeLayer();if(!current||current.id!==id)throw new Error('选择的图层已变化，请重新选择后替换。');checkpoint();const layer=mutableLayer();layer.source=asset.source;layer.assetId=asset.id;delete layer.sourceRef;if(layer.kind==='effect')layer.effect.preset='custom';changed({previewOnly:!!pending&&id===pending.id});renderProperties();}finally{if(asset)reservations.delete(asset.id);syncPins();} }
-    function confirmPending() { if(!pending)return;checkpoint();draft.layers.push(pending);pending=null;changed();render();notice(editing?'素材已加入草稿；保存后保留。':'素材已添加，正在保存。'); }
+    function confirmPending() { if(!pending)return;checkpoint();draft.layers=draft.layers.filter(layer=>layer.id!==pending.id&&layer.id!==pending._originId);delete pending._originId;draft.layers.push(pending);pending=null;changed();render();notice(editing?'素材已加入草稿；保存后保留。':'素材已添加，正在保存。'); }
     function cancelPending() { if(!pending)return;checkpoint();pending=null;selected=null;apply();render();notice('已取消新增，导入文件仍可在素材库复用。'); }
     async function startEditing() { if(disposed)return;await ready;if(disposed)return;if(editing){opened=true;renderVisibility();focusCanvas();return;}const needsSave=!!saveTimer;win.clearTimeout(saveTimer);saveTimer=null;if(needsSave)await persist(copy(draft));await storageQueue.catch(()=>{});if(disposed)return;editing=true;opened=true;undo=[];redo=[];render();focusCanvas();notice('草稿实时预览；方向键微调1px，Shift为10px；保存后保留，取消可恢复。'); }
     async function saveAndExit() { if(pending)throw new Error('请先确认或取消新增预览。');if(saving)return;saving=true;panel.inert=true;notice('正在保存工程…');try{win.clearTimeout(saveTimer);saveTimer=null;const targetMode=mode;let okay;if(stagedModes){stagedModes[mode]=copy(draft);okay=await persistModes(stagedModes);}else okay=await persist(copy(draft));if(!okay||disposed||mode!==targetMode)return;stagedModes=null;editing=false;opened=false;undo=[];redo=[];render();}finally{saving=false;panel.inert=false;} }
@@ -448,6 +480,8 @@
       if(strict&&value.lockAspect!=null&&typeof value.lockAspect!=='boolean')throw new Error('保持比例设置无效。');
       if(strict&&value.aspectRatio!=null&&(!Number.isFinite(value.aspectRatio)||value.aspectRatio<=0||value.aspectRatio>1000000))throw new Error('素材像素比例无效。');
       layer.lockAspect=value.kind==='region'?false:value.lockAspect==null?['portrait','emote','image'].includes(value.kind):value.lockAspect;
+      if(strict&&value.followRegion!=null&&typeof value.followRegion!=='boolean')throw new Error('跟随区域尺寸设置无效。');
+      if(value.followRegion!=null)layer.followRegion=!!value.followRegion;
       layer.aspectRatio=Number.isFinite(value.aspectRatio)&&value.aspectRatio>0?value.aspectRatio:pixelRatio(layer);
       if(layer.sourceRef&&!layer.builtin)throw new Error('只有内置素材可以引用预设资源。');
       if(layer.kind==='region'){if(!['sidebar-region','chat-region','composer-region'].includes(layer.id))throw new Error('未知布局区域。');if(strict&&(value.enabled===false||value.rotation!==0))throw new Error('真实区域不能隐藏或旋转。');layer.rotation=0;layer.source='';layer.builtin=true;layer.enabled=true;}
@@ -517,12 +551,16 @@
     const observer=new win.MutationObserver(()=>{if(!disposed&&(adapter.getMode()==='dark'?'dark':'light')!==mode)run(refresh);});
     observer.observe(doc.documentElement,{attributes:true,attributeFilter:['class','data-theme','data-color-mode','data-mode']});
     function dispose() {
-      if(disposed)return;disposed=true;++loadSerial;win.clearTimeout(saveTimer);observer.disconnect();listeners.splice(0).forEach(remove=>remove());host.remove();
+      if(disposed)return;disposed=true;if(panelTransport)panelTransport.dispose();++loadSerial;win.clearTimeout(saveTimer);observer.disconnect();listeners.splice(0).forEach(remove=>remove());host.remove();
       if(db)Promise.all([storageQueue.catch(()=>{}),pinsQueue.catch(()=>{})]).then(()=>transaction(['projects'],tx=>tx.objectStore('projects').delete(sessionKey),true)).catch(()=>{}).finally(()=>{db.close();if(releaseSessionLock)releaseSessionLock();});else if(releaseSessionLock)releaseSessionLock();
       try{adapter.apply([],null,mode);}finally{if(win.__SUNLIT_DIY__===api)delete win.__SUNLIT_DIY__;}
     }
-    const api={open(){if(disposed)return;opened=true;render();return ready;},startEditing,refresh,dispose,getState(){return copy({schema:VERSION,platform,mode,ready:!loading,open:opened,editing,layers:draft.layers,typography:draft.typography,pending,saved,assets:assets.map(({source,...metadata})=>metadata),selected});}};
-    win.__SUNLIT_DIY__=api;return api;
+    const panelElements=()=>({host,shadow,panel,header:heading,handle:heading,style});
+    const api={getPanelElements:panelElements,collapse(){if(disposed)return;opened=false;renderVisibility();},open(){if(disposed)return;activeTab='素材';opened=true;render();return ready;},startEditing,refresh,dispose,getState(){return copy({schema:VERSION,platform,mode,ready:!loading,open:opened,editing,layers:draft.layers,typography:draft.typography,pending,saved,assets:assets.map(({source,...metadata})=>metadata),selected});}};
+    win.__SUNLIT_DIY__=api;
+    if(typeof win.mountSunlitPanel==='function')panelTransport=win.mountSunlitPanel({window:win,document:doc,panel,handle:heading,styleText:style.textContent,theme:()=>adapter.getMode(),onClose:close,key:'theme'});
+    if(typeof adapter.onPanelReady==='function')adapter.onPanelReady(panelElements(),api);
+    return api;
   }
   global.mountSunlitDiy=mountSunlitDiy;
 })(typeof window!=='undefined'?window:globalThis);

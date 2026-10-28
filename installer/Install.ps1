@@ -11,7 +11,7 @@ if ([string]::IsNullOrWhiteSpace($SourceDirectory)) {
 $sourceRoot = [IO.Path]::GetFullPath((Resolve-Path -LiteralPath $SourceDirectory).Path).TrimEnd('\')
 $installRoot = Get-SunlitRoot
 $executable = Join-Path $installRoot 'SunlitTidesCodex.exe'
-$version = '2.0.1'
+$version = '2.1.0'
 if ($sourceRoot -eq $installRoot -or (Test-SunlitChild $sourceRoot $installRoot)) { throw '安装来源不能位于安装目录中。' }
 Assert-SunlitLocalPath $installRoot
 Assert-SunlitNoReparse $sourceRoot
@@ -33,7 +33,7 @@ if ($hadRoot) {
     $existingMarker = Get-SunlitMarker $installRoot
     if ($null -eq $existingMarker -and @(Get-ChildItem -LiteralPath $installRoot -Force).Count -gt 0) { throw '现有目录没有本程序所有权记录；不会覆盖。' }
     if ($null -ne $existingMarker) {
-        if ($existingMarker.version -notin @('1.0.0', '1.1.0', '1.1.1', '1.1.2', '1.1.3', '1.1.4', '1.2.0', '1.2.1', '1.2.2', '1.2.3', '1.2.4', '1.2.5', '1.2.6', '1.2.7', '1.2.8', '1.2.9', '1.2.10', '1.2.11','2.0.0', $version)) { throw '不支持此已安装版本；现有安装已保留。' }
+        if ($existingMarker.version -notin @('1.0.0', '1.1.0', '1.1.1', '1.1.2', '1.1.3', '1.1.4', '1.2.0', '1.2.1', '1.2.2', '1.2.3', '1.2.4', '1.2.5', '1.2.6', '1.2.7', '1.2.8', '1.2.9', '1.2.10', '1.2.11','2.0.0', '2.0.1', '2.0.2', $version)) { throw '不支持此已安装版本；现有安装已保留。' }
         Assert-SunlitInstalledFiles $installRoot $existingMarker $files
     }
 }
@@ -44,7 +44,7 @@ $shortcuts = @(Get-SunlitShortcuts)
 $priorShortcuts = @{}
 foreach ($shortcut in $shortcuts) { $priorShortcuts[$shortcut] = Test-Path -LiteralPath $shortcut }
 foreach ($shortcut in $shortcuts) { if (-not (Test-SunlitShortcut $shortcut $executable)) { throw ('快捷方式已由其他程序占用：' + $shortcut) } }
-if (-not $PSCmdlet.ShouldProcess($installRoot, '暂存并验证 2.0.1，恢复旧主题、保留用户设置与完整旧版本备份后安装')) { return }
+if (-not $PSCmdlet.ShouldProcess($installRoot, '暂存并验证 2.1.0，恢复旧主题、保留用户设置与完整旧版本备份后安装')) { return }
 
 $installMutex = New-Object Threading.Mutex($false, ('Local\SunlitTidesCodex.Install.' + [Security.Principal.WindowsIdentity]::GetCurrent().User.Value))
 $hasInstallMutex = $false
@@ -65,6 +65,7 @@ $oldStopped = $false
 $settingsBytes = $null
 $settingsPath = Join-Path $installRoot 'data\settings.json'
 $hadSettings = $false
+$shortcutRollback = @{}
 try {
     [void](New-Item -ItemType Directory -Path $stage)
     foreach ($file in $files) {
@@ -112,7 +113,7 @@ try {
     }
     Move-SunlitDirectory $stage $installRoot
     $newMoved = $true
-    Set-SunlitIntegration $installRoot $shortcuts
+    Set-SunlitIntegration $installRoot $shortcuts $shortcutRollback
     if (-not $NoLaunch) {
         # --launch intentionally re-enables a fresh installation. Existing users'
         # disabled-theme choice must survive an upgrade or reinstall.
@@ -141,6 +142,15 @@ try {
             Assert-SunlitNoReparse $backup
             Move-SunlitDirectory $backup $installRoot
             $oldMoved = $false
+        }
+        # Restore only links still identical to this attempt's write. Preserve any
+        # concurrent user changes (including target, arguments, or icon).
+        foreach ($shortcut in $shortcutRollback.Keys) {
+            $saved = $shortcutRollback[$shortcut]
+            if ((Test-Path -LiteralPath $shortcut -PathType Leaf) -and
+                [Convert]::ToBase64String([IO.File]::ReadAllBytes($shortcut)) -ceq $saved.Written) {
+                [IO.File]::WriteAllBytes($shortcut, $saved.Original)
+            }
         }
         if ($oldStopped -and $hadSettings -and (Test-Path -LiteralPath $installRoot -PathType Container)) { [IO.File]::WriteAllBytes($settingsPath, $settingsBytes) }
     } catch { throw ('安装失败且自动恢复未完成。原错误：' + $failure.Exception.Message + '；恢复错误：' + $_.Exception.Message + '；备份：' + $backup + '；暂存：' + $stage) }

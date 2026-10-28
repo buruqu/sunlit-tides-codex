@@ -19,6 +19,7 @@ internal sealed class ThemeHost : IAsyncDisposable
     private readonly SemaphoreSlim _gate = new(1, 1), _wake = new(0, 1);
     private readonly CancellationTokenSource _stop = new();
     private readonly CdpDiscovery _discovery = new();
+    private readonly PanelManager _panels = new();
     private readonly Dictionary<string, PageSession> _pages = [];
     private readonly Dictionary<string, List<string>> _registrations = [];
     private volatile Settings _settings;
@@ -92,8 +93,8 @@ internal sealed class ThemeHost : IAsyncDisposable
         var folder = Path.Combine(AppContext.BaseDirectory, "theme");
         using var manifest = JsonDocument.Parse(File.ReadAllText(Path.Combine(folder, "manifest.json")));
         if (manifest.RootElement.GetProperty("id").GetString() != "sunlit-tides.codex"
-            || manifest.RootElement.GetProperty("version").GetString() != "2.0.1"
-            || manifest.RootElement.GetProperty("config").GetProperty("designVersion").GetString() != "2.0.1") throw new InvalidDataException("manifest-invalid");
+            || manifest.RootElement.GetProperty("version").GetString() != "2.1.0"
+            || manifest.RootElement.GetProperty("config").GetProperty("designVersion").GetString() != "2.1.0") throw new InvalidDataException("manifest-invalid");
         string Expression(string file)
         {
             var path = Path.Combine(folder, file);
@@ -247,6 +248,7 @@ internal sealed class ThemeHost : IAsyncDisposable
                     await RemoveFutureAsync(page, token);
                     if (!_settings.Enabled) await page.Connection.EvaluateAsync(_remove, token);
                 }
+                _panels.CloseScope(page.Key);
                 await page.Connection.DisposeAsync();
                 _pages.Remove(key);
             }
@@ -262,14 +264,27 @@ internal sealed class ThemeHost : IAsyncDisposable
                         await connection.SendAsync("Page.enable", new { }, token);
                         page = new(connection, value.Port.ProcessId, value.Port.Port, value.Target.Id);
                         var capturedPage = page;
-                        connection.Navigated += () => { capturedPage.Restored = false; capturedPage.BridgeInitialized = false; Wake(); };
+                        connection.Navigated += () => { _panels.CloseScope(capturedPage.Key); capturedPage.Restored = false; capturedPage.BridgeInitialized = false; Wake(); };
                         connection.StartupSettingChanged += value =>
                         {
                             if (StartupSettingsBridge.TryParseChange(value, out var enabled))
                                 _ = ReceiveStartupChangeAsync(enabled);
                         };
+                        connection.PanelRequested += value =>
+                        {
+                            if (!_settings.Enabled) return;
+                            try
+                            {
+                                using var document = JsonDocument.Parse(value);
+                                var owner = PanelNative.FindOwner(capturedPage.Pid, hints: document.RootElement);
+                                _panels.Request(capturedPage.Key, document.RootElement.Clone(), owner, json =>
+                                    _ = SendPanelEventAsync(capturedPage, json));
+                            }
+                            catch { /* Untrusted request is rejected without recording content. */ }
+                        };
                         await connection.SendAsync("Runtime.enable", new { }, token);
                         await connection.SendAsync("Runtime.addBinding", new { name = "sunlitTidesStartupChanged" }, token);
+                        await connection.SendAsync("Runtime.addBinding", new { name = "sunlitTidesPanelRequest" }, token);
                         if (_registrations.TryGetValue(key, out var ids)) page.ScriptIds.AddRange(ids);
                         _pages.Add(key, page);
                         await RemoveFutureAsync(page, token); // Recover registrations left by a crashed earlier helper.
@@ -342,6 +357,7 @@ internal sealed class ThemeHost : IAsyncDisposable
 
     private async Task RestoreSessionsAsync(CancellationToken token)
     {
+        foreach (var page in _pages.Values) _panels.CloseScope(page.Key);
         try
         {
             await RestoreOrdering.RunAsync(_pages.Values.ToArray(),
@@ -349,6 +365,12 @@ internal sealed class ThemeHost : IAsyncDisposable
                 async page => { await page.Connection.EvaluateAsync(_remove, token); page.Restored = true; });
         }
         catch { _store.Log("restore-removal-pending"); }
+    }
+
+    private async Task SendPanelEventAsync(PageSession page, string json)
+    {
+        try { if (page.Connection.Ready) await page.Connection.EvaluateAsync("window.__SUNLIT_PANEL_TRANSPORT__?.receive(" + json + ")", _stop.Token); }
+        catch { _panels.CloseScope(page.Key); }
     }
 
     private void SaveRegistrations()
@@ -397,6 +419,7 @@ internal sealed class ThemeHost : IAsyncDisposable
         }
         finally { _gate.Release(); }
         _discovery.Dispose();
+        _panels.Dispose();
         _stop.Dispose();
         _gate.Dispose();
         _wake.Dispose();

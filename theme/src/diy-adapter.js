@@ -4,6 +4,10 @@ function mountCodexDiy(context) {
   win.__SUNLIT_CODEX_DIY__?.dispose?.();
   const names={background:'主背景',sidebar:'侧栏背景','portrait-left':'左侧立绘','portrait-right':'右侧立绘','emote-left':'左侧表情包','emote-right':'右侧表情包','effect-default':'场景特效','sidebar-region':'侧栏功能区','chat-region':'聊天功能区','composer-region':'输入框功能区'};
   const selectors={background:'main[data-tessalume-surface="main"]',sidebar:'[data-sunlit-sidebar="true"]','portrait-left':'[data-fusion-card="left"]','portrait-right':'[data-fusion-card="primary"]','emote-left':'[data-sunlit-companion="xixi-emote"]','emote-right':'[data-sunlit-companion="denia"]','effect-default':'[data-fusion-bubbles]','sidebar-region':'aside.app-shell-left-panel,[data-tessalume-surface="sidebar"]','chat-region':'.thread-scroll-container','composer-region':'.composer-surface-chrome,[data-composer-surface-variant]'};
+  Object.assign(names,{'chat-background':'聊天区背景','composer-background':'输入框背景','toolbar-background':'顶部功能栏背景'});
+  Object.assign(selectors,{'chat-background':selectors['chat-region'],'composer-background':selectors['composer-region'],'toolbar-background':'[data-app-shell-titlebar-content="true"],header'});
+  const backgroundSlots=new Set(['chat-background','composer-background','toolbar-background']);
+  const regionArt=createSunlitSurfaceBackground({window:win,document:doc});
   let disposed=false, pending=0, core, layers=[], typography=null, lastSignature='', lastNodes=[], lastMode='';
   const touched=new Map(), roots=new Map(), style=doc.createElement('style');
   style.dataset.sunlitDiyOwned=''; doc.head.append(style);
@@ -12,7 +16,11 @@ function mountCodexDiy(context) {
   const visible=node=>node?.isConnected&&!node.closest('[hidden],[aria-hidden="true"],[inert]')&&win.getComputedStyle(node).display!=='none';
   function find(id){
     if(id==='composer-region'){
-      const composer=resolveFusionLayout(doc,win).composer;
+      const layout=resolveFusionLayout(doc,win);
+      // A freely moved chat area need not overlap its composer. The normal
+      // layout resolver uses overlap to reject unrelated panes, so recover
+      // the visible composer in the same main surface during editing.
+      const composer=layout.composer||[...doc.querySelectorAll(selectors['composer-region'])].find(n=>visible(n)&&!n.closest('.app-shell-right-panel,[data-app-shell-right-panel],[role="dialog"]')&&(!layout.main||n.closest('main')===layout.main));
       return composer?.closest('[data-pip-obstacle="thread-footer"],[data-thread-find-composer="true"],.chat-composer-carrier,.home-composer-carrier')||composer;
     }
     return [...doc.querySelectorAll(selectors[id]||':not(*)')].find(n=>visible(n))||doc.querySelector(selectors[id]||':not(*)');
@@ -29,12 +37,16 @@ function mountCodexDiy(context) {
   function getBuiltins(m=mode()){
     const settings=win.__SIGRIKA_DENIA_FUSION__?.getSettings?.()||{};
     return Object.keys(selectors).map(id=>{
-      const node=find(id), region=id.endsWith('-region'), kind=region?'region':id.startsWith('portrait')?'portrait':id.startsWith('emote')?'emote':id==='effect-default'?'effect':id;
+      const node=find(id), region=id.endsWith('-region'), kind=region?'region':backgroundSlots.has(id)?'background':id.startsWith('portrait')?'portrait':id.startsWith('emote')?'emote':id==='effect-default'?'effect':id;
       const shape=rect(node,id==='sidebar'?rect(find('sidebar-region')):null);
       return {id,name:names[id],kind,source:source(id,m),rect:shape,enabled:region||!!node&&!node.hidden,opacity:['portrait','emote'].includes(kind)?effectiveOpacity(node):100,flipX:id==='portrait-right'&&settings.common?.layout==='panorama',fit:['background','sidebar'].includes(kind)?'cover':'contain',effect:id==='effect-default'?{preset:scene(m).id==='orchard'?'leaf':'bubble',count:settings.common?.bubbleCount||16,size:28,speed:(settings.common?.bubbleSpeed||100)/100,direction:scene(m).id==='orchard'?'down':'up',sway:22}:undefined};
     });
   }
   function constrainLayer(layer){
+    if(layer.followRegion&&['background','sidebar',...backgroundSlots].includes(layer.id)){
+      const node=find(layer.id==='sidebar'?'sidebar-region':layer.id),r=rect(node);
+      return {...layer,x:r.x/win.innerWidth*100,y:r.y/win.innerHeight*100,width:r.width/win.innerWidth*100,height:r.height/win.innerHeight*100};
+    }
     if(layer.kind!=='region')return {...layer};
     const viewportHeight=Math.max(1,win.innerHeight),top=Math.min(44,viewportHeight-1)/viewportHeight*100;
     const available=Math.max(.1,100-top),width=clamp(layer.width,10,100,50),height=clamp(layer.height,Math.min(8,available),available,50);
@@ -45,7 +57,7 @@ function mountCodexDiy(context) {
     return `left:${l.x}vw!important;top:${l.y}vh!important;width:${l.width}vw!important;height:${l.height}vh!important;`;
   }
   function artBox(l){return `left:${clamp(l.x,-100,200,0)}vw!important;top:${clamp(l.y,-100,200,0)}vh!important;width:${clamp(l.width,.1,200,100)}vw!important;height:${clamp(l.height,.1,200,100)}vh!important;`;}
-  function mark(node,value){if(!node)return;if(!touched.has(node))touched.set(node,node.getAttribute('data-sunlit-diy-native'));if(node.getAttribute('data-sunlit-diy-native')!==value)node.setAttribute('data-sunlit-diy-native',value);}
+  function mark(node,value){if(!node)return;if(!touched.has(node)){touched.set(node,node.getAttribute('data-sunlit-diy-native'));node.setAttribute('data-sunlit-diy-native',value);}else node.setAttribute('data-sunlit-diy-native',node.getAttribute('data-sunlit-diy-native')+' '+value);}
   function clearMarks(){for(const [node,old]of touched){if(old===null)node.removeAttribute('data-sunlit-diy-native');else node.setAttribute('data-sunlit-diy-native',old);}touched.clear();}
   function surface(key,parent,z){
     let record=roots.get(key);
@@ -59,10 +71,15 @@ function mountCodexDiy(context) {
     const signature=JSON.stringify([layers,typography,mode(),win.innerWidth,win.innerHeight,main?.className]);
     if(signature===lastSignature&&nativeNodes.length===lastNodes.length&&nativeNodes.every((node,i)=>node===lastNodes[i]))return;
     lastSignature=signature;lastNodes=nativeNodes;clearMarks();
-    const rules=[],front=[],back=[],side=[];
+    const rules=[],front=[],back=[],side=[],regionBackgrounds=[];
+    let slotIndex=0;
     for(const l of layers){
-      const native=l.builtin&&find(l.id), tag='n'+rules.length, target=`html.sgk-theme.tessalume-theme-active body [data-sunlit-diy-native="${tag}"]`;
+      const native=l.builtin&&find(l.id), tag='n'+slotIndex++, target=`html.sgk-theme.tessalume-theme-active body [data-sunlit-diy-native~="${tag}"]`;
       if(native)mark(native,tag);
+      if(backgroundSlots.has(l.id)){
+        if(native&&l.enabled!==false){const moved=layers.some(p=>p.kind==='region'&&find(p.id)===native);rules.push(`${target}{isolation:isolate!important;${!moved&&win.getComputedStyle(native).position==='static'?'position:relative!important;':''}background-color:transparent!important;background-image:none!important;}`);regionBackgrounds.push({layer:l,node:native});}
+        continue;
+      }
       if(l.kind==='region'){
         if(!native)continue;
         // Regions remain functional, visible and above decoration. Do not rotate native text/input.
@@ -82,7 +99,7 @@ function mountCodexDiy(context) {
       }else if(native){
         // The native standee rule includes the template root ID. Beat its
         // explicit visibility so moving one image never leaves a second copy.
-        const templateTarget=`html.sgk-theme.tessalume-theme-active[data-fusion-active] #tessalume-theme-root [data-sunlit-diy-native="${tag}"]`;
+        const templateTarget=`html.sgk-theme.tessalume-theme-active[data-fusion-active] #tessalume-theme-root [data-sunlit-diy-native~="${tag}"]`;
         rules.push(`${target},${templateTarget}{visibility:hidden!important;}`);
       }
       if(l.enabled===false)continue;
@@ -103,6 +120,7 @@ function mountCodexDiy(context) {
       }
     }
     const css=rules.join('\n');if(style.textContent!==css)style.textContent=css;
+    regionArt.render(regionBackgrounds);
     if(main){surface('front',main,5).render(front);surface('back',main,-2).render(back);}
     if(aside)surface('sidebar',aside,-2).render(side);
     // Prevent detached stages retaining decoded assets after a native route change.
@@ -116,6 +134,6 @@ function mountCodexDiy(context) {
   });
   observer.observe(doc.body,{subtree:true,childList:true});observer.observe(html,{attributes:true,attributeFilter:['data-theme','class']});
   win.addEventListener('resize',refresh,{passive:true});
-  const api={open:()=>core.open(),startEditing:()=>core.startEditing(),refresh,dispose(){if(disposed)return;core.dispose();disposed=true;observer.disconnect();win.removeEventListener('resize',refresh);win.cancelAnimationFrame(pending);clearMarks();for(const record of roots.values())record.art.dispose();roots.clear();style.remove();if(win.__SUNLIT_CODEX_DIY__===api)delete win.__SUNLIT_CODEX_DIY__;}};
+  const api={open:()=>core.open(),startEditing:()=>core.startEditing(),refresh,dispose(){if(disposed)return;core.dispose();disposed=true;observer.disconnect();win.removeEventListener('resize',refresh);win.cancelAnimationFrame(pending);clearMarks();regionArt.dispose();for(const record of roots.values())record.art.dispose();roots.clear();style.remove();if(win.__SUNLIT_CODEX_DIY__===api)delete win.__SUNLIT_CODEX_DIY__;}};
   win.__SUNLIT_CODEX_DIY__=api;context.addCleanup(api.dispose);return api;
 }

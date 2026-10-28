@@ -91,6 +91,7 @@ if ($pkg.scripts) {
     }
 }
 $runtimeFiles = @('package.json') + @($pkg.files)
+if ('native' -notin $pkg.files -or !(Test-Path -LiteralPath (Join-Path $SourcePath 'native/SunlitTidesCodex.exe') -PathType Leaf)) { throw '源包缺少受管原生面板程序。请使用完整发布包。' }
 foreach ($name in $runtimeFiles) {
     if (!$name -or [IO.Path]::IsPathRooted($name) -or $name -match '(^|[\\/])\.\.([\\/]|$)|[*?]') { throw "非法 runtime 文件声明: $name" }
     $p = Join-Path $SourcePath $name

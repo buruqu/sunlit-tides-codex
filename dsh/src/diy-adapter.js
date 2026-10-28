@@ -2,6 +2,10 @@
 function mountDshDiy({ window, document, assets, getScene, getSettings }) {
   const names = { background: '背景', sidebar: '侧栏背景', 'portrait-left': '左侧立绘', 'portrait-right': '右侧立绘', 'emote-left': '左侧表情', 'emote-right': '右侧表情', 'effect-default': '场景粒子', 'sidebar-region': '侧栏功能区', 'chat-region': '聊天功能区', 'composer-region': '输入功能区' };
   const selectors = { background: '[data-sunlit-background]', sidebar: '[data-sunlit-sidebar-art]', 'portrait-left': '[data-sunlit-companion=left]', 'portrait-right': '[data-sunlit-companion=right]', 'emote-left': '[data-sunlit-emote=left]', 'emote-right': '[data-sunlit-emote=right]', 'effect-default': '[data-sunlit-bubbles]', 'sidebar-region': ':is([data-pane=sidebar],[class*="_sidebarCol"])', 'chat-region': '[data-conversation-scroll]', 'composer-region': '[data-composer-seat]' };
+  Object.assign(names,{background:'主背景','chat-background':'聊天区背景','composer-background':'输入框背景','toolbar-background':'顶部功能栏背景'});
+  Object.assign(selectors,{'chat-background':selectors['chat-region'],'composer-background':selectors['composer-region'],'toolbar-background':'[class*="_crumbBar"],[class*="_tabHostHeader"],[data-app-titlebar],[data-pane="header"]'});
+  const backgroundSlots=new Set(['chat-background','composer-background','toolbar-background']);
+  const regionArt=createSunlitSurfaceBackground({window,document});
   let layers = [], typography = null, disposed = false, tick = 0, core = null, lastMode = null;
   const style = document.createElement('style'), stage = document.createElement('div');
   style.dataset.sunlitOwner = stage.dataset.sunlitOwner = 'diy'; stage.dataset.sunlitDiyStage = '';
@@ -22,7 +26,7 @@ function mountDshDiy({ window, document, assets, getScene, getSettings }) {
   function getBuiltins(m = mode()) {
     return Object.keys(selectors).map(id => {
       const el = find(id), region = id.endsWith('-region');
-      const kind = region ? 'region' : id.startsWith('portrait') ? 'portrait' : id.startsWith('emote') ? 'emote' : id === 'effect-default' ? 'effect' : id;
+      const kind = region ? 'region' : backgroundSlots.has(id)?'background' : id.startsWith('portrait') ? 'portrait' : id.startsWith('emote') ? 'emote' : id === 'effect-default' ? 'effect' : id;
       const rect = bounds(el) || (id === 'sidebar' ? bounds(find('sidebar-region')) : null) || {x:0,y:0,width:window.innerWidth,height:window.innerHeight};
       let alpha=1, visible=!!el;
       for(let p=el;p&&p!==document.body;p=p.parentElement){const cs=window.getComputedStyle(p);alpha*=Number(cs.opacity);if(p.hidden||cs.display==='none'||cs.visibility==='hidden')visible=false;}
@@ -32,6 +36,10 @@ function mountDshDiy({ window, document, assets, getScene, getSettings }) {
   }
   const number = (v,d=0) => Number.isFinite(Number(v)) ? Number(v) : d;
   function constrainLayer(layer) {
+    if(layer?.followRegion&&['background','sidebar',...backgroundSlots].includes(layer.id)){
+      const r=bounds(find(layer.id==='sidebar'?'sidebar-region':layer.id));
+      if(r)return {...layer,x:r.x/window.innerWidth*100,y:r.y/window.innerHeight*100,width:r.width/window.innerWidth*100,height:r.height/window.innerHeight*100};
+    }
     if(!layer || layer.kind!=='region') return layer;
     const viewportHeight=Math.max(1,window.innerHeight), title=Math.min(44,viewportHeight-1)/viewportHeight*100, available=Math.max(.1,100-title);
     const width=Math.min(100,Math.max(10,number(layer.width,100)));
@@ -51,11 +59,16 @@ function mountDshDiy({ window, document, assets, getScene, getSettings }) {
     lastSignature=signature;lastNative=natives;
     for(const el of touched) el.removeAttribute('data-sunlit-diy-native');
     touched.clear();
-    const rules = [], artLayers = [], underLayers=[];
+    const rules = [], artLayers = [], underLayers=[],regionBackgrounds=[];
+    let slotIndex=0;
     for(const layer of layers) {
-      const native = layer.builtin && find(layer.id), id = `diy-${rules.length}`, opacity = Math.min(100,Math.max(0,number(layer.opacity,100))) / 100;
-      if(native) { native.setAttribute('data-sunlit-diy-native',id); touched.add(native); }
-      const target = `[data-sunlit-diy-native="${id}"][data-sunlit-diy-native][data-sunlit-diy-native]`;
+      const native = layer.builtin && find(layer.id), id = `diy-${slotIndex++}`, opacity = Math.min(100,Math.max(0,number(layer.opacity,100))) / 100;
+      if(native) { native.setAttribute('data-sunlit-diy-native',touched.has(native)?native.getAttribute('data-sunlit-diy-native')+' '+id:id); touched.add(native); }
+      const target = `[data-sunlit-diy-native~="${id}"][data-sunlit-diy-native][data-sunlit-diy-native]`;
+      if(backgroundSlots.has(layer.id)){
+        if(native&&layer.enabled!==false){const moved=layers.some(p=>p.kind==='region'&&find(p.id)===native);rules.push(`${target}{isolation:isolate!important;${!moved&&window.getComputedStyle(native).position==='static'?'position:relative!important;':''}background-color:transparent!important;background-image:none!important;}`);regionBackgrounds.push({layer,node:native});}
+        continue;
+      }
       if(layer.kind === 'region') {
         if(!native) continue;
         rules.push(`${target}{position:fixed!important;${box(layer)}margin:0!important;max-width:none!important;min-width:0!important;min-height:0!important;flex:none!important;translate:none!important;transform:none!important;overflow:auto!important;z-index:2!important;opacity:1!important;visibility:visible!important;}`);
@@ -97,10 +110,11 @@ function mountDshDiy({ window, document, assets, getScene, getSettings }) {
       if(typography.gradientEnabled && window.CSS.supports('color',typography.gradientStart) && window.CSS.supports('color',typography.gradientEnd)) rules.push(`${scope} ${prose}:not(li):not(:has(:is(ul,ol,li,a,pre,code,kbd,samp,button,input,textarea,select,svg,[role=img],[role=status],[data-status],[data-tool-call]))){background-image:linear-gradient(110deg,${typography.gradientStart},${typography.gradientEnd})!important;background-clip:text!important;-webkit-background-clip:text!important;-webkit-text-fill-color:transparent!important}`);
     }
     const css=rules.join('\n'); if(style.textContent!==css) style.textContent=css;
+    regionArt.render(regionBackgrounds);
   }
   const refresh=()=>{if(disposed)return;if(lastMode!==mode()){lastMode=mode();core?.refresh?.();}if(!tick)tick=window.requestAnimationFrame(render);};
   const adapter={getMode:mode,getBuiltins,constrainLayer,apply(next,text){layers=next || [];typography=text;render();}};
   lastMode=mode();core = typeof mountSunlitDiy === 'function' ? mountSunlitDiy({window,document,platform:'dsh',adapter}) : null;
   window.addEventListener('resize',refresh);
-  return {open:()=>core?.open(),startEditing:()=>core?.startEditing(),refresh,dispose(){disposed=true;window.removeEventListener('resize',refresh);if(tick)window.cancelAnimationFrame(tick);core?.dispose();art.dispose();underArt.dispose();underStage.remove();for(const el of touched)el.removeAttribute('data-sunlit-diy-native');stage.remove();style.remove();}};
+  return {open:()=>core?.open(),startEditing:()=>core?.startEditing(),refresh,dispose(){disposed=true;window.removeEventListener('resize',refresh);if(tick)window.cancelAnimationFrame(tick);core?.dispose();art.dispose();underArt.dispose();regionArt.dispose();underStage.remove();for(const el of touched)el.removeAttribute('data-sunlit-diy-native');stage.remove();style.remove();}};
 }

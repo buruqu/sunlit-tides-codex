@@ -6,6 +6,9 @@ host/obj/
 /work/startup-follow-build/
 /work/diy-delivery/
 test-results/
+/work/panel-native-evidence/
+/work/panel-editor-delivery/
+/work/
 *.user
 *.log
 .DS_Store

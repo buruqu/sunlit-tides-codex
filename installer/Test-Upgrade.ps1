@@ -44,7 +44,7 @@ function Start-Process([string]$FilePath, [string]$ArgumentList, [string]$Window
 '@
     Add-Content -LiteralPath (Join-Path $fixture 'installer\Common.ps1') -Value $mock -Encoding UTF8
     foreach ($name in @('SunlitTidesCodex.exe', 'theme\payload.js', 'theme\remove.js', 'media\startup.mp4')) { Write-Fixture (Join-Path $app $name) ('new ' + $name) }
-    Write-Fixture (Join-Path $app 'theme\manifest.json') '{"id":"sunlit-tides.codex","version":"2.0.1"}'
+    Write-Fixture (Join-Path $app 'theme\manifest.json') '{"id":"sunlit-tides.codex","version":"2.1.0"}'
     $files = @()
     foreach ($name in @('SunlitTidesCodex.exe', 'theme\payload.js', 'theme\remove.js', 'theme\manifest.json')) {
         $path = Join-Path $install $name
@@ -71,7 +71,7 @@ try {
     Invoke-Fixture $fixture
     Assert-Fixture ((Get-Content -LiteralPath (Join-Path $fixture.install 'data\settings.json') -Raw -Encoding UTF8) -eq $fixture.settings) 'Settings changed during --quit upgrade.'
     Assert-Fixture (Test-Path -LiteralPath (Join-Path $fixture.install 'data\custom.json')) 'Custom data was not preserved.'
-    Assert-Fixture ((Get-SunlitMarker $fixture.install).version -eq '2.0.1') 'New marker version missing.'
+    Assert-Fixture ((Get-SunlitMarker $fixture.install).version -eq '2.1.0') 'New marker version missing.'
     Assert-Fixture (-not (Test-Path -LiteralPath (Join-Path $fixture.local 'launch.called'))) 'NoLaunch started a helper.'
     $backups = @(Get-ChildItem -LiteralPath $fixture.local -Directory -Filter 'SunlitTidesCodex.backup.*')
     Assert-Fixture ($backups.Count -eq 1) 'Complete old backup missing.'
@@ -80,16 +80,16 @@ try {
     Write-Output 'PASS upgrade preserves pre-quit settings, data, and complete old backup'
     Invoke-Fixture $fixture
     Assert-Fixture (@(Get-ChildItem -LiteralPath $fixture.local -Directory -Filter 'SunlitTidesCodex.backup.*').Count -eq 2) 'Reinstall did not retain both backups.'
-    Write-Output 'PASS 2.0.1 reinstall retains its own validated backup'
+    Write-Output 'PASS 2.1.0 reinstall retains its own validated backup'
 
-    foreach ($priorVersion in @('1.1.3','1.1.4','1.2.0','1.2.1','1.2.2','1.2.3','1.2.4','1.2.5','1.2.6','1.2.7','1.2.8','1.2.9','1.2.10','1.2.11','2.0.0')) {
+    foreach ($priorVersion in @('1.1.3','1.1.4','1.2.0','1.2.1','1.2.2','1.2.3','1.2.4','1.2.5','1.2.6','1.2.7','1.2.8','1.2.9','1.2.10','1.2.11','2.0.0','2.0.1','2.0.2')) {
     $fixture = New-Fixture ('upgrade-from-' + $priorVersion)
     $markerPath = Join-Path $fixture.install '.sunlit-tides-owned.json'
     $trialMarker = Get-Content -LiteralPath $markerPath -Raw -Encoding UTF8 | ConvertFrom-Json
     $trialMarker.version = $priorVersion
     Write-Fixture $markerPath ($trialMarker | ConvertTo-Json -Depth 6)
     Invoke-Fixture $fixture
-    Assert-Fixture ((Get-SunlitMarker $fixture.install).version -eq '2.0.1') 'Trial upgrade missing.'
+    Assert-Fixture ((Get-SunlitMarker $fixture.install).version -eq '2.1.0') 'Trial upgrade missing.'
     Assert-Fixture ((Get-Content -LiteralPath (Join-Path $fixture.install 'data\settings.json') -Raw -Encoding UTF8) -eq $fixture.settings) 'Trial settings changed.'
     Write-Output ('PASS ' + $priorVersion + ' upgrades with settings intact')
     }
@@ -97,7 +97,7 @@ try {
     $fixture = New-Fixture 'fresh'
     [IO.Directory]::Move($fixture.install, (Join-Path $fixture.root 'original-fixture'))
     Invoke-Fixture $fixture
-    Assert-Fixture ((Get-SunlitMarker $fixture.install).version -eq '2.0.1') 'Fresh install missing.'
+    Assert-Fixture ((Get-SunlitMarker $fixture.install).version -eq '2.1.0') 'Fresh install missing.'
     Assert-Fixture (-not (Test-Path -LiteralPath (Join-Path $fixture.local 'quit.called'))) 'Fresh install controlled an old helper.'
     Write-Output 'PASS fresh install does not invoke old helper'
 
@@ -175,5 +175,76 @@ function Stop-SunlitOwnedHelper([string]$Root, $Marker) {
     Assert-Fixture ((Get-Content -LiteralPath (Join-Path $stages[0].FullName 'data\settings.json') -Raw -Encoding UTF8) -eq $fixture.settings) 'Failed quit lost pre-quit settings.'
     Assert-Fixture (-not (Test-Path -LiteralPath (Join-Path $fixture.local 'integration.called'))) 'Failed quit changed integration.'
     Write-Output 'PASS failed old restore preserves original install and pre-quit recovery settings'
-    Write-Output ('All 30 isolated installer checks passed; retained fixture root: ' + $testRoot)
+    foreach ($concurrentEdit in @($false, $true)) {
+        $fixture = New-Fixture ('shortcut-rollback-' + $concurrentEdit)
+        $markerPath = Join-Path $fixture.install '.sunlit-tides-owned.json'
+        $marker = Get-Content -LiteralPath $markerPath -Raw -Encoding UTF8 | ConvertFrom-Json
+        $marker.version = '2.0.1'
+        Write-Fixture $markerPath ($marker | ConvertTo-Json -Depth 6)
+        Write-Fixture (Join-Path $fixture.app 'branding\sunlit-tides.ico') 'isolated icon bytes'
+        $shortcut = Join-Path $fixture.local 'dedicated.lnk'
+        $shell = New-Object -ComObject WScript.Shell
+        try {
+            $link = $shell.CreateShortcut($shortcut)
+            try {
+                $link.TargetPath = Join-Path $fixture.install 'SunlitTidesCodex.exe'
+                $link.Arguments = '--launch'
+                $link.IconLocation = $link.TargetPath + ',0'
+                $link.Description = 'old dedicated shortcut'
+                $link.Save()
+                $oldIcon = $link.IconLocation
+            } finally { [void][Runtime.InteropServices.Marshal]::FinalReleaseComObject($link) }
+        } finally { [void][Runtime.InteropServices.Marshal]::FinalReleaseComObject($shell) }
+        $oldBytes = [Convert]::ToBase64String([IO.File]::ReadAllBytes($shortcut))
+        # Exercise actual shortcut integration; suppress only registry writes in
+        # the isolated fixture copy, never touching the user's HKCU integration.
+        $body = ${function:Set-SunlitIntegration}.ToString()
+        $body = $body.Replace('[void](New-Item -Path $runPath -Force)', '')
+        $body = $body.Replace('Set-ItemProperty -LiteralPath $runPath -Name SunlitTidesCodex -Value $runValue -Type String', '')
+        Add-Content -LiteralPath (Join-Path $fixture.root 'installer\Common.ps1') -Encoding UTF8 -Value ('function Set-SunlitIntegration {' + $body + '}')
+        $fault = @'
+function Get-SunlitShortcuts { @(Join-Path $env:LOCALAPPDATA 'dedicated.lnk') }
+function Start-Process([string]$FilePath, [string]$ArgumentList, [string]$WindowStyle, [switch]$PassThru) {
+    $path = Join-Path $env:LOCALAPPDATA 'dedicated.lnk'
+    $shell = New-Object -ComObject WScript.Shell
+    try {
+        $link = $shell.CreateShortcut($path)
+        try {
+            $expected = (Join-Path $env:LOCALAPPDATA 'SunlitTidesCodex\data\entrypoints\sunlit-tides.ico') + ',0'
+            if ($link.IconLocation -ne $expected) { throw 'New icon was not installed before launch.' }
+            [IO.File]::WriteAllText((Join-Path $env:LOCALAPPDATA 'icon.observed'), $link.IconLocation)
+            if (Test-Path -LiteralPath (Join-Path $env:LOCALAPPDATA 'change.shortcut')) {
+                $link.TargetPath = Join-Path $env:WINDIR 'notepad.exe'
+                $link.Arguments = 'user-changed.txt'
+                $link.Save()
+                [IO.File]::WriteAllBytes((Join-Path $env:LOCALAPPDATA 'user-shortcut.bytes'), [IO.File]::ReadAllBytes($path))
+            }
+        } finally { [void][Runtime.InteropServices.Marshal]::FinalReleaseComObject($link) }
+    } finally { [void][Runtime.InteropServices.Marshal]::FinalReleaseComObject($shell) }
+    throw 'fixture launch failure after real shortcut integration'
+}
+'@
+        Add-Content -LiteralPath (Join-Path $fixture.root 'installer\Common.ps1') -Value $fault -Encoding UTF8
+        if ($concurrentEdit) { Write-Fixture (Join-Path $fixture.local 'change.shortcut') 'yes' }
+        Invoke-Fixture $fixture -Launch -ExpectFailure
+        Assert-Fixture (Test-Path -LiteralPath (Join-Path $fixture.local 'icon.observed')) 'Launch failure did not follow actual icon integration.'
+        Assert-Fixture ((Get-SunlitMarker $fixture.install).version -eq '2.0.1') 'Shortcut failure did not restore 2.0.1.'
+        Assert-Fixture (-not (Test-Path -LiteralPath (Join-Path $fixture.install 'data\entrypoints\sunlit-tides.ico'))) 'Old install unexpectedly contains new icon.'
+        $actualBytes = [Convert]::ToBase64String([IO.File]::ReadAllBytes($shortcut))
+        if ($concurrentEdit) {
+            $userBytes = [Convert]::ToBase64String([IO.File]::ReadAllBytes((Join-Path $fixture.local 'user-shortcut.bytes')))
+            Assert-Fixture ($actualBytes -ceq $userBytes) 'Rollback overwrote concurrent user edits.'
+            Write-Output 'PASS shortcut rollback preserves concurrent target and arguments byte-for-byte'
+        } else {
+            Assert-Fixture ($actualBytes -ceq $oldBytes) 'Rollback did not restore original shortcut bytes.'
+            $shell = New-Object -ComObject WScript.Shell
+            try {
+                $link = $shell.CreateShortcut($shortcut)
+                try { Assert-Fixture ($link.IconLocation -eq $oldIcon) 'Rollback did not restore old IconLocation.' }
+                finally { [void][Runtime.InteropServices.Marshal]::FinalReleaseComObject($link) }
+            } finally { [void][Runtime.InteropServices.Marshal]::FinalReleaseComObject($shell) }
+            Write-Output 'PASS launch failure restores real 2.0.1 shortcut bytes and old IconLocation'
+        }
+    }
+    Write-Output ('All 34 isolated installer checks passed; retained fixture root: ' + $testRoot)
 } finally { $env:LOCALAPPDATA = $originalLocal }

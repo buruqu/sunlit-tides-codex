@@ -138,8 +138,23 @@ function Assert-SunlitInstalledFiles([string]$Root, $Marker, $NewFiles) {
     }
     if ((Test-Path -LiteralPath (Join-Path $Root 'data')) -and -not (Test-Path -LiteralPath (Join-Path $Root 'data') -PathType Container)) { throw '用户状态 data 路径不是目录。' }
 }
-function Set-SunlitIntegration([string]$Root, [string[]]$Shortcuts) {
+function Get-SunlitThemeShortcutIcon([string]$Root) {
     $executable = Join-Path $Root 'SunlitTidesCodex.exe'
+    $source = Join-Path $Root 'branding\sunlit-tides.ico'
+    # Older packages have no separate brand icon. Their embedded/default EXE
+    # icon remains usable, including during restoration of an older backup.
+    if (-not (Test-Path -LiteralPath $source -PathType Leaf)) { return $executable }
+    $stable = Join-Path $Root 'data\entrypoints\sunlit-tides.ico'
+    Assert-SunlitLocalPath $source
+    Assert-SunlitLocalPath $stable
+    [void][IO.Directory]::CreateDirectory((Split-Path $stable -Parent))
+    Copy-Item -LiteralPath $source -Destination $stable -Force
+    if ((Get-SunlitHash $stable) -ne (Get-SunlitHash $source)) { throw '主题入口图标校验失败。' }
+    return $stable
+}
+function Set-SunlitIntegration([string]$Root, [string[]]$Shortcuts, [hashtable]$ShortcutRollback = $null) {
+    $executable = Join-Path $Root 'SunlitTidesCodex.exe'
+    $themeIcon = Get-SunlitThemeShortcutIcon $Root
     $runPath = 'HKCU:\Software\Microsoft\Windows\CurrentVersion\Run'
     $runValue = '"' + $executable + '" --startup'
     [void](New-Item -Path $runPath -Force)
@@ -148,14 +163,23 @@ function Set-SunlitIntegration([string]$Root, [string[]]$Shortcuts) {
     try {
         foreach ($shortcut in $Shortcuts) {
             [void](New-Item -ItemType Directory -Path (Split-Path $shortcut -Parent) -Force)
+            # Snapshot immediately before our write; refuse a newly customized command.
+            if (-not (Test-SunlitShortcut $shortcut $executable)) { throw ('快捷方式已由其他程序占用：' + $shortcut) }
+            $originalBytes = if (Test-Path -LiteralPath $shortcut -PathType Leaf) { [IO.File]::ReadAllBytes($shortcut) } else { $null }
             $link = $shell.CreateShortcut($shortcut)
             try {
                 $link.TargetPath = $executable
                 $link.Arguments = '--launch'
                 $link.WorkingDirectory = $Root
                 $link.Description = '独立晴光与泡影主题；登录时自动启动；托盘可恢复默认外观'
-                $link.IconLocation = $executable + ',0'
+                $link.IconLocation = $themeIcon + ',0'
                 $link.Save()
+                if ($null -ne $ShortcutRollback -and $null -ne $originalBytes) {
+                    $ShortcutRollback[$shortcut] = [pscustomobject]@{
+                        Original = $originalBytes
+                        Written = [Convert]::ToBase64String([IO.File]::ReadAllBytes($shortcut))
+                    }
+                }
             } finally { [void][Runtime.InteropServices.Marshal]::FinalReleaseComObject($link) }
         }
     } finally { [void][Runtime.InteropServices.Marshal]::FinalReleaseComObject($shell) }

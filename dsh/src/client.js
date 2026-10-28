@@ -177,13 +177,17 @@ function mountDshSunlitClient({ window, document, config = {}, assets = {}, cssT
   }
   const footer = node("footer");
   const reset = node("button", { type: "button", "data-sunlit-reset": "" }, "恢复主题默认");
-  footer.append(node("small", {}, "不改变 DSH 账号、模型及聊天设置。"), reset);
+  footer.append(reset);
   panel.append(header, subtitle, tabs, gallery, controls, status, footer);
-  const diyLibrary = node('button', {type:'button','data-sunlit-diy-open':''}, '素材与 DIY');
-  const diyEdit = node('button', {type:'button','data-sunlit-diy-edit':''}, '开启 DIY 编辑');
-  footer.append(diyLibrary, diyEdit);
-  listen(diyLibrary, 'click', () => { setOpen(false); diy?.open(); });
+  const diyEdit = node('button', {type:'button','data-sunlit-diy-edit':''}, '开启编辑');
+  footer.append(diyEdit);
   listen(diyEdit, 'click', () => { setOpen(false); diy?.startEditing(); });
+  const panelBody=node('div',{'data-sunlit-panel-body':''});
+  for(const child of [...panel.children])if(child!==header&&child!==footer)panelBody.append(child);
+  panel.append(panelBody,footer);
+  const categories=[['阅读',['layout','backgroundOpacity','contentOpacity','readingWidth']],['角色',['companionOpacity','emoteOpacity','companions','emotes']],['动效',['bubbleCount','bubbleSpeed','motion','lighting','blink','bubbles','gradientText']]];
+  for(const [label,keys]of categories){const section=node('details',{'data-sunlit-control-group':''});section.open=label==='阅读';section.append(node('summary',{},label));for(const key of keys){const row=controls.querySelector(`[data-sunlit-control="${key}"]`);if(row)section.append(row);}controls.append(section);}
+  const panelDrag=window.mountSunlitPanel?.({window,document,panel,handle:header,styleText:cssText,theme:()=>mode(),key:'theme'});
   const reducedMotion = window.matchMedia?.("(prefers-reduced-motion: reduce)");
   const mode = () => body.hasAttribute("data-ds-dark-theme") ? "dark" : "light";
   const leafScene = () => settings.scenes[mode()] === "orchard";
@@ -462,6 +466,7 @@ function mountDshSunlitClient({ window, document, config = {}, assets = {}, cssT
     apply();
   }
   function setOpen(open) {
+    if(open)window.__SUNLIT_DIY__?.collapse?.();
     if (open) { lastFocus = document.activeElement; editorMode = mode(); refreshPanel(); }
     panel.hidden = !open; toggle.setAttribute("aria-expanded", String(open));
     if (open) close.focus();
@@ -508,6 +513,7 @@ function mountDshSunlitClient({ window, document, config = {}, assets = {}, cssT
   function dispose() {
     if (disposed) return;
     disposed = true; observer.disconnect(); resize.disconnect();
+    panelDrag?.dispose();
     diy?.dispose();
     if (frame) window.cancelAnimationFrame(frame);
     for (const remove of listeners) remove();

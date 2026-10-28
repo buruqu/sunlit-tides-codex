@@ -10,6 +10,9 @@ internal static class Program
     private static int Main(string[] args)
     {
         var command = args.FirstOrDefault()?.ToLowerInvariant() ?? "--launch";
+        // Isolated carrier mode must never acquire the theme mutex, launch Codex or create a tray.
+        if (args.Length == 1 && command == "--panel-stdio") return PanelProtocol.RunStdio();
+        if (args.Length == 1 && command == "--panel-self-test") return PanelSelfTests.Run();
         if (args.Length > 1 || !HostCommands.TryParseCli(command, out _))
         { Write("{\"ok\":false,\"error\":\"invalid-command\"}"); return 2; }
         if (command == "--self-test") return SelfTests.Run();
@@ -76,6 +79,7 @@ internal sealed class TrayContext : ApplicationContext
 {
     private readonly Control _dispatcher = new();
     private readonly NotifyIcon _icon;
+    private readonly Icon _applicationIcon;
     private readonly ThemeHost _host;
     private readonly StateStore _store;
     private readonly CancellationTokenSource _stop = new();
@@ -100,7 +104,8 @@ internal sealed class TrayContext : ApplicationContext
         menu.Items.Add("查看状态", null, (_, _) => ShowStatus());
         menu.Items.Add(new ToolStripSeparator());
         menu.Items.Add("恢复默认并退出", null, async (_, _) => await QuitAsync());
-        _icon = new NotifyIcon { Icon = SystemIcons.Application, Text = "Codex · 晴光与泡影", ContextMenuStrip = menu, Visible = true };
+        _applicationIcon = Icon.ExtractAssociatedIcon(Application.ExecutablePath) ?? (Icon)SystemIcons.Application.Clone();
+        _icon = new NotifyIcon { Icon = _applicationIcon, Text = "Codex · 晴光与泡影", ContextMenuStrip = menu, Visible = true };
         _icon.DoubleClick += (_, _) => ShowStatus();
         _host.Changed += health => Dispatch(() =>
         {
@@ -225,6 +230,7 @@ internal sealed class TrayContext : ApplicationContext
         {
             _stop.Cancel();
             _icon.Dispose();
+            _applicationIcon.Dispose();
             _dispatcher.Dispose();
             _stop.Dispose();
         }

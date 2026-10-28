@@ -8,7 +8,9 @@
 - 用户提供插画、团子头像、500×500 西西吃饭 GIF 原字节素材保留来源；其中部分作者/再分发授权尚未在本机素材记录中确认。公开分享前应补足这些素材的来源及分享条件，也可用自己的授权素材替换。
 - `duo-night.png`、西西透明立绘、果园闭眼帧与遮挡补底包含内置 imagegen 生成/编辑部分；原图、处理方法及提示词记录在 `docs/ASSETS.md`。果园人物图层以原图 RGB 和手工透明遮罩构成。
 - 字体使用系统已安装的 Noto Sans SC、Microsoft YaHei UI、Segoe UI 回退；不捆绑或下载字体。
+- 2.0.2 起的专用入口图标由内置 imagegen 按用户要求生成和编辑，暖阳、泡泡及 GPT 标志组合用于识别此启动入口。GPT 标志参考已安装应用图标，相关权利仍归其权利人，不因本仓库代码许可而转移；本主题不代表官方作品或背书。生成提示与来源见 `assets/branding/README.md`。
 - Windows 自包含宿主捆绑 .NET / Windows Desktop 8.0.32 运行时，保留对应运行时包的 MIT 许可及第三方声明于 `licenses/DOTNET-*`、`licenses/WINDOWS-DESKTOP-LICENSE.txt`。
+- 2.1.0 起的桌面浮动面板使用 Microsoft.Web.WebView2 SDK 1.0.3650.58；SDK 的许可与声明原样保留于 `licenses/WEBVIEW2-SDK-LICENSE.txt`、`licenses/WEBVIEW2-SDK-NOTICE.txt`。使用机器已有的 WebView2 Runtime，不捆绑或自动安装该运行时。
 - Dragon Codex Boot：https://github.com/yushua0808-cpu/dragon-codex-boot 。1.1.0 保留本机先前安装的 0.2.0 示例视频完整原字节，用于个人启动播放；媒体说明原样保存在 `media/MEDIA_NOTICE.md`，上游代码许可保存在 `licenses/DRAGON-CODEX-BOOT-MIT.txt`。启动宿主采用本项目实现的窗口检测与 WPF 播放，不运行上游快捷方式替换器。视频、音轨及角色不因代码的 MIT 许可而获得额外授权；本项目不声明拥有这些权利。
 
 安装器和托盘宿主是本项目代码；其行为不涉及 Codex 账户登录、订阅或聊天内容收集。所有调试连接限制到经过当前 Codex 包路径和端口所属进程验证的 loopback 端点。没有分析上报或外部主题更新服务。

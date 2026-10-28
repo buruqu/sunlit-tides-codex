@@ -86,6 +86,7 @@ internal sealed class CdpConnection : IAsyncDisposable
     internal bool Ready => _socket.State == WebSocketState.Open && _reader is { IsCompleted: false };
     internal event Action? Navigated;
     internal event Action<string>? StartupSettingChanged;
+    internal event Action<string>? PanelRequested;
 
     internal async Task ConnectAsync(Uri socket, CancellationToken token)
     {
@@ -143,7 +144,7 @@ internal sealed class CdpConnection : IAsyncDisposable
                 {
                     frame = await _socket.ReceiveAsync(new ArraySegment<byte>(buffer), _stop.Token);
                     if (frame.MessageType == WebSocketMessageType.Close) return;
-                    if (frame.MessageType != WebSocketMessageType.Text || message.Length + frame.Count > 1024 * 1024)
+                    if (frame.MessageType != WebSocketMessageType.Text || message.Length + frame.Count > PanelProtocol.MaxMessage)
                         throw new InvalidOperationException("cdp-message-limit");
                     message.Write(buffer, 0, frame.Count);
                 } while (!frame.EndOfMessage);
@@ -153,6 +154,10 @@ internal sealed class CdpConnection : IAsyncDisposable
                 else if (root.TryGetProperty("method", out var method))
                 {
                     if (method.GetString() is "Page.frameNavigated" or "Page.domContentEventFired" or "Page.loadEventFired") Navigated?.Invoke();
+                    else if (method.GetString() == "Runtime.bindingCalled" && root.TryGetProperty("params", out var panelParameters)
+                        && panelParameters.TryGetProperty("name", out var panelName) && panelName.GetString() == "sunlitTidesPanelRequest"
+                        && panelParameters.TryGetProperty("payload", out var panelPayload) && panelPayload.ValueKind == JsonValueKind.String
+                        && panelPayload.GetString() is { Length: <= PanelProtocol.MaxMessage } panelValue) PanelRequested?.Invoke(panelValue);
                     else if (method.GetString() == "Runtime.bindingCalled" && root.TryGetProperty("params", out var parameters)
                         && parameters.TryGetProperty("name", out var name) && name.GetString() == "sunlitTidesStartupChanged"
                         && parameters.TryGetProperty("payload", out var payload) && payload.ValueKind == JsonValueKind.String

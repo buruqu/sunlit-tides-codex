@@ -6,3 +6,4 @@ release/
 /lib/client.js
 /lib/build.json
 /shared/
+/native/
