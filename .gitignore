@@ -4,6 +4,7 @@ node_modules/
 host/bin/
 host/obj/
 /work/startup-follow-build/
+/work/diy-delivery/
 test-results/
 *.user
 *.log

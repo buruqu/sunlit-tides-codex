@@ -86,7 +86,7 @@ async function main() {
       const initial = await page.evaluate(() => __SIGRIKA_DENIA_FUSION__.getSettings());
       assert.equal(initial.common.layout, 'panorama');
       await page.getByRole('button', { name: '调色板', exact: true }).click();
-      await page.getByText('背景', { exact: true }).click();
+      await page.getByLabel('功能融合调色板').getByText('背景', { exact: true }).click();
       const selector = page.getByRole('combobox', { name: '背景布局（亮暗通用）', exact: true });
       const geometry = () => page.evaluate(() => {
         const main = document.querySelector('main'), sidebar = document.querySelector('aside.app-shell-left-panel');
@@ -118,10 +118,10 @@ async function main() {
       await evaluateFile('/remove.js'); await apply();
       assert.equal((await page.evaluate(() => __SIGRIKA_DENIA_FUSION__.getSettings())).common.layout,'sidebar');
       await page.getByRole('button', { name: '调色板', exact: true }).click();
-      await page.getByText('背景', { exact: true }).click();
+      await page.getByLabel('功能融合调色板').getByText('背景', { exact: true }).click();
       await selector.selectOption('panorama'); await page.waitForTimeout(300);
       await page.evaluate(() => fixture.setMode('light'));
-      await page.getByText('背景', { exact: true }).click();
+      await page.getByLabel('功能融合调色板').getByText('背景', { exact: true }).click();
       await page.getByRole('button', { name: '调色板', exact: true }).click();
     });
     await check('panorama preserves 800px reading at 1280 and paints native content above background characters', async () => {
@@ -309,7 +309,7 @@ async function main() {
       await page.evaluate(() => { fixture.setMode('light'); fixture.setView('home'); });
       const preferences = await page.evaluate(() => __SIGRIKA_DENIA_FUSION__.getSettings());
       await page.getByRole('button', { name: '调色板', exact: true }).click();
-      await page.getByText('背景', { exact: true }).click();
+      await page.getByLabel('功能融合调色板').getByText('背景', { exact: true }).click();
       const opener = page.getByRole('button', { name: '选择背景', exact: true });
       await opener.click();
       const dialog = page.locator('dialog[data-sgk-gallery]');

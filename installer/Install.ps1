@@ -11,7 +11,7 @@ if ([string]::IsNullOrWhiteSpace($SourceDirectory)) {
 $sourceRoot = [IO.Path]::GetFullPath((Resolve-Path -LiteralPath $SourceDirectory).Path).TrimEnd('\')
 $installRoot = Get-SunlitRoot
 $executable = Join-Path $installRoot 'SunlitTidesCodex.exe'
-$version = '1.2.11'
+$version = '2.0.1'
 if ($sourceRoot -eq $installRoot -or (Test-SunlitChild $sourceRoot $installRoot)) { throw '安装来源不能位于安装目录中。' }
 Assert-SunlitLocalPath $installRoot
 Assert-SunlitNoReparse $sourceRoot
@@ -33,7 +33,7 @@ if ($hadRoot) {
     $existingMarker = Get-SunlitMarker $installRoot
     if ($null -eq $existingMarker -and @(Get-ChildItem -LiteralPath $installRoot -Force).Count -gt 0) { throw '现有目录没有本程序所有权记录；不会覆盖。' }
     if ($null -ne $existingMarker) {
-        if ($existingMarker.version -notin @('1.0.0', '1.1.0', '1.1.1', '1.1.2', '1.1.3', '1.1.4', '1.2.0', '1.2.1', '1.2.2', '1.2.3', '1.2.4', '1.2.5', '1.2.6', '1.2.7', '1.2.8', '1.2.9', '1.2.10', $version)) { throw '不支持此已安装版本；现有安装已保留。' }
+        if ($existingMarker.version -notin @('1.0.0', '1.1.0', '1.1.1', '1.1.2', '1.1.3', '1.1.4', '1.2.0', '1.2.1', '1.2.2', '1.2.3', '1.2.4', '1.2.5', '1.2.6', '1.2.7', '1.2.8', '1.2.9', '1.2.10', '1.2.11','2.0.0', $version)) { throw '不支持此已安装版本；现有安装已保留。' }
         Assert-SunlitInstalledFiles $installRoot $existingMarker $files
     }
 }
@@ -44,7 +44,7 @@ $shortcuts = @(Get-SunlitShortcuts)
 $priorShortcuts = @{}
 foreach ($shortcut in $shortcuts) { $priorShortcuts[$shortcut] = Test-Path -LiteralPath $shortcut }
 foreach ($shortcut in $shortcuts) { if (-not (Test-SunlitShortcut $shortcut $executable)) { throw ('快捷方式已由其他程序占用：' + $shortcut) } }
-if (-not $PSCmdlet.ShouldProcess($installRoot, '暂存并验证 1.2.11，恢复旧主题、保留用户设置与完整旧版本备份后安装')) { return }
+if (-not $PSCmdlet.ShouldProcess($installRoot, '暂存并验证 2.0.1，恢复旧主题、保留用户设置与完整旧版本备份后安装')) { return }
 
 $installMutex = New-Object Threading.Mutex($false, ('Local\SunlitTidesCodex.Install.' + [Security.Principal.WindowsIdentity]::GetCurrent().User.Value))
 $hasInstallMutex = $false

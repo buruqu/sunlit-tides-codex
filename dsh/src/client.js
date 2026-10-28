@@ -12,7 +12,7 @@ function mountDshSunlitClient({ window, document, config = {}, assets = {}, cssT
   const changedStyles = new Map(), ownStyleSnapshots = new WeakMap(), originalStylePresence = new WeakMap();
   let disposed = false, frame = 0, structureDirty = true, renderer = null, editorMode = null;
   let nodes = {}, layoutState = {}, observed = new Set();
-  let lastFocus = null;
+  let lastFocus = null, diy = null;
   const SIDEBAR = ":is([data-pane='sidebar'],[class*='sidebarCol'])";
   const CENTER = "[class*='_centerCol']";
   const scenes = (config.gallery?.scenes || []).filter(s => s && typeof s.id === "string" && assets[s.asset]);
@@ -179,6 +179,11 @@ function mountDshSunlitClient({ window, document, config = {}, assets = {}, cssT
   const reset = node("button", { type: "button", "data-sunlit-reset": "" }, "恢复主题默认");
   footer.append(node("small", {}, "不改变 DSH 账号、模型及聊天设置。"), reset);
   panel.append(header, subtitle, tabs, gallery, controls, status, footer);
+  const diyLibrary = node('button', {type:'button','data-sunlit-diy-open':''}, '素材与 DIY');
+  const diyEdit = node('button', {type:'button','data-sunlit-diy-edit':''}, '开启 DIY 编辑');
+  footer.append(diyLibrary, diyEdit);
+  listen(diyLibrary, 'click', () => { setOpen(false); diy?.open(); });
+  listen(diyEdit, 'click', () => { setOpen(false); diy?.startEditing(); });
   const reducedMotion = window.matchMedia?.("(prefers-reduced-motion: reduce)");
   const mode = () => body.hasAttribute("data-ds-dark-theme") ? "dark" : "light";
   const leafScene = () => settings.scenes[mode()] === "orchard";
@@ -382,6 +387,7 @@ function mountDshSunlitClient({ window, document, config = {}, assets = {}, cssT
     bubbles.style.setProperty("--sunlit-leaf-travel", ((panorama ? sceneBottom - sceneTop : height) + 90) + "px");
     const clip = fitTranscript();
     layoutState = { layout: settings.layout, scene: { left: sceneLeft, top: sceneTop, width: right - sceneLeft, height: sceneBottom - sceneTop }, main: { left, top, width, height }, sidebar: sidebar ? { left: sidebar.left, width: sidebar.width } : null, readingWidth, shift, scale, characters: placed, ...clip };
+    diy?.refresh();
   }
   function refreshPanel() {
     const current = mode(), editing = editorMode || current;
@@ -447,6 +453,7 @@ function mountDshSunlitClient({ window, document, config = {}, assets = {}, cssT
     schedule(true);
     if (renderer) renderer.refresh(sceneSettings());
     refreshPanel();
+    diy?.refresh();
   }
   function saveAndApply() {
     settings = normalize(settings);
@@ -497,9 +504,11 @@ function mountDshSunlitClient({ window, document, config = {}, assets = {}, cssT
     catch (_) { status.textContent = "动态场景不可用，已使用原画背景。"; }
   }
   observer.observe(body, { subtree: true, childList: true, attributes: true, attributeFilter: ["data-ds-dark-theme", "class", "style", "hidden", "aria-hidden", "data-phase", "data-content-phase", "data-conversation-composer-overlay", "data-rightbar-collapsed", "data-sidebar-collapsed"] });
+  if (typeof mountDshDiy === 'function') diy = mountDshDiy({window, document, assets, getScene: m => sceneById.get(settings.scenes[m]), getSettings: () => settings});
   function dispose() {
     if (disposed) return;
     disposed = true; observer.disconnect(); resize.disconnect();
+    diy?.dispose();
     if (frame) window.cancelAnimationFrame(frame);
     for (const remove of listeners) remove();
     try { renderer?.dispose(); } catch (_) {}

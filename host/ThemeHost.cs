@@ -92,8 +92,8 @@ internal sealed class ThemeHost : IAsyncDisposable
         var folder = Path.Combine(AppContext.BaseDirectory, "theme");
         using var manifest = JsonDocument.Parse(File.ReadAllText(Path.Combine(folder, "manifest.json")));
         if (manifest.RootElement.GetProperty("id").GetString() != "sunlit-tides.codex"
-            || manifest.RootElement.GetProperty("version").GetString() != "1.2.11"
-            || manifest.RootElement.GetProperty("config").GetProperty("designVersion").GetString() != "1.2.11") throw new InvalidDataException("manifest-invalid");
+            || manifest.RootElement.GetProperty("version").GetString() != "2.0.1"
+            || manifest.RootElement.GetProperty("config").GetProperty("designVersion").GetString() != "2.0.1") throw new InvalidDataException("manifest-invalid");
         string Expression(string file)
         {
             var path = Path.Combine(folder, file);

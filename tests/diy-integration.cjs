@@ -1,0 +1,38 @@
+/* Real Codex distributable + shared editor in the synthetic native shell. */
+const fs=require('node:fs'),path=require('node:path'),vm=require('node:vm'),http=require('node:http'),assert=require('node:assert/strict');
+const {chromium}=require('playwright'),root=path.resolve(__dirname,'..'),output=path.join(root,'test-results/diy-codex');
+const source=fs.readFileSync(path.join(__dirname,'theme-browser.cjs'),'utf8').match(/const fixture = (`[\s\S]+?`);\r?\n\r?\nasync function main/);
+if(!source)throw Error('Codex fixture changed');
+const fixture=vm.runInNewContext(source[1]).replace('</body>',`<script>fixture.setMode('dark');fixture.setView('chat');document.querySelector('#chat-view .send').onclick=()=>{document.body.dataset.sent=document.querySelector('[aria-label="聊天输入"]').value};document.querySelector('.sidebar-row').onclick=()=>fixture.setView('home');</script><script src="/payload.js"></script></body>`);
+const png=Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+jRZkAAAAASUVORK5CYII=','base64');
+(async()=>{fs.mkdirSync(output,{recursive:true});const server=http.createServer((req,res)=>{res.setHeader('Content-Type',req.url==='/payload.js'?'application/javascript':'text/html;charset=utf-8');res.end(req.url==='/payload.js'?fs.readFileSync(path.join(root,'dist/theme/payload.js')):fixture)});await new Promise(r=>server.listen(0,'127.0.0.1',r));
+const browser=await chromium.launch({channel:'msedge',headless:true,args:['--enable-unsafe-swiftshader']});
+try{const page=await browser.newPage({viewport:{width:1440,height:950}}),errors=[];page.on('pageerror',e=>errors.push(e.message));page.setDefaultTimeout(12000);
+ await page.goto(`http://127.0.0.1:${server.address().port}`);await page.waitForFunction(()=>window.__SUNLIT_DIY__?.getState().ready);
+ const editor=page.locator('#sunlit-diy-editor'),panel=editor.getByRole('dialog');
+ const open=async()=>{await page.getByRole('button',{name:'调色板',exact:true}).click();await page.getByRole('button',{name:'素材调色板',exact:true}).click();await panel.waitFor({state:'visible'});};
+ const pick=async id=>panel.locator(`.layer[data-layer-id="${id}"] .pick`).click();
+ const field=async(name,value)=>panel.getByRole('spinbutton',{name,exact:true}).fill(String(value));
+ const input=page.getByRole('textbox',{name:'聊天输入',exact:true});await input.fill('编辑前已有草稿');
+ await open();await panel.getByRole('button',{name:'进入 DIY',exact:true}).click();
+ await panel.getByRole('textbox',{name:'新素材名称',exact:true}).fill('左侧立绘');await panel.getByRole('combobox',{name:'素材类型',exact:true}).selectOption('portrait');
+ const upload=()=>panel.locator('input[aria-label="导入素材文件"]').setInputFiles({name:'tiny.png',mimeType:'image/png',buffer:png});
+ await upload();await panel.getByRole('button',{name:'确认添加',exact:true}).waitFor();await field('透明度 %',45);assert.equal(await page.evaluate(()=>__SUNLIT_DIY__.getState().pending.opacity),45);
+ await panel.getByRole('button',{name:'取消新增',exact:true}).click();assert.equal(await page.evaluate(()=>__SUNLIT_DIY__.getState().pending),null);
+ await upload();await panel.getByRole('button',{name:'确认添加',exact:true}).click();const id=await page.evaluate(()=>__SUNLIT_DIY__.getState().layers.find(x=>!x.builtin).id);
+ await pick(id);await panel.getByRole('textbox',{name:'素材名称',exact:true}).fill('我的左侧立绘');await field('横向位置 %',25);await field('纵向位置 %',25);await field('宽度 %',15);await field('高度 %',20);
+ const rect=await editor.locator(`.box[data-layer-id="${id}"]`).boundingBox();await page.mouse.move(rect.x+rect.width/2,rect.y+rect.height/2);await page.mouse.down();await page.mouse.move(rect.x+rect.width/2+72,rect.y+rect.height/2+47.5,{steps:8});await page.mouse.up();assert.ok(Number(await panel.getByRole('spinbutton',{name:'横向位置 %',exact:true}).inputValue())>25);await field('横向位置 %',30);
+ for(const kind of ['background','sidebar','emote','image','effect']){await panel.getByRole('textbox',{name:'新素材名称',exact:true}).fill('导入'+kind);await panel.getByRole('combobox',{name:'素材类型',exact:true}).selectOption(kind);await upload();await panel.getByRole('button',{name:'确认添加',exact:true}).click();const layer=await page.evaluate(()=>__SUNLIT_DIY__.getState().layers.at(-1));assert.equal(layer.kind,kind);if(kind==='effect'){await field('粒子数量',7);await field('运动速度',2);await panel.getByRole('combobox',{name:'运动方向',exact:true}).selectOption('right');assert.equal(await page.locator(`[data-sunlit-diy-art] [data-layer-id="${layer.id}"] .particle`).count(),7);}await panel.getByRole('checkbox',{name:'显示此层',exact:true}).uncheck();}
+ await panel.getByText('字体与文字颜色',{exact:true}).click();await panel.getByRole('textbox',{name:'文字颜色',exact:true}).fill('#c5a2fa');await panel.getByRole('checkbox',{name:'启用渐变文字',exact:true}).check();await panel.getByRole('checkbox',{name:'启用渐变文字',exact:true}).uncheck();assert.equal(await page.locator('.assistant-text p').first().evaluate(el=>getComputedStyle(el).webkitTextFillColor),'rgb(197, 162, 250)');
+ for(const [region,x,y,w,h]of[['sidebar-region',1,7,17,82],['chat-region',20,12,76,49],['composer-region',22,68,74,21]]){await pick(region);await field('横向位置 %',x);await field('纵向位置 %',y);await field('宽度 %',w);await field('高度 %',h);assert.equal(await panel.getByRole('checkbox',{name:'显示此层',exact:true}).count(),0);}
+ await panel.getByRole('button',{name:'保存并退出',exact:true}).click();await panel.waitFor({state:'hidden'});
+ assert.equal(await input.inputValue(),'编辑前已有草稿');const composer=page.locator('.chat-composer-carrier');assert.ok(Math.abs((await composer.boundingBox()).width-1440*.74)<2,'Composer must use the requested width');assert.ok((await page.locator('.thread-content-max-width').boundingBox()).width>700,'Reading column remains usable');
+ await input.fill('保存后可发送');await page.locator('#chat-view .send').click();assert.equal(await page.locator('body').getAttribute('data-sent'),'保存后可发送');await page.screenshot({path:path.join(output,'saved.png')});
+ await page.locator('.thread-scroll-container').hover();await page.mouse.wheel(0,700);await page.waitForTimeout(200);assert.ok(await page.locator('.thread-scroll-container').evaluate(el=>el.scrollTop>0));
+ await page.locator('.sidebar-row').first().click();await page.getByRole('textbox',{name:'新聊天输入',exact:true}).fill('切页后可输入');await page.evaluate(()=>fixture.setView('chat'));
+ await page.reload();await page.waitForFunction(()=>window.__SUNLIT_DIY__?.getState().ready);assert.equal(await page.evaluate(()=>__SUNLIT_DIY__.getState().layers.find(x=>x.name==='我的左侧立绘').x),30);assert.equal(await composer.evaluate(el=>getComputedStyle(el).position),'fixed');
+ await open();await panel.getByRole('button',{name:'进入 DIY',exact:true}).click();await pick(id);await field('横向位置 %',50);await panel.getByRole('button',{name:'取消编辑',exact:true}).click();
+ assert.equal(await page.evaluate(id=>__SUNLIT_DIY__.getState().layers.find(x=>x.id===id).x,id),30);
+ if(!(await panel.isVisible()))await open();await panel.getByRole('button',{name:'恢复默认',exact:true}).click();await page.waitForTimeout(350);assert.equal(await composer.evaluate(el=>getComputedStyle(el).position),'absolute');await page.screenshot({path:path.join(output,'reset.png')});assert.deepEqual(errors,[]);
+ fs.writeFileSync(path.join(output,'report.json'),JSON.stringify({passed:true,errors,checks:['six import kinds','pending adjustment and cancel','name/numeric/real drag sync','effect render parameters','typography','three actual regions','draft input preserved','send/scroll/page switch','save/reload/cancel/reset']},null,2));console.log('Codex DIY full integration passed; page errors 0.');
+}finally{await browser.close();await new Promise(r=>server.close(r));}})().catch(e=>{console.error(e);process.exitCode=1;});

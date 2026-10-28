@@ -1,0 +1,2 @@
+[data-sunlit-diy-stage]{position:fixed;inset:0;pointer-events:none;overflow:hidden;z-index:3}
+[data-sunlit-diy-stage] *{pointer-events:none!important}

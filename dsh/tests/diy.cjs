@@ -1,0 +1,52 @@
+/* Adapter contract tests in a browser. Shared-editor UI is covered separately. */
+const fs=require('node:fs'),path=require('node:path'),assert=require('node:assert/strict');
+const {chromium}=require('playwright');
+const root=path.resolve(__dirname,'..');
+(async()=>{
+ const browser=await chromium.launch({channel:'msedge',headless:true});
+ try {
+  const page=await browser.newPage({viewport:{width:1280,height:800}}),errors=[];page.on('pageerror',e=>errors.push(e.message));
+  await page.setContent(`<style>body{margin:0}.frame{display:grid;grid-template-columns:220px 1fr;height:100vh}.x_sidebarCol{overflow:auto}.x_centerCol{position:relative;display:flex;flex-direction:column}[data-conversation-scroll]{flex:1;overflow:auto}[data-composer-seat]{height:120px}textarea{width:90%}[data-sunlit-viewport]{position:fixed;inset:0;pointer-events:none;z-index:-1}[data-sunlit-background]{position:absolute;inset:0}</style><div data-sunlit-viewport data-sunlit-owner="theme"><div data-sunlit-background><canvas></canvas></div><img data-sunlit-companion="left"><img data-sunlit-companion="right"><img data-sunlit-emote="left"><img data-sunlit-emote="right"><div data-sunlit-bubbles></div><div data-sunlit-sidebar-art hidden></div></div><div class="frame"><aside class="x_sidebarCol" data-pane="sidebar"><button id="switch">切换页面</button></aside><main class="x_centerCol"><div data-conversation-scroll><div data-sunlit-reading-column><p>聊天文字</p><pre><code>code preserved</code></pre><div style="height:1600px">长记录</div></div><section data-composer-seat><textarea></textarea><button id="send">发送</button><output></output></section></div></main></div><script>document.querySelector('#send').onclick=()=>document.querySelector('output').textContent=document.querySelector('textarea').value;document.querySelector('#switch').onclick=()=>document.querySelector('p').textContent='新页面';function mountSunlitDiy(options){window.testAdapter=options.adapter;return{open(){},startEditing(){},dispose(){}}}</script>`);
+  await page.addStyleTag({path:path.join(root,'src/diy-adapter.css')});await page.addScriptTag({path:path.join(root,'../shared/diy-art.js')});await page.addScriptTag({path:path.join(root,'src/diy-adapter.js')});
+  await page.evaluate(()=>{window.pixel='data:image/svg+xml;base64,'+btoa('<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32"><rect width="32" height="32" fill="pink"/></svg>');window.host=mountDshDiy({window,document,assets:{bg:pixel,'sidebar-light':pixel,'task-left':pixel,'task-right-primary':pixel,'sigrika-emote':pixel,'denia-chibi':pixel},getScene:()=>({id:'orchard',asset:'bg'}),getSettings:()=>({layout:'panorama',bubbleCount:18,bubbleSpeed:100})});});
+  assert.equal(await page.evaluate(()=>testAdapter.getBuiltins().length),10);
+  assert.equal(await page.evaluate(()=>testAdapter.getBuiltins().find(x=>x.id==='sidebar-region').rect.width),220);
+  assert.deepEqual(await page.evaluate(()=>{const original={id:'composer-region',kind:'region',x:200,y:-20,width:1,height:200};const result=testAdapter.constrainLayer(original);return{copy:result!==original,original,width:result.width,x:result.x,top:result.y*innerHeight/100,height:result.height*innerHeight/100}}),{copy:true,original:{id:'composer-region',kind:'region',x:200,y:-20,width:1,height:200},width:10,x:90,top:44,height:756});
+  assert.equal(await page.evaluate(()=>{const original={kind:'image',x:-80};return testAdapter.constrainLayer(original)===original}),true);
+  assert.equal(await page.evaluate(()=>testAdapter.getBuiltins().find(x=>x.id==='background').fit),'cover');assert.equal(await page.evaluate(()=>testAdapter.getBuiltins().find(x=>x.id==='portrait-left').fit),'contain');
+  assert.equal(await page.evaluate(()=>{const el=document.querySelector('[data-sunlit-companion=left]');el.style.opacity='.6';el.parentElement.style.opacity='.5';return testAdapter.getBuiltins().find(x=>x.id==='portrait-left').opacity}),30);
+  assert.equal(await page.evaluate(()=>{const el=document.querySelector('[data-sunlit-companion=left]');el.parentElement.hidden=true;return testAdapter.getBuiltins().find(x=>x.id==='portrait-left').enabled}),false);
+  await page.evaluate(()=>{const el=document.querySelector('[data-sunlit-companion=left]');el.style.opacity='';el.parentElement.style.opacity='';el.parentElement.hidden=false;});
+  await page.evaluate(()=>testAdapter.apply([{id:'composer-region',builtin:true,kind:'region',x:200,y:-20,width:1,height:200,enabled:false}],null,'light'));
+  let bounded=await page.locator('[data-composer-seat]').boundingBox();assert.equal(bounded.y,44);assert.equal(bounded.width,128);assert.equal(bounded.height,756);
+  await page.setViewportSize({width:1000,height:700});await page.waitForFunction(()=>Math.abs(document.querySelector('[data-composer-seat]').getBoundingClientRect().y-44)<.1);bounded=await page.locator('[data-composer-seat]').boundingBox();assert.equal(bounded.y,44);assert.equal(bounded.width,100);assert.equal(bounded.height,656);
+  await page.setViewportSize({width:1280,height:800});
+  await page.evaluate(()=>testAdapter.apply([{id:'background',builtin:true,kind:'background',source:pixel,fit:'cover',x:-25,y:-10,width:150,height:120,opacity:100}],null,'light'));
+  const wallpaper=await page.locator('[data-sunlit-background]').boundingBox();assert.equal(wallpaper.x,-320);assert.equal(wallpaper.width,1920);assert.equal(wallpaper.y,-80);
+  await page.evaluate(()=>testAdapter.apply([{id:'background',builtin:true,kind:'background',source:pixel,fit:'contain',x:0,y:0,width:100,height:100,opacity:100}],null,'light'));
+  assert.equal(await page.locator('[data-sunlit-background]').evaluate(el=>getComputedStyle(el).visibility),'hidden');assert.equal(await page.locator('[data-sunlit-diy-art] [data-layer-id="background"] img').evaluate(el=>getComputedStyle(el).objectFit),'contain');
+  await page.evaluate(()=>testAdapter.apply([],null,'light'));
+  const layer={id:'composer-region',name:'输入',builtin:true,kind:'region',enabled:true,x:24,y:65,width:68,height:25,opacity:100};
+  await page.evaluate(l=>testAdapter.apply([l],null,'light'),layer);
+  await page.locator('textarea').fill('移动后发送');await page.locator('#send').click();assert.equal(await page.locator('output').textContent(),'移动后发送');
+  assert.ok(Math.abs((await page.locator('[data-composer-seat]').boundingBox()).x-307.2)<1);
+  await page.setViewportSize({width:1000,height:700});assert.ok(Math.abs((await page.locator('[data-composer-seat]').boundingBox()).x-240)<1);
+  await page.locator('#switch').click();assert.equal(await page.locator('p').textContent(),'新页面');
+  await page.evaluate(l=>testAdapter.apply([l,{...l,id:'sidebar-region',x:0,y:5,width:20,height:80},{...l,id:'chat-region',x:22,y:5,width:76,height:58}],null,'light'),layer);
+  await page.locator('[data-conversation-scroll]').hover();await page.mouse.wheel(0,500);await page.waitForTimeout(200);
+  assert.ok(await page.locator('[data-conversation-scroll]').evaluate(el=>el.scrollTop)>0);
+  await page.locator('textarea').fill('三个区域移动后仍可发送');await page.locator('#send').click();assert.equal(await page.locator('output').textContent(),'三个区域移动后仍可发送');
+  await page.evaluate(l=>testAdapter.apply([{...l,enabled:false,opacity:0}],null,'light'),layer);await page.locator('textarea').fill('防御隐藏请求仍可输入');assert.equal(await page.locator('textarea').inputValue(),'防御隐藏请求仍可输入');
+  fs.mkdirSync(path.join(root,'test-results'),{recursive:true});await page.screenshot({path:path.join(root,'test-results/diy-adapter-regions.png')});
+  await page.evaluate(()=>testAdapter.apply(['background','sidebar','portrait','emote','image','effect'].map((kind,i)=>({id:kind==='background'?'background':kind==='sidebar'?'sidebar':`new-${kind}`,builtin:i<2,name:kind,kind,source:pixel,enabled:true,x:i*10,y:10,width:15,height:20,opacity:60,rotation:kind==='background'?0:15,effect:{preset:'custom',count:4,size:20,speed:50,direction:'right',sway:10}})),{fontFamily:'serif',fontSize:20,lineHeight:1.8},'light'));
+  assert.equal(await page.locator('[data-layer-id]').count(),5);assert.equal(await page.locator('.particle').count(),4);
+  assert.equal(await page.locator('canvas').evaluate(el=>getComputedStyle(el.parentElement).visibility),'visible');
+  await page.evaluate(()=>testAdapter.apply([{id:'background',builtin:true,kind:'background',source:pixel+'x',enabled:true,x:0,y:0,width:100,height:100,opacity:100}],null,'light'));
+  assert.equal(await page.locator('canvas').evaluate(el=>getComputedStyle(el.parentElement).visibility),'hidden');
+  await page.evaluate(()=>testAdapter.apply([],null,'light'));assert.equal(await page.locator('[data-layer-id]').count(),0);assert.equal(await page.locator('[data-sunlit-diy-native]').count(),0);
+  assert.equal(await page.locator('[data-composer-seat]').evaluate(el=>getComputedStyle(el).position),'static');
+  fs.mkdirSync(path.join(root,'test-results'),{recursive:true});await page.screenshot({path:path.join(root,'test-results/diy-adapter-reset.png')});
+  await page.evaluate(()=>host.dispose());assert.equal(await page.locator('[data-sunlit-diy-stage]').count(),0);assert.deepEqual(errors,[]);
+  console.log('DSH DIY adapter: geometry, input/send, page switch, viewport resize, six layer kinds, native canvas preservation/replacement, reset/dispose passed.');
+ } finally {await browser.close();}
+})().catch(e=>{console.error(e);process.exitCode=1;});

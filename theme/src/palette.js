@@ -68,6 +68,14 @@ function createFusionPalette({ document, initialState, mode, title, companionsEn
     panel.appendChild(section);
     return section;
   }
+  const diy = group('素材与 DIY', true);
+  const diyActions = element('div', 'actions');
+  for (const [label, method] of [['素材调色板','open'],['开启 DIY 编辑','startEditing']]) {
+    const button = element('button', '', label); button.type = 'button';
+    listen(button, 'click', () => { setExpanded(false); win?.__SUNLIT_CODEX_DIY__?.[method]?.(); });
+    diyActions.append(button);
+  }
+  diy.append(diyActions, element('p','note','素材名称、拖动位置与数值同步。背景、侧栏、立绘、表情和特效均可编辑。'));
   function target(scope) { return scope === 'common' ? state.common : state.modes[activeMode]; }
   function get(scope, key, slot) { return slot ? target(scope)[slot][key] : target(scope)[key]; }
   function change(scope, key, slot, value) {

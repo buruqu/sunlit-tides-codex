@@ -13,7 +13,7 @@
         runtime?.themeId !== 'sunlit-tides.codex' || runtime?.fingerprint !== %%FINGERPRINT%%) {
       throw new Error('theme-acceptance');
     }
-    window.__SUNLIT_TIDES_HOST_MARKER__ = {id:'sunlit-tides.codex',version:'1.2.11',fingerprint:%%FINGERPRINT%%};
+    window.__SUNLIT_TIDES_HOST_MARKER__ = {id:'sunlit-tides.codex',version:'2.0.1',fingerprint:%%FINGERPRINT%%};
     return {installed:true,themeId:'sunlit-tides.codex'};
   })();
   gate.inFlight = job;
